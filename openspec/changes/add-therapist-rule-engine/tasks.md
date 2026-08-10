@@ -5,7 +5,7 @@
 - [x] 1.1 在這個資料夾裡跑 `ng new` 建立 Angular App(standalone、zoneless/Signals、routing、Tailwind)——Angular 21.2,已驗證 `ng build` 跟開發伺服器都正常
 - [x] 1.2 設定 Vitest(取代預設的 Jasmine/Karma)——原生 `--test-runner=vitest`,已驗證 `ng test` 通過
 - [x] 1.3 確認 `tsconfig` 有開 `strict: true`(對應全域 CLAUDE.md)——已確認
-- [x] 1.4 設定好 ESLint/Prettier(或 Angular 內建的等效工具)——Prettier 已隨 scaffold 內建;ESLint 還沒加,留到之後補
+- [x] 1.4 設定好 ESLint/Prettier(或 Angular 內建的等效工具)——Prettier 已隨 scaffold 內建;ESLint 已用 `angular-eslint` 官方 schematic 補上(`pnpm lint` 通過)
 
 ## 2. 資料結構與資料儲存(取代舊的家長打勾清單模型)
 
