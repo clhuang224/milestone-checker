@@ -1,53 +1,53 @@
-# Spec delta: development-checklist (ADDED)
+# Delta for development-checklist
 
 ## ADDED Requirements
 
-### Requirement: Hierarchical checklist structure
-The system SHALL organize milestones under major categories (language, speech, swallowing), each containing sub-items.
+### Requirement: 階層式打勾清單結構
+系統 SHALL 把里程碑用大項目(語言、言語、吞嚥)分類,每個大項目底下有子項目。
 
-#### Scenario: Viewing a category
-- **WHEN** a user opens the checklist page
-- **THEN** they see the three major categories, each expandable to show its sub-items
+#### Scenario: 檢視一個大項目
+- WHEN 使用者打開打勾清單頁面
+- THEN 使用者會看到三個大項目,各自可以展開看到子項目
 
-### Requirement: Achievement recording
-The system SHALL let a user mark a sub-item as achieved and record the date it was achieved.
+### Requirement: 達成記錄
+系統 SHALL 讓使用者把一個子項目標記為已達成,並記錄達成日期。
 
-#### Scenario: Marking a milestone achieved
-- **WHEN** a user checks off a milestone sub-item
-- **THEN** they are prompted for (or can edit) the achievement date
-- **AND** the date is persisted alongside the milestone
+#### Scenario: 標記一個里程碑達成
+- WHEN 使用者打勾一個里程碑子項目
+- THEN 系統會請使用者輸入(或之後可編輯)達成日期
+- AND 這個日期會跟里程碑一起被儲存
 
-### Requirement: Suggested activities
-The system SHALL optionally display suggested at-home activities for a milestone, when available.
+### Requirement: 活動建議
+系統 SHALL 在有資料的情況下,選擇性顯示一個里程碑的建議居家活動。
 
-#### Scenario: Milestone with suggestions
-- **WHEN** a milestone has `suggestedActivities` defined
-- **THEN** those suggestions are visible near the milestone item
+#### Scenario: 有建議活動的里程碑
+- WHEN 一個里程碑有定義 `suggestedActivities`
+- THEN 那些建議會顯示在里程碑項目附近
 
-### Requirement: Observation log
-The system SHALL let a user add free-text dated notes independent of the structured checklist.
+### Requirement: 觀察日誌
+系統 SHALL 讓使用者新增跟結構化打勾清單獨立的、有日期的自由文字筆記。
 
-#### Scenario: Adding a note
-- **WHEN** a user writes a note in the observation log and saves it
-- **THEN** the note is persisted with its date and shown in the log going forward
+#### Scenario: 新增一則筆記
+- WHEN 使用者在觀察日誌寫下筆記並儲存
+- THEN 這則筆記連同日期一起被儲存,之後會顯示在日誌裡
 
-### Requirement: Local-only persistence
-The system SHALL persist all data in the browser's `localStorage` only, with no backend or account system.
+### Requirement: 純本機儲存
+系統 SHALL 把所有資料只存在瀏覽器的 `localStorage`,不使用任何後端或帳號系統。
 
-#### Scenario: Reloading the page
-- **WHEN** a user reloads the page after recording data
-- **THEN** all previously recorded checklist and observation data is still present
+#### Scenario: 重新整理頁面
+- WHEN 使用者記錄資料後重新整理頁面
+- THEN 先前記錄的打勾清單跟觀察日誌資料都還在
 
-### Requirement: Reference-only disclaimer
-The system SHALL display a persistent, non-dismissible-into-oblivion notice that the checklist is for reference only and not a diagnostic tool.
+### Requirement: 僅供參考警語
+系統 SHALL 顯示一個常駐、不會被永久關掉的提示,說明這個打勾清單僅供參考,不是診斷工具。
 
-#### Scenario: Any page view
-- **WHEN** a user views any page of the app
-- **THEN** the disclaimer is visible (not hidden behind a menu or shown only once)
+#### Scenario: 檢視任何頁面
+- WHEN 使用者檢視 App 的任何頁面
+- THEN 警語都是可見的(不會被藏在選單裡,也不會只出現一次)
 
-### Requirement: Scope limited to language/speech/swallowing
-The system SHALL, in this change, only include content for the language, speech, and swallowing categories — not other developmental domains.
+### Requirement: 範圍限定在語言/言語/吞嚥
+系統 SHALL 在這次 change 裡,只包含語言、言語、吞嚥這三個類別的內容——不包含其他發展面向。
 
-#### Scenario: Category list
-- **WHEN** viewing the list of major categories
-- **THEN** only language, speech, and swallowing are present (other domains are out of scope until a future change adds them)
+#### Scenario: 大項目清單
+- WHEN 檢視大項目清單
+- THEN 只會看到語言、言語、吞嚥(其他面向要等之後的 change 才會加入)

@@ -10,6 +10,7 @@ This is an experiment project for trying Claude Code + Angular. The first OpenSp
 
 - Code, comments, commit messages: **English** (per global `CLAUDE.md`).
 - User-facing app content (labels, milestone descriptions, activity suggestions): **Traditional Chinese (Taiwan usage)** — this app's audience is Chinese-speaking parents/caregivers.
+- OpenSpec docs (`proposal.md`, `design.md`, `tasks.md`, `specs/**/spec.md`): **Traditional Chinese**, prose only — keep OpenSpec's structural keywords (`ADDED Requirements`, `Requirement:`, `Scenario:`, `WHEN`/`THEN`/`AND`, `SHALL`/`SHALL NOT`) in English since the tooling parses on them.
 
 ## Health-content caution
 
