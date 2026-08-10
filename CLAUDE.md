@@ -1,6 +1,15 @@
 # development-milestones — project rules
 
-General habits (commit language, Conventional Commits, strict TypeScript, Vitest, Angular standalone+Signals) live in the global `CLAUDE.md` — this file only adds project-specific rules on top.
+General habits (commit language, Conventional Commits, strict TypeScript, Vitest, Angular standalone+Signals, small atomic commits) live in the global `dotfiles/claude/CLAUDE.md` — this file only adds project-specific rules on top. If something isn't covered here, check that file rather than guessing.
+
+## Experimentation philosophy & review posture
+
+This repo exists to experiment with **Claude Code** (subagents, OpenSpec-driven workflow, etc.) and with **Angular** (standalone + Signals, zoneless) — not to ship a polished product. The user is intentionally **not doing line-by-line code review** ("vibe coding"); Claude Code is trusted to drive development and self-verify.
+
+Because there's no human review gate, compensate by:
+- Keeping commits **small and atomic** (already a global rule, but doubly important here) — one task/subtask from `tasks.md` per commit where practical, so a regression is easy to bisect back to a single small change.
+- Treating `ng build` / `ng test` passing as the actual quality gate before considering a task done, not a nice-to-have.
+- Using subagents freely where they fit the task — that's part of what this project is for.
 
 ## Product direction
 

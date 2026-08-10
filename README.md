@@ -2,7 +2,9 @@
 
 一個給語言治療師用的臨床規則輔助工具實驗專案。
 
-> **這個專案是為了實驗 [Claude Code](https://claude.com/product/claude-code) 搭配 Angular 開發而做的**,重點在體驗 Claude Code 的開發流程(OpenSpec 規格驅動、subagents 等),不是正式產品。
+> **這個專案有兩個實驗目的**:一是實驗 [Claude Code](https://claude.com/product/claude-code) 的開發流程與能力(OpenSpec 規格驅動、subagents 等),二是實驗 Angular(standalone + Signals、zoneless)本身。應用本身的完成度/正確性不是重點,不是正式產品。
+>
+> 這個 repo 走**「vibe coding」**:程式碼不會被認真逐行 review,主要靠 Claude Code 自主開發、跑測試自我把關。相對地,commit 會刻意切得**小顆粒**(一個邏輯改動一個 commit),方便事後追查是哪一步出的問題,而不是靠 review 擋在前面。
 
 ## 這是什麼
 
