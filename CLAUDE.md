@@ -1,4 +1,4 @@
-# development-milestones — project rules
+# milestone-checker — project rules
 
 General habits (commit language, Conventional Commits, strict TypeScript, Vitest, Angular standalone+Signals, small atomic commits) live in the global `dotfiles/claude/CLAUDE.md` — this file only adds project-specific rules on top. If something isn't covered here, check that file rather than guessing.
 

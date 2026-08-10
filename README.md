@@ -1,4 +1,4 @@
-# development-milestones
+# milestone-checker
 
 一個給語言治療師用的臨床規則輔助工具實驗專案。
 
@@ -23,10 +23,10 @@
 
 ## 開發方式:OpenSpec
 
-跟 [claude-code-zh-tw](../claude-code-zh-tw) 那個專案一樣,這裡也用 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的規格慣例:先寫 proposal/design/spec,再依 `tasks.md` 逐項實作。
+用 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的規格慣例:先寫 proposal/design/spec,再依 `tasks.md` 逐項實作。
 
 ```
-development-milestones/
+milestone-checker/
 ├── README.md                本檔
 ├── CLAUDE.md                給 Claude Code 看的專案規則(Angular 細節,通用習慣在全域 CLAUDE.md)
 ├── openspec/
@@ -39,8 +39,6 @@ development-milestones/
 │           └── specs/rule-engine/spec.md
 └── (Angular 專案本體,scaffold 完成後會出現在這裡)
 ```
-
-跟 `claude-code-zh-tw` 一樣,這個環境裝不了真正的 `openspec` npm CLI,`openspec/` 資料夾是照官方慣例手動搭的,格式相容,之後可以用 `npm install -g @fission-ai/openspec@latest && openspec init` 接上真正的 CLI。
 
 ## 目前狀態
 

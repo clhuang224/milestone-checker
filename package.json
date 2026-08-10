@@ -1,5 +1,5 @@
 {
-  "name": "development-milestones",
+  "name": "milestone-checker",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
