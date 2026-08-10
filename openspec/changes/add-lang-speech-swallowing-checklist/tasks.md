@@ -9,9 +9,9 @@
 
 ## 2. 資料結構與資料儲存
 
-- [ ] 2.1 寫 `models/milestone.model.ts`(Category、Milestone、AchievementRecord、ObservationEntry)
-- [ ] 2.2 寫 `StorageService`(localStorage 讀寫、有命名空間+版號的 key)
-- [ ] 2.3 `StorageService` 的單元測試(Vitest)
+- [x] 2.1 寫 `models/milestone.model.ts`(Category、Milestone、AchievementRecord、ObservationEntry)
+- [x] 2.2 寫 `StorageService`(localStorage 讀寫、有命名空間+版號的 key)——`core/storage/storage.ts`,類別名稱是 `Storage`(Angular 2025 命名風格自動產生,拿掉 `Service` 字尾)
+- [x] 2.3 `StorageService` 的單元測試(Vitest)——10 個測試全過,涵蓋新增/取代/清除 achievement、新增 observation、資料損毀時的 fallback
 
 ## 3. 範例內容(先當佔位,需要審核)
 
