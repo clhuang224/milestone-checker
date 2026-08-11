@@ -9,12 +9,12 @@
 
 ## 2. 資料結構與資料儲存(取代舊的家長打勾清單模型)
 
-- [ ] 2.1 移除 `models/milestone.model.ts`(舊構想留下的型別,這次的方向不會用到)
-- [ ] 2.2 寫 `models/finding.model.ts`(`FindingDefinition`、`FindingKind`)
-- [ ] 2.3 寫 `models/case.model.ts`(`Case`、`CaseProfile`)
-- [ ] 2.4 寫 `models/rule.model.ts`(`Rule`、`RuleAction`、`JsonLogicRule`)
-- [ ] 2.5 把 `core/storage/storage.ts` 換掉包裝的型別跟 key(`therapist-rule-engine:findings:v1` / `:cases:v1` / `:rules:v1`),保留既有的命名空間+版號+壞資料 fallback 機制
-- [ ] 2.6 `StorageService` 單元測試改成新型別(沿用既有涵蓋範圍:新增/更新/清除、資料損毀時的 fallback)
+- [x] 2.1 移除 `models/milestone.model.ts`(舊構想留下的型別,這次的方向不會用到)
+- [x] 2.2 寫 `models/finding.model.ts`(`FindingDefinition`、`FindingKind`)
+- [x] 2.3 寫 `models/case.model.ts`(`Case`、`CaseProfile`)
+- [x] 2.4 寫 `models/rule.model.ts`(`Rule`、`RuleAction`、`JsonLogicRule`)
+- [x] 2.5 把 `core/storage/storage.ts` 換掉包裝的型別跟 key(`therapist-rule-engine:findings:v1` / `:cases:v1` / `:rules:v1`),保留既有的命名空間+版號+壞資料 fallback 機制
+- [x] 2.6 `StorageService` 單元測試改成新型別(沿用既有涵蓋範圍:新增/更新/清除、資料損毀時的 fallback)——11 個測試全過
 
 ## 3. 規則引擎核心
 
