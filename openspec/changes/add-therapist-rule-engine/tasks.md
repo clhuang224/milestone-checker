@@ -18,10 +18,10 @@
 
 ## 3. 規則引擎核心
 
-- [ ] 3.1 安裝 `json-logic-js`(或 `json-logic-engine`)並確認型別可用
-- [ ] 3.2 `core/rule-engine/json-logic.ts`——包一層評估函式:給定 `CaseProfile.values` 攤平成 facts、套用 `Rule.condition`,回傳布林
-- [ ] 3.3 `core/rule-engine/condition-mapper.ts`——內部「條件列/群組」模型 ⇄ `JsonLogicRule` 互轉
-- [ ] 3.4 上述兩者的單元測試(Vitest):evaluation 的正確性、mapper 的 round-trip
+- [x] 3.1 安裝 `json-logic-js`(或 `json-logic-engine`)並確認型別可用——裝了 `json-logic-js` + `@types/json-logic-js`
+- [x] 3.2 `core/rule-engine/json-logic.ts`——包一層評估函式:給定 `CaseProfile.values` 攤平成 facts、套用 `Rule.condition`,回傳布林
+- [x] 3.3 `core/rule-engine/condition-mapper.ts`——內部「條件列/群組」模型 ⇄ `JsonLogicRule` 互轉
+- [x] 3.4 上述兩者的單元測試(Vitest):evaluation 的正確性、mapper 的 round-trip——24 個測試全過
 
 ## 4. 範例內容(先當佔位,需要審核)
 
