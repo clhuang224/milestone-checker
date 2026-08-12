@@ -38,4 +38,30 @@ describe('buildReportDraft', () => {
   it('returns an empty string when there are no triggered rules', () => {
     expect(buildReportDraft([], caseRecord)).toBe('');
   });
+
+  it('substitutes {{value:fieldId}} with the recorded value', () => {
+    const draft = buildReportDraft([ruleWith('分數為 {{value:oralMotorScore}} 分。')], caseRecord, {
+      oralMotorScore: 42,
+    });
+
+    expect(draft).toBe('分數為 42 分。');
+  });
+
+  it('formats a boolean value as 是/否', () => {
+    const draft = buildReportDraft([ruleWith('流口水:{{value:drooling}}')], caseRecord, {
+      drooling: true,
+    });
+
+    expect(draft).toBe('流口水:是');
+  });
+
+  it('substitutes an unrecorded value placeholder with an empty string', () => {
+    const draft = buildReportDraft(
+      [ruleWith('分數為 {{value:oralMotorScore}} 分。')],
+      caseRecord,
+      {},
+    );
+
+    expect(draft).toBe('分數為  分。');
+  });
 });

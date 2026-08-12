@@ -32,7 +32,7 @@ export class CaseDetail {
 
   readonly reportText = computed(() => {
     const caseRecord = this.caseRecord();
-    return caseRecord ? buildReportDraft(this.triggeredRules(), caseRecord) : '';
+    return caseRecord ? buildReportDraft(this.triggeredRules(), caseRecord, this.values()) : '';
   });
 
   constructor() {
