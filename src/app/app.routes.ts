@@ -11,4 +11,8 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/cases/case-detail/case-detail').then((m) => m.CaseDetail),
   },
+  {
+    path: 'rules',
+    loadComponent: () => import('./features/rules/rule-list/rule-list').then((m) => m.RuleList),
+  },
 ];

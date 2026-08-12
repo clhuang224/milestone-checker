@@ -1,0 +1,84 @@
+@if (row(); as r) {
+  <div class="flex items-center gap-2 flex-wrap">
+    <select
+      [ngModel]="r.fieldId"
+      (ngModelChange)="setField($event)"
+      class="border border-slate-300 rounded px-2 py-1 text-sm"
+    >
+      @for (f of fields(); track f.id) {
+        <option [value]="f.id">{{ f.label }}</option>
+      }
+    </select>
+
+    <select
+      [ngModel]="r.operator"
+      (ngModelChange)="setOperator($event)"
+      class="border border-slate-300 rounded px-2 py-1 text-sm"
+    >
+      @for (op of availableOperators(); track op) {
+        <option [value]="op">{{ op }}</option>
+      }
+    </select>
+
+    @if (selectedField()?.kind === 'boolean') {
+      <select
+        [ngModel]="r.value"
+        (ngModelChange)="setBooleanValue($event)"
+        class="border border-slate-300 rounded px-2 py-1 text-sm"
+      >
+        <option [ngValue]="true">是</option>
+        <option [ngValue]="false">否</option>
+      </select>
+    } @else {
+      <input
+        type="number"
+        [ngModel]="r.value"
+        (ngModelChange)="setNumberValue($event)"
+        class="w-24 border border-slate-300 rounded px-2 py-1 text-sm"
+      />
+    }
+  </div>
+} @else if (group(); as g) {
+  <div class="border border-slate-200 rounded p-3 space-y-2">
+    <div class="flex items-center gap-2 text-sm">
+      <span class="text-slate-500">符合</span>
+      <select
+        [ngModel]="g.combinator"
+        (ngModelChange)="setCombinator($event)"
+        class="border border-slate-300 rounded px-2 py-1"
+      >
+        <option value="and">全部(AND)</option>
+        <option value="or">任一(OR)</option>
+      </select>
+    </div>
+
+    <div class="space-y-2 pl-4 border-l-2 border-slate-100">
+      @for (child of g.children; track $index) {
+        <div class="flex items-start gap-2">
+          <app-condition-editor
+            [node]="child"
+            [fields]="fields()"
+            (nodeChange)="updateChild($index, $event)"
+            class="flex-1"
+          />
+          <button
+            type="button"
+            class="text-red-600 text-sm hover:underline"
+            (click)="removeChild($index)"
+          >
+            移除
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="flex gap-3 text-sm">
+      <button type="button" class="text-sky-700 hover:underline" (click)="addRowChild()">
+        + 條件
+      </button>
+      <button type="button" class="text-sky-700 hover:underline" (click)="addGroupChild()">
+        + 群組
+      </button>
+    </div>
+  </div>
+}

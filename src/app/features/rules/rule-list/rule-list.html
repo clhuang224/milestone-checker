@@ -1,0 +1,80 @@
+<div class="space-y-5">
+  <div class="flex items-center justify-between">
+    <h2 class="text-lg font-semibold text-slate-800">規則</h2>
+    <div class="flex gap-2 text-sm">
+      <button
+        type="button"
+        class="bg-sky-600 text-white font-medium rounded px-3 py-1.5 hover:bg-sky-700"
+        (click)="startCreate()"
+      >
+        新增規則
+      </button>
+      <button
+        type="button"
+        class="border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
+        (click)="exportRules()"
+      >
+        匯出
+      </button>
+      <label class="border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50 cursor-pointer">
+        匯入
+        <input
+          type="file"
+          accept="application/json"
+          class="hidden"
+          (change)="importRules($event)"
+        />
+      </label>
+    </div>
+  </div>
+
+  @if (importError()) {
+    <p class="text-sm text-red-600">{{ importError() }}</p>
+  }
+
+  @if (isEditorOpen()) {
+    <app-rule-editor
+      [initialRule]="editingRule()"
+      [fields]="fields()"
+      (saveRule)="onSave($event)"
+      (cancelEdit)="closeEditor()"
+    />
+  }
+
+  <div class="space-y-2">
+    @for (rule of rules(); track rule.id) {
+      <div class="bg-white rounded-lg border border-slate-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="font-medium text-slate-800">{{ rule.name }}</span>
+            @if (!rule.enabled) {
+              <span class="ml-2 text-xs text-slate-400">(已停用)</span>
+            }
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <button
+              type="button"
+              class="text-slate-600 hover:underline"
+              (click)="toggleEnabled(rule)"
+            >
+              {{ rule.enabled ? '停用' : '啟用' }}
+            </button>
+            <button type="button" class="text-sky-700 hover:underline" (click)="startEdit(rule)">
+              編輯
+            </button>
+            <button
+              type="button"
+              class="text-red-600 hover:underline"
+              (click)="removeRule(rule.id)"
+            >
+              刪除
+            </button>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 mt-1">{{ rule.action.message }}</p>
+      </div>
+    } @empty {
+      <p class="text-sm text-slate-500">還沒有任何規則,點右上角「新增規則」開始。</p>
+    }
+  </div>
+</div>

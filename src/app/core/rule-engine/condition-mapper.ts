@@ -1,3 +1,4 @@
+import { FindingDefinition } from '../../models/finding.model';
 import { JsonLogicRule } from '../../models/rule.model';
 
 export type ConditionOperator = '==' | '!=' | '>' | '>=' | '<' | '<=';
@@ -67,4 +68,20 @@ export function fromJsonLogic(rule: JsonLogicRule): ConditionNode {
 
 function isComparisonOperator(value: string): value is ConditionOperator {
   return (COMPARISON_OPERATORS as readonly string[]).includes(value);
+}
+
+/** A starter condition row for the given findings, used when adding a new row in the editor. */
+export function defaultRow(fields: FindingDefinition[]): ConditionRow {
+  const field = fields[0];
+  return {
+    type: 'row',
+    fieldId: field?.id ?? '',
+    operator: '==',
+    value: field?.kind === 'boolean' ? true : 0,
+  };
+}
+
+/** A starter condition group for the given findings, used when creating a new rule. */
+export function defaultGroup(fields: FindingDefinition[]): ConditionGroup {
+  return { type: 'group', combinator: 'and', children: [defaultRow(fields)] };
 }
