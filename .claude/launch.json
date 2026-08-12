@@ -4,7 +4,7 @@
     {
       "name": "milestone-checker-dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["run", "start", "--port", "4201"],
+      "runtimeArgs": ["exec", "ng", "serve", "--port", "4201"],
       "port": 4201
     }
   ]
