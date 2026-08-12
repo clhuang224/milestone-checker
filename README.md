@@ -42,4 +42,6 @@ milestone-checker/
 
 ## 目前狀態
 
-專案第一版方向從「家長用的里程碑打勾清單」換成「治療師用的規則輔助工具」,原本的 change(`add-lang-speech-swallowing-checklist`)已改名/改寫成 `add-therapist-rule-engine`,規格文件(proposal/design/tasks/spec)已依新方向重寫。Angular scaffold、`StorageService` 殼已經有(來自舊構想,殼會沿用、型別會換掉),`tasks.md` 的資料模型/規則引擎/介面部分還沒開始執行。範例規則內容**需要治療師本人審核後才能當真的臨床邏輯使用**,目前只放示意用的佔位資料。
+`add-therapist-rule-engine` 這個 change 的 `tasks.md` 第 1–6 節都做完了:資料模型、規則引擎(JsonLogic 儲存/評估 + 條件列/群組編輯器)、一小批示意用的觀察項目跟規則、還有完整的畫面(個案管理、觀察表單、規則清單/編輯器/匯出匯入、警示清單、報告草稿),`pnpm lint`/`pnpm test`/`pnpm build` 都過,也在瀏覽器裡手動測過一輪完整流程。
+
+範例規則內容(`src/app/data/starter-*.ts`)**還沒經過治療師審核**,只是示意用的佔位資料,正式使用前要由治療師本人確認或整批替換(對應 `tasks.md` 4.3,故意留著沒打勾)。第 7 節(收尾/archive)也還沒做。

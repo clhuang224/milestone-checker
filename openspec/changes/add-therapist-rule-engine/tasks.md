@@ -31,21 +31,26 @@
 
 ## 5. 介面
 
-- [ ] 5.1 `DisclaimerBanner` 元件(常駐顯示「僅供臨床參考,不取代專業判斷」,不是點掉一次就沒了的那種提示)
-- [ ] 5.2 `features/cases`——個案清單、建立/切換個案
-- [ ] 5.3 `features/findings`——單一個案的觀察/評估項目填寫表單(勾選 + 數值,依類別分組)
-- [ ] 5.4 `features/rules/rule-list`——規則清單(啟用/停用、編輯、刪除)
-- [ ] 5.5 `features/rules/rule-editor`——條件列 + AND/OR 群組編輯器
-- [ ] 5.6 `features/rules/rule-import-export`——匯出/匯入 JsonLogic 規則集 JSON 檔(匯入要做基本結構檢查,失敗要有清楚錯誤訊息)
-- [ ] 5.7 `features/warnings`——目前個案被觸發的規則清單(依 severity 呈現)
-- [ ] 5.8 `features/report-draft`——組出報告文字草稿 + 複製按鈕
-- [ ] 5.9 視覺風格調整(Tailwind 主題、配色、間距)——工具/專業取向,不用刻意童趣化
+- [x] 5.1 `DisclaimerBanner` 元件(常駐顯示「僅供臨床參考,不取代專業判斷」,不是點掉一次就沒了的那種提示)
+- [x] 5.2 `features/cases`——個案清單、建立/切換個案
+- [x] 5.3 `features/findings`——單一個案的觀察/評估項目填寫表單(勾選 + 數值,依類別分組)
+- [x] 5.4 `features/rules/rule-list`——規則清單(啟用/停用、編輯、刪除)
+- [x] 5.5 `features/rules/rule-editor`——條件列 + AND/OR 群組編輯器(遞迴元件,支援巢狀群組)
+- [x] 5.6 匯出/匯入 JsonLogic 規則集 JSON 檔(匯入要做基本結構檢查,失敗要有清楚錯誤訊息)——沒有另外拆 `rule-import-export` 元件,直接做在 `rule-list` 裡
+- [x] 5.7 `features/warnings`——目前個案被觸發的規則清單(依 severity 呈現)
+- [x] 5.8 `features/report-draft`——組出報告文字草稿 + 複製按鈕(額外支援 `{{value:欄位ID}}` 帶入實際數值,不只 `{{case.label}}`)
+- [x] 5.9 視覺風格調整(Tailwind 主題、配色、間距)——工具/專業取向,不刻意童趣化
 
 ## 6. 測試與收尾
 
-- [ ] 6.1 主要元件的 smoke test(Vitest)
-- [ ] 6.2 手動測一輪完整流程:建立個案 → 填觀察項目 → 編輯規則 → 觸發警示 → 產生報告草稿 → 重新整理頁面資料還在
+- [x] 6.1 主要元件的 smoke test(Vitest)——`case-list`、`rule-list`,45 個測試全過
+- [x] 6.2 手動測一輪完整流程:建立個案 → 填觀察項目 → 編輯規則 → 觸發警示 → 產生報告草稿 → 重新整理頁面資料還在——用瀏覽器實測過,順便抓到兩個真的 bug(見下方)並修掉
 - [ ] 6.3 這個 change 功能完成後,更新 README 的「目前狀態」段落
+
+### 手動測試時抓到的兩個 bug(已修)
+
+- 數值門檻規則(例如 `oralMotorScore < 40`)在個案完全沒填這個分數時也會誤觸發——原因是 `json-logic-js` 把缺值的 `{ var }` 解析成 `null`,而 `null < 40` 在 JS 裡是 `true`。修法:`evaluateCondition` 現在會先確認條件引用到的欄位都已經有記錄值,沒有就直接視為不成立,不呼叫 `jsonLogic.apply`。
+- 報告範本裡的 `{{value:欄位ID}}` 佔位字串原本只是佔位範例文字,`buildReportDraft` 沒有真的實作這個替換,規則觸發時會把 `{{value:oralMotorScore}}` 原封不動印到報告草稿裡。已經在 `buildReportDraft` 補上這個替換(數值直接顯示、布林顯示是/否)。
 
 ## 7. 收尾
 
