@@ -1,0 +1,18 @@
+<section class="bg-white rounded-lg border border-slate-200 p-4">
+  <h3 class="font-medium text-slate-800 mb-3">觸發的警示/歸納</h3>
+
+  @if (triggeredRules().length === 0) {
+    <p class="text-sm text-slate-500">目前沒有規則被觸發。</p>
+  } @else {
+    <ul class="space-y-2">
+      @for (rule of triggeredRules(); track rule.id) {
+        <li class="border rounded px-3 py-2 text-sm" [class]="severityClass(rule.action.severity)">
+          <span class="font-medium"
+            >[{{ severityLabel(rule.action.severity) }}] {{ rule.name }}</span
+          >
+          <p class="mt-1">{{ rule.action.message }}</p>
+        </li>
+      }
+    </ul>
+  }
+</section>

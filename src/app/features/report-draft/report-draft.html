@@ -1,0 +1,17 @@
+<section class="bg-white rounded-lg border border-slate-200 p-4">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="font-medium text-slate-800">報告草稿</h3>
+    <div class="flex gap-2 text-sm">
+      <button type="button" class="text-slate-600 hover:underline" (click)="regenerate()">
+        重新產生
+      </button>
+      <button type="button" class="text-sky-700 hover:underline" (click)="copy()">複製</button>
+    </div>
+  </div>
+  <textarea
+    [(ngModel)]="draftText"
+    rows="6"
+    placeholder="目前沒有觸發任何附報告範本的規則。"
+    class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+  ></textarea>
+</section>

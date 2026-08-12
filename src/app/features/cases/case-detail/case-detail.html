@@ -1,0 +1,21 @@
+@if (caseRecord(); as c) {
+  <div class="space-y-5">
+    <div>
+      <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案清單</a>
+      <h2 class="text-lg font-semibold text-slate-800 mt-1">{{ c.label }}</h2>
+    </div>
+
+    <app-findings-form
+      [findings]="findings()"
+      [values]="values()"
+      (valuesChange)="onValuesChange($event)"
+    />
+
+    <app-warnings-list [triggeredRules]="triggeredRules()" />
+
+    <app-report-draft [generatedText]="reportText()" />
+  </div>
+} @else {
+  <p class="text-sm text-slate-500">找不到這個個案。</p>
+  <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案清單</a>
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "milestone-checker-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "start", "--port", "4201"],
+      "port": 4201
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+<div class="space-y-6">
+  <section class="bg-white rounded-lg border border-slate-200 p-4">
+    <h2 class="font-medium text-slate-800 mb-3">新增個案</h2>
+    <form class="flex gap-2" (submit)="$event.preventDefault(); addCase()">
+      <input
+        type="text"
+        [(ngModel)]="newCaseLabel"
+        name="newCaseLabel"
+        placeholder="個案暱稱/代號"
+        class="flex-1 border border-slate-300 rounded px-3 py-2 text-sm"
+      />
+      <button
+        type="submit"
+        class="bg-sky-600 text-white text-sm font-medium rounded px-4 py-2 hover:bg-sky-700"
+      >
+        建立
+      </button>
+    </form>
+  </section>
+
+  <section class="space-y-2">
+    @for (c of cases(); track c.id) {
+      <div
+        class="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-4"
+      >
+        <a [routerLink]="['/cases', c.id]" class="text-sky-700 font-medium hover:underline">
+          {{ c.label }}
+        </a>
+        <div class="flex items-center gap-3 text-sm text-slate-500">
+          <span>{{ c.createdOnISODate }}</span>
+          <button type="button" class="text-red-600 hover:underline" (click)="removeCase(c.id)">
+            刪除
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <p class="text-sm text-slate-500">還沒有個案,先在上面新增一個。</p>
+    }
+  </section>
+</div>

@@ -1,0 +1,39 @@
+<div class="space-y-5">
+  @for (group of groups(); track group.categoryId) {
+    <section class="bg-white rounded-lg border border-slate-200 p-4">
+      <h3 class="font-medium text-slate-800 mb-3">{{ group.label }}</h3>
+      <div class="space-y-2">
+        @for (finding of group.findings; track finding.id) {
+          <div class="flex items-center justify-between gap-3 text-sm">
+            <label class="text-slate-700" [for]="finding.id">{{ finding.label }}</label>
+
+            @if (finding.kind === 'boolean') {
+              <input
+                type="checkbox"
+                [id]="finding.id"
+                [checked]="!!values()[finding.id]"
+                (change)="setBoolean(finding.id, $any($event.target).checked)"
+                class="h-4 w-4"
+              />
+            } @else {
+              <div class="flex items-center gap-1">
+                <input
+                  type="number"
+                  [id]="finding.id"
+                  [value]="numberValueFor(finding.id) ?? ''"
+                  (change)="setNumber(finding.id, $any($event.target).value)"
+                  class="w-24 border border-slate-300 rounded px-2 py-1 text-right"
+                />
+                @if (finding.unit) {
+                  <span class="text-slate-500">{{ finding.unit }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  } @empty {
+    <p class="text-sm text-slate-500">還沒有任何觀察項目可以填寫。</p>
+  }
+</div>

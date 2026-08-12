@@ -1,12 +1,25 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
+import { Storage } from './core/storage/storage';
+import { STARTER_FINDINGS } from './data/starter-findings';
+import { STARTER_RULES } from './data/starter-rules';
+import { DisclaimerBanner } from './shared/disclaimer-banner/disclaimer-banner';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, DisclaimerBanner],
   templateUrl: './app.html',
-  styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('development-milestones');
+  private readonly storage = inject(Storage);
+
+  constructor() {
+    if (this.storage.findings().length === 0) {
+      STARTER_FINDINGS.forEach((finding) => this.storage.upsertFinding(finding));
+    }
+    if (this.storage.rules().length === 0) {
+      STARTER_RULES.forEach((rule) => this.storage.upsertRule(rule));
+    }
+  }
 }
