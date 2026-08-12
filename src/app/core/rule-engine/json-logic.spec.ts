@@ -41,6 +41,21 @@ describe('evaluateCondition', () => {
 
     expect(evaluateCondition(condition, profileWith({}))).toBe(false);
   });
+
+  it('does not fire a "less than" threshold rule when the field was never recorded', () => {
+    // Regression test: json-logic-js resolves a missing { var } to null, and `null < 40` is
+    // `true` in JS, so an unset score used to look identical to "0, which is below 40".
+    const condition = { '<': [{ var: 'oralMotorScore' }, 40] };
+
+    expect(evaluateCondition(condition, profileWith({}))).toBe(false);
+  });
+
+  it('still fires a "less than" threshold rule once the field is actually recorded', () => {
+    const condition = { '<': [{ var: 'oralMotorScore' }, 40] };
+
+    expect(evaluateCondition(condition, profileWith({ oralMotorScore: 10 }))).toBe(true);
+    expect(evaluateCondition(condition, profileWith({ oralMotorScore: 50 }))).toBe(false);
+  });
 });
 
 describe('evaluateRules', () => {
