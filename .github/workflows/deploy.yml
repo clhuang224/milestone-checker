@@ -1,0 +1,68 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+# Let a running deploy finish rather than cancelling it — a half-applied Pages deploy
+# is worse than a slightly stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: ${{ matrix.command }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        command: [lint, typecheck, test]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm run ${{ matrix.command }}
+
+  build:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-pnpm
+      - uses: actions/configure-pages@v5
+
+      # Pages serves the app from /<repo>/, so the app has to be built for that prefix.
+      # Invoked via `pnpm exec` rather than `pnpm run build --`: forwarding args through the
+      # npm script is what broke launch.json in ce35447.
+      - run: pnpm exec ng build --base-href "/${{ github.event.repository.name }}/"
+
+      # Deep links (e.g. /cases/<id>) are client-side routes; Pages has no rewrite rule,
+      # so it needs the SPA shell served as the 404 page.
+      - run: cp dist/development-milestones/browser/index.html dist/development-milestones/browser/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/development-milestones/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

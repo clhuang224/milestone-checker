@@ -1,27 +1,31 @@
 name: CI
 
+# Pushes to main are covered by deploy.yml, which runs the same checks before deploying —
+# this workflow only guards pull requests, so main doesn't run everything twice.
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  build-and-test:
+  checks:
+    name: ${{ matrix.command }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        command: [lint, typecheck, test]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm run ${{ matrix.command }}
+
+  build:
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.6.0
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24.16.0
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run lint
-      - run: pnpm run test
+      - uses: ./.github/actions/setup-pnpm
       - run: pnpm run build

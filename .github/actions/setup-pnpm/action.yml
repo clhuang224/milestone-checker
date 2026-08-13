@@ -1,0 +1,17 @@
+name: Setup pnpm
+description: Checkout-adjacent setup — installs pnpm, Node and the project dependencies.
+
+runs:
+  using: composite
+  steps:
+    # No version pin here: pnpm/action-setup reads the packageManager field in package.json,
+    # so the version lives in one place.
+    - uses: pnpm/action-setup@v4
+
+    - uses: actions/setup-node@v5
+      with:
+        node-version-file: package.json
+        cache: pnpm
+
+    - run: pnpm install --frozen-lockfile
+      shell: bash
