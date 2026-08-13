@@ -14,10 +14,12 @@
 
 ## 3. 儲存
 
-- [ ] 3.1 `StorageService` 新增 `articulation-processes` / `articulation-records` 兩個 key(`therapist-rule-engine:articulation-processes:v1`、`therapist-rule-engine:articulation-records:v1`),沿用既有命名空間+版號+壞資料 fallback 機制
-- [ ] 3.2 音韻歷程目錄用 `starter-articulation-processes.ts` 做初始 seed,支援 upsert/delete(比照 findings 目錄的做法)
-- [ ] 3.3 構音音對記錄支援依 `caseId` 篩選、新增/編輯/刪除單筆 `ArticulationSubstitution`
-- [ ] 3.4 上述儲存邏輯的單元測試(Vitest)
+- [x] 3.1 `StorageService` 新增 `articulation-processes` / `articulation-records` 兩個 key(`therapist-rule-engine:articulation-processes:v1`、`therapist-rule-engine:articulation-records:v1`),沿用既有命名空間+版號+壞資料 fallback 機制
+- [x] 3.2 音韻歷程目錄用 `starter-articulation-processes.ts` 做初始 seed,支援 upsert/delete(比照 findings 目錄的做法——seed 一樣放在 `App` 的 constructor);刪除歷程時會順便把還掛著這個標籤的音對解除標記,免得總覽畫面依一個已不存在的歷程分組
+- [x] 3.3 構音音對記錄支援依 `caseId` 篩選、新增/編輯/刪除單筆 `ArticulationSubstitution`;`removeCase` 也一併刪掉該個案的音對(比照既有 profile 的 cascade)
+- [x] 3.4 上述儲存邏輯的單元測試(Vitest)——`ng test` 61 個測試全過
+
+> 註:測試要用 `pnpm test` / `ng test` 跑,直接跑 `pnpm exec vitest run` 會缺少 Angular 的測試環境設定,用到 `localStorage`/`TestBed` 的測試會炸。
 
 ## 4. 介面
 

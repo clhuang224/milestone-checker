@@ -1,12 +1,16 @@
 import { Injectable, computed, signal } from '@angular/core';
 
+import { ArticulationSubstitution } from '../../models/articulation-record.model';
 import { Case, CaseProfile } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
+import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
 import { Rule } from '../../models/rule.model';
 
 const FINDINGS_KEY = 'therapist-rule-engine:findings:v1';
 const CASES_KEY = 'therapist-rule-engine:cases:v1';
 const RULES_KEY = 'therapist-rule-engine:rules:v1';
+const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v1';
+const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v1';
 
 interface CasesData {
   cases: Case[];
@@ -51,11 +55,19 @@ export class Storage {
   );
   private readonly casesData = signal<CasesData>(loadCasesData());
   private readonly rulesData = signal<Rule[]>(loadArray<Rule>(RULES_KEY));
+  private readonly articulationProcessesData = signal<PhonologicalProcessDefinition[]>(
+    loadArray<PhonologicalProcessDefinition>(ARTICULATION_PROCESSES_KEY),
+  );
+  private readonly articulationRecordsData = signal<ArticulationSubstitution[]>(
+    loadArray<ArticulationSubstitution>(ARTICULATION_RECORDS_KEY),
+  );
 
   readonly findings = computed(() => this.findingsData());
   readonly cases = computed(() => this.casesData().cases);
   readonly profiles = computed(() => this.casesData().profiles);
   readonly rules = computed(() => this.rulesData());
+  readonly articulationProcesses = computed(() => this.articulationProcessesData());
+  readonly articulationRecords = computed(() => this.articulationRecordsData());
 
   upsertFinding(finding: FindingDefinition): void {
     this.findingsData.update((current) => [...current.filter((f) => f.id !== finding.id), finding]);
@@ -81,6 +93,9 @@ export class Storage {
       profiles: current.profiles.filter((p) => p.caseId !== id),
     }));
     this.persistCases();
+
+    this.articulationRecordsData.update((current) => current.filter((r) => r.caseId !== id));
+    this.persistArticulationRecords();
   }
 
   saveProfile(profile: CaseProfile): void {
@@ -111,6 +126,47 @@ export class Storage {
     this.persistRules();
   }
 
+  upsertArticulationProcess(process: PhonologicalProcessDefinition): void {
+    this.articulationProcessesData.update((current) => [
+      ...current.filter((p) => p.id !== process.id),
+      process,
+    ]);
+    this.persistArticulationProcesses();
+  }
+
+  removeArticulationProcess(id: string): void {
+    this.articulationProcessesData.update((current) => current.filter((p) => p.id !== id));
+    this.persistArticulationProcesses();
+
+    // Drop the tag from any substitution still carrying it, so the overview can't
+    // group by a process that no longer exists.
+    this.articulationRecordsData.update((current) =>
+      current.map((record) =>
+        record.processIds.includes(id)
+          ? { ...record, processIds: record.processIds.filter((p) => p !== id) }
+          : record,
+      ),
+    );
+    this.persistArticulationRecords();
+  }
+
+  substitutionsFor(caseId: string): ArticulationSubstitution[] {
+    return this.articulationRecordsData().filter((r) => r.caseId === caseId);
+  }
+
+  upsertSubstitution(substitution: ArticulationSubstitution): void {
+    this.articulationRecordsData.update((current) => [
+      ...current.filter((r) => r.id !== substitution.id),
+      substitution,
+    ]);
+    this.persistArticulationRecords();
+  }
+
+  removeSubstitution(id: string): void {
+    this.articulationRecordsData.update((current) => current.filter((r) => r.id !== id));
+    this.persistArticulationRecords();
+  }
+
   private persistFindings(): void {
     localStorage.setItem(FINDINGS_KEY, JSON.stringify(this.findingsData()));
   }
@@ -121,5 +177,16 @@ export class Storage {
 
   private persistRules(): void {
     localStorage.setItem(RULES_KEY, JSON.stringify(this.rulesData()));
+  }
+
+  private persistArticulationProcesses(): void {
+    localStorage.setItem(
+      ARTICULATION_PROCESSES_KEY,
+      JSON.stringify(this.articulationProcessesData()),
+    );
+  }
+
+  private persistArticulationRecords(): void {
+    localStorage.setItem(ARTICULATION_RECORDS_KEY, JSON.stringify(this.articulationRecordsData()));
   }
 }

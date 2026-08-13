@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { Storage } from './core/storage/storage';
+import { STARTER_ARTICULATION_PROCESSES } from './data/starter-articulation-processes';
 import { STARTER_FINDINGS } from './data/starter-findings';
 import { STARTER_RULES } from './data/starter-rules';
 import { DisclaimerBanner } from './shared/disclaimer-banner/disclaimer-banner';
@@ -20,6 +21,11 @@ export class App {
     }
     if (this.storage.rules().length === 0) {
       STARTER_RULES.forEach((rule) => this.storage.upsertRule(rule));
+    }
+    if (this.storage.articulationProcesses().length === 0) {
+      STARTER_ARTICULATION_PROCESSES.forEach((process) =>
+        this.storage.upsertArticulationProcess(process),
+      );
     }
   }
 }

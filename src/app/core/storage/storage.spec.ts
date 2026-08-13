@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { ArticulationSubstitution } from '../../models/articulation-record.model';
 import { Case, CaseProfile } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
+import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
 import { Rule } from '../../models/rule.model';
 import { Storage } from './storage';
 
@@ -33,6 +35,23 @@ const rule: Rule = {
   enabled: true,
 };
 
+const process: PhonologicalProcessDefinition = {
+  id: 'deaspiration',
+  name: '不送氣化',
+  builtin: true,
+  sourceNote: '佔位資料',
+};
+
+const substitution: ArticulationSubstitution = {
+  id: 'sub-1',
+  caseId: 'case-1',
+  targetPhonemeId: 'p',
+  errorPhonemeId: 'b',
+  processIds: ['deaspiration'],
+  examples: [{ word: '拼' }],
+  updatedOnISODate: '2026-01-02',
+};
+
 describe('Storage', () => {
   let service: Storage;
 
@@ -51,6 +70,8 @@ describe('Storage', () => {
     expect(service.cases()).toEqual([]);
     expect(service.profiles()).toEqual([]);
     expect(service.rules()).toEqual([]);
+    expect(service.articulationProcesses()).toEqual([]);
+    expect(service.articulationRecords()).toEqual([]);
   });
 
   it('upserts and removes a finding, persisting to localStorage', () => {
@@ -105,11 +126,75 @@ describe('Storage', () => {
     expect(service.rules()).toEqual([rule, { ...rule, id: 'rule-2' }]);
   });
 
+  it('upserts and removes an articulation process, persisting to localStorage', () => {
+    service.upsertArticulationProcess(process);
+    expect(service.articulationProcesses()).toEqual([process]);
+
+    const persisted = JSON.parse(
+      localStorage.getItem('therapist-rule-engine:articulation-processes:v1')!,
+    );
+    expect(persisted).toEqual([process]);
+
+    service.removeArticulationProcess(process.id);
+    expect(service.articulationProcesses()).toEqual([]);
+  });
+
+  it('upserts, filters by case, and removes substitutions', () => {
+    const otherCase: ArticulationSubstitution = {
+      ...substitution,
+      id: 'sub-2',
+      caseId: 'case-2',
+    };
+    service.upsertSubstitution(substitution);
+    service.upsertSubstitution(otherCase);
+
+    expect(service.substitutionsFor('case-1')).toEqual([substitution]);
+    expect(service.substitutionsFor('case-2')).toEqual([otherCase]);
+
+    const persisted = JSON.parse(
+      localStorage.getItem('therapist-rule-engine:articulation-records:v1')!,
+    );
+    expect(persisted).toEqual([substitution, otherCase]);
+
+    service.removeSubstitution(substitution.id);
+    expect(service.substitutionsFor('case-1')).toEqual([]);
+  });
+
+  it('replaces an existing substitution with the same id', () => {
+    service.upsertSubstitution(substitution);
+    const edited: ArticulationSubstitution = { ...substitution, errorPhonemeId: undefined };
+    service.upsertSubstitution(edited);
+
+    expect(service.articulationRecords()).toEqual([edited]);
+  });
+
+  it('untags substitutions when the process they reference is deleted', () => {
+    service.upsertArticulationProcess(process);
+    service.upsertSubstitution({ ...substitution, processIds: ['deaspiration', 'backing'] });
+
+    service.removeArticulationProcess('deaspiration');
+
+    expect(service.articulationRecords()[0].processIds).toEqual(['backing']);
+  });
+
+  it('removing a case also drops its substitutions', () => {
+    service.upsertCase(caseRecord);
+    service.upsertSubstitution(substitution);
+    service.upsertSubstitution({ ...substitution, id: 'sub-2', caseId: 'case-2' });
+
+    service.removeCase(caseRecord.id);
+
+    expect(service.substitutionsFor('case-1')).toEqual([]);
+    expect(service.substitutionsFor('case-2')).toHaveLength(1);
+  });
+
   it('a fresh instance picks up what an earlier instance persisted', () => {
     service.upsertFinding(finding);
     service.upsertCase(caseRecord);
     service.saveProfile(profile);
     service.upsertRule(rule);
+    service.upsertArticulationProcess(process);
+    service.upsertSubstitution(substitution);
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
@@ -119,17 +204,23 @@ describe('Storage', () => {
     expect(reloaded.cases()).toEqual([caseRecord]);
     expect(reloaded.profiles()).toEqual([profile]);
     expect(reloaded.rules()).toEqual([rule]);
+    expect(reloaded.articulationProcesses()).toEqual([process]);
+    expect(reloaded.articulationRecords()).toEqual([substitution]);
   });
 
   it('falls back to empty data when localStorage holds corrupt JSON', () => {
     localStorage.setItem('therapist-rule-engine:findings:v1', '{not valid json');
     localStorage.setItem('therapist-rule-engine:cases:v1', '{not valid json');
     localStorage.setItem('therapist-rule-engine:rules:v1', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:articulation-processes:v1', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:articulation-records:v1', '{not valid json');
 
     const corrupted = TestBed.inject(Storage);
     expect(corrupted.findings()).toEqual([]);
     expect(corrupted.cases()).toEqual([]);
     expect(corrupted.profiles()).toEqual([]);
     expect(corrupted.rules()).toEqual([]);
+    expect(corrupted.articulationProcesses()).toEqual([]);
+    expect(corrupted.articulationRecords()).toEqual([]);
   });
 });
