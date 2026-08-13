@@ -22,13 +22,8 @@
                   @if (symbol.label) {
                     <span class="ml-1 text-xs text-slate-500">{{ symbol.label }}</span>
                   }
-                  @if (symbol.features; as f) {
-                    <p class="text-xs text-slate-400">
-                      {{ f.place }}/{{ f.manner }}
-                      @if (f.aspiration !== '不適用') {
-                        <span>/{{ f.aspiration }}</span>
-                      }
-                    </p>
+                  @if (symbol.features) {
+                    <p class="text-xs text-slate-400">{{ featureLabel(symbol) }}</p>
                   }
                 </div>
 
@@ -45,12 +40,7 @@
                         @if (sub.examples.length > 0) {
                           <p class="text-xs text-slate-500 mt-0.5">
                             @for (example of sub.examples; track $index) {
-                              <span class="mr-2">
-                                {{ example.word }}
-                                @if (example.note) {
-                                  <span>({{ example.note }})</span>
-                                }
-                              </span>
+                              <span class="mr-2">{{ exampleLabel(example) }}</span>
                             }
                           </p>
                         }
@@ -89,16 +79,20 @@
                   <div class="mt-2 ml-24 border border-sky-200 rounded p-3 space-y-3">
                     <div class="flex items-center gap-2 text-sm">
                       <span class="text-slate-700">{{ symbol.symbol }} →</span>
+                      <!-- Each option owns its own [selected]: binding [value] on the select
+                           runs before the @for options exist, leaving the box blank on edit. -->
                       <select
                         class="border border-slate-300 rounded px-2 py-1"
-                        [value]="d.errorPhonemeId"
                         (change)="setErrorPhoneme($any($event.target).value)"
                       >
-                        <option value="">(構音正確,無替代音)</option>
+                        <option value="" [selected]="!d.errorPhonemeId">(構音正確,無替代音)</option>
                         @for (group of options; track group.category) {
                           <optgroup [label]="group.label">
                             @for (option of group.symbols; track option.id) {
-                              <option [value]="option.id">
+                              <option
+                                [value]="option.id"
+                                [selected]="option.id === d.errorPhonemeId"
+                              >
                                 {{ option.symbol }}{{ option.label ? ' ' + option.label : '' }}
                               </option>
                             }

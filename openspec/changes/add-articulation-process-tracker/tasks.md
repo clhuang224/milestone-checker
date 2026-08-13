@@ -31,9 +31,14 @@
 
 ## 5. 測試與收尾
 
-- [ ] 5.1 主要元件的 smoke test(Vitest):`articulation-table`、`process-list`、`process-overview`
+- [x] 5.1 主要元件的 smoke test(Vitest):`articulation-table`、`process-list`、`process-overview`——82 個測試全過;寫測試時抓到一個真的 bug(見下方)
 - [ ] 5.2 手動測一輪:選個案 → 在表格裡新增幾筆音對(含留空=✓的情況)→ 貼音韻歷程標籤 → 加範例字詞 → 到總覽畫面確認有正確分組 → 重新整理頁面資料還在
 - [ ] 5.3 `ng build` / `ng test` 全過,作為完成的品質門檻(對應 `CLAUDE.md` 的審查慣例)
+
+### 寫 smoke test 時抓到的 bug(已修)
+
+- 編輯一筆已存在的音對時,「錯誤音」下拉選單會是空白的,沒有帶出已記錄的音。原因是 `<select>` 上的 `[value]` 綁定會早於它底下 `@for` 產生的 `<option>` 執行,設值時選項還不存在。修法:改成每個 `<option>` 自己綁 `[selected]`。
+- 順手把 `{{ f.place }}/{{ f.manner }}` 這種在樣板裡串字串的寫法改成在 TS 算好(`featureLabel()`/`exampleLabel()`),否則 Prettier 換行後畫面上會多出空白(「雙唇/塞音 /送氣」)。
 
 ## 6. 收尾
 

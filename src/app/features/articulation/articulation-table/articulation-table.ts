@@ -64,6 +64,23 @@ export class ArticulationTable {
     return substitutionLabel(substitution);
   }
 
+  /** '雙唇/塞音/送氣' — built here rather than in the template so it renders without stray spaces. */
+  featureLabel(symbol: ZhuyinSymbol): string {
+    const features = symbol.features;
+    if (!features) {
+      return '';
+    }
+    const parts = [features.place, features.manner];
+    if (features.aspiration !== '不適用') {
+      parts.push(features.aspiration);
+    }
+    return parts.join('/');
+  }
+
+  exampleLabel(example: WordExample): string {
+    return example.note ? `${example.word}(${example.note})` : example.word;
+  }
+
   processNames(substitution: ArticulationSubstitution): string[] {
     return substitution.processIds.map(
       (id) => this.processes().find((p) => p.id === id)?.name ?? id,
