@@ -2,9 +2,9 @@
 
 ## 1. 資料模型
 
-- [ ] 1.1 寫 `models/zhuyin.model.ts`(`ZhuyinCategory`、`ArticulationFeatures`、`ZhuyinSymbol`)
-- [ ] 1.2 寫 `models/phonological-process.model.ts`(`PhonologicalProcessDefinition`)
-- [ ] 1.3 寫 `models/articulation-record.model.ts`(`WordExample`、`ArticulationSubstitution`)
+- [x] 1.1 寫 `models/zhuyin.model.ts`(`ZhuyinCategory`、`ArticulationFeatures`、`ZhuyinSymbol`)——另外拉出 `Aspiration` 型別,`features` 的三個欄位都設成必填(只有 `features` 本身選填,對應「只有聲母有特徵」)
+- [x] 1.2 寫 `models/phonological-process.model.ts`(`PhonologicalProcessDefinition`)
+- [x] 1.3 寫 `models/articulation-record.model.ts`(`WordExample`、`ArticulationSubstitution`)
 
 ## 2. 靜態參考資料
 
