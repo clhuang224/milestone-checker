@@ -33,7 +33,7 @@
 
 - [x] 5.1 主要元件的 smoke test(Vitest):`articulation-table`、`process-list`、`process-overview`——82 個測試全過;寫測試時抓到一個真的 bug(見下方)
 - [ ] 5.2 手動測一輪:選個案 → 在表格裡新增幾筆音對(含留空=✓的情況)→ 貼音韻歷程標籤 → 加範例字詞 → 到總覽畫面確認有正確分組 → 重新整理頁面資料還在
-- [ ] 5.3 `ng build` / `ng test` 全過,作為完成的品質門檻(對應 `CLAUDE.md` 的審查慣例)
+- [x] 5.3 `ng build` / `ng test` 全過,作為完成的品質門檻(對應 `CLAUDE.md` 的審查慣例)——另外 `ng lint` 也過
 
 ### 寫 smoke test 時抓到的 bug(已修)
 
@@ -43,6 +43,6 @@
 ## 6. 收尾
 
 - [ ] 6.1 **使用者審核關卡**:注音參考表的構音特徵草案、音韻歷程預設清單,先給治療師本人確認/修改過,才能當真的內容——這一步需要專業判斷,不能自動放行
-- [ ] 6.2 更新 README 的「目前狀態」段落
+- [x] 6.2 更新 README 的「目前狀態」段落
 - [ ] 6.3 這個 change 功能完成後 archive(`openspec/specs/articulation-tracker/` 會變成定案的規格)
 - [ ] 6.4 把「串進規則引擎(月齡/母語 + 音韻歷程 → 建議構音處置)」記錄成下一個 change 的候選(已經寫在 `proposal.md` 的「未來想法」)

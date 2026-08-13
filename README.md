@@ -45,3 +45,7 @@ milestone-checker/
 `add-therapist-rule-engine` 這個 change 的 `tasks.md` 第 1–6 節都做完了:資料模型、規則引擎(JsonLogic 儲存/評估 + 條件列/群組編輯器)、一小批示意用的觀察項目跟規則、還有完整的畫面(個案管理、觀察表單、規則清單/編輯器/匯出匯入、警示清單、報告草稿),`pnpm lint`/`pnpm test`/`pnpm build` 都過,也在瀏覽器裡手動測過一輪完整流程。
 
 範例規則內容(`src/app/data/starter-*.ts`)**還沒經過治療師審核**,只是示意用的佔位資料,正式使用前要由治療師本人確認或整批替換(對應 `tasks.md` 4.3,故意留著沒打勾)。第 7 節(收尾/archive)也還沒做。
+
+`add-articulation-process-tracker`(構音記錄/音韻歷程)進行中:資料模型、注音參考表、儲存、三個畫面(構音記錄表格 `cases/:id/articulation`、音韻歷程目錄 `/articulation-processes`、音韻歷程總覽)跟 smoke test 都做完了,`pnpm lint`/`pnpm test`(82 個測試)/`pnpm build` 都過。還沒做的是瀏覽器手動實測、治療師審核注音構音特徵跟預設音韻歷程清單、以及 archive。
+
+注音表上的構音特徵(部位/方式/送氣)跟預設的音韻歷程清單同樣是**未經審核的佔位內容**,系統不會拿它們自動判斷音韻歷程——歸類完全靠治療師手動貼標籤。
