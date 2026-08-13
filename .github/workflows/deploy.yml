@@ -38,16 +38,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-pnpm
-      # enablement turns Pages on (source: GitHub Actions) the first time this runs, so the
-      # repo doesn't need a manual visit to Settings → Pages first.
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
-      # Pages serves the app from /<repo>/, so the app has to be built for that prefix.
-      # Invoked via `pnpm exec` rather than `pnpm run build --`: forwarding args through the
-      # npm script is what broke launch.json in ce35447.
-      - run: pnpm exec ng build --base-href "/${{ github.event.repository.name }}/"
+      # No --base-href: the site is served from the root of a custom domain
+      # (milestone-checker.lynns.me), which is what src/index.html already declares.
+      - run: pnpm run build
 
       # Deep links (e.g. /cases/<id>) are client-side routes; Pages has no rewrite rule,
       # so it needs the SPA shell served as the 404 page.
