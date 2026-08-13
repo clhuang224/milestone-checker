@@ -1,0 +1,104 @@
+<div class="space-y-5">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-lg font-semibold text-slate-800">音韻歷程</h2>
+      <p class="text-xs text-slate-500 mt-0.5">
+        構音記錄表格貼標籤時可以挑的分類清單,可以自己增修。
+      </p>
+    </div>
+    <button
+      type="button"
+      class="bg-sky-600 text-white font-medium rounded px-3 py-1.5 text-sm hover:bg-sky-700"
+      (click)="startCreate()"
+    >
+      新增歷程
+    </button>
+  </div>
+
+  @if (draft(); as d) {
+    <div class="bg-white rounded-lg border border-sky-200 p-4 space-y-3">
+      <div>
+        <label class="block text-sm text-slate-700 mb-1" for="process-name">名稱</label>
+        <input
+          id="process-name"
+          type="text"
+          class="w-full border border-slate-300 rounded px-2 py-1 text-sm"
+          [value]="d.name"
+          (input)="updateDraft('name', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label class="block text-sm text-slate-700 mb-1" for="process-description">說明</label>
+        <input
+          id="process-description"
+          type="text"
+          placeholder="例如:送氣音被不送氣音替代,如 ㄆ→ㄅ"
+          class="w-full border border-slate-300 rounded px-2 py-1 text-sm"
+          [value]="d.description"
+          (input)="updateDraft('description', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label class="block text-sm text-slate-700 mb-1" for="process-source">臨床依據</label>
+        <input
+          id="process-source"
+          type="text"
+          placeholder="這個分類背後的臨床理由"
+          class="w-full border border-slate-300 rounded px-2 py-1 text-sm"
+          [value]="d.sourceNote"
+          (input)="updateDraft('sourceNote', $any($event.target).value)"
+        />
+      </div>
+      <div class="flex gap-2 text-sm">
+        <button
+          type="button"
+          class="bg-sky-600 text-white font-medium rounded px-3 py-1.5 hover:bg-sky-700 disabled:opacity-40"
+          [disabled]="!canSave()"
+          (click)="save()"
+        >
+          儲存
+        </button>
+        <button
+          type="button"
+          class="border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
+          (click)="cancel()"
+        >
+          取消
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="space-y-2">
+    @for (process of processes(); track process.id) {
+      <div class="bg-white rounded-lg border border-slate-200 p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <span class="font-medium text-slate-800">{{ process.name }}</span>
+            @if (process.builtin) {
+              <span class="ml-2 text-xs text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">
+                預設項目,待審核
+              </span>
+            }
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <button type="button" class="text-sky-700 hover:underline" (click)="startEdit(process)">
+              編輯
+            </button>
+            <button type="button" class="text-red-600 hover:underline" (click)="remove(process)">
+              刪除
+            </button>
+          </div>
+        </div>
+        @if (process.description) {
+          <p class="text-sm text-slate-600 mt-1">{{ process.description }}</p>
+        }
+        @if (process.sourceNote) {
+          <p class="text-xs text-slate-400 mt-1">依據:{{ process.sourceNote }}</p>
+        }
+      </div>
+    } @empty {
+      <p class="text-sm text-slate-500">還沒有任何音韻歷程,點右上角「新增歷程」開始。</p>
+    }
+  </div>
+</div>

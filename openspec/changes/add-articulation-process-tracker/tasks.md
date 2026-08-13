@@ -23,11 +23,11 @@
 
 ## 4. 介面
 
-- [ ] 4.1 `features/articulation/articulation-table`——依 `zhuyin-inventory.ts` 順序列出所有列,每列可以展開新增/編輯/刪除音對(正確音固定、錯誤音可留空代表✓、可掛音韻歷程標籤、可掛範例字詞)
-- [ ] 4.2 `features/articulation/process-list`——音韻歷程目錄管理畫面(新增/編輯/刪除,標示 builtin 項目跟自建項目)
-- [ ] 4.3 `features/articulation/process-overview`——依音韻歷程分組的總覽畫面,把個案底下所有音對彙總呈現(例如「不送氣化:ㄆ→ㄅ、ㄊ→ㄉ」)
-- [ ] 4.4 在既有的個案畫面(cases/case 詳情)裡加入構音這塊的入口
-- [ ] 4.5 沿用既有 `DisclaimerBanner`,確認構音相關頁面也看得到警語
+- [x] 4.1 `features/articulation/articulation-table`——依 `zhuyin-inventory.ts` 順序列出所有列,每列可以展開新增/編輯/刪除音對(正確音固定、錯誤音可留空代表✓、可掛音韻歷程標籤、可掛範例字詞);獨立成 `cases/:id/articulation` 路由,不塞進本來就很長的個案頁
+- [x] 4.2 `features/articulation/process-list`——音韻歷程目錄管理畫面(新增/編輯/刪除,標示 builtin 項目跟自建項目);掛在 `/articulation-processes`,跟「規則」並列在導覽列
+- [x] 4.3 `features/articulation/process-overview`——依音韻歷程分組的總覽畫面,把個案底下所有音對彙總呈現(例如「不送氣化:ㄆ→ㄅ、ㄊ→ㄉ」);額外多一組「尚未歸類」收還沒貼標籤的錯誤音對,正確音(✓)不列入總覽
+- [x] 4.4 在既有的個案畫面(cases/case 詳情)裡加入構音這塊的入口
+- [x] 4.5 沿用既有 `DisclaimerBanner`,確認構音相關頁面也看得到警語——警語在 `App` 的外框,所有路由都吃得到
 
 ## 5. 測試與收尾
 

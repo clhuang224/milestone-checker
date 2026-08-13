@@ -2,7 +2,15 @@
   <div class="space-y-5">
     <div>
       <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案清單</a>
-      <h2 class="text-lg font-semibold text-slate-800 mt-1">{{ c.label }}</h2>
+      <div class="flex items-baseline justify-between gap-3 mt-1">
+        <h2 class="text-lg font-semibold text-slate-800">{{ c.label }}</h2>
+        <a
+          [routerLink]="['/cases', c.id, 'articulation']"
+          class="text-sm text-sky-700 hover:underline"
+        >
+          構音記錄 →
+        </a>
+      </div>
     </div>
 
     <app-findings-form
