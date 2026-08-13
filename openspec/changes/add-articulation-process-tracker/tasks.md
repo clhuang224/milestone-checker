@@ -8,9 +8,9 @@
 
 ## 2. 靜態參考資料
 
-- [ ] 2.1 `data/zhuyin-inventory.ts`——依教育部標準順序的 37 個注音符號 + 5 個聲調,聲母附掛部位/方式/送氣特徵(依 `design.md` 草案表,若審核時有調整以審核結果為準)
-- [ ] 2.2 `data/starter-articulation-processes.ts`——音韻歷程預設清單(佔位,每筆都要有標示「待審核」的 `sourceNote`)
-- [ ] 2.3 單元測試:注音參考表的 id 不重複、排序覆蓋 4 個類別、聲母都有 features 而韻母/聲調沒有;預設音韻歷程清單的 id 不重複、都有 `sourceNote`
+- [x] 2.1 `data/zhuyin-inventory.ts`——依教育部標準順序的 37 個注音符號 + 5 個聲調,聲母附掛部位/方式/送氣特徵(依 `design.md` 草案表,若審核時有調整以審核結果為準);`order` 由陣列位置自動編號,避免手動編號編錯;另外附 `ZHUYIN_CATEGORY_LABELS`/`ZHUYIN_CATEGORY_ORDER`/`findZhuyin()` 給之後的畫面用。聲調另外加了 `label`(model 補一個選填欄位),否則表格會是一排幾乎看不出差別的符號
+- [x] 2.2 `data/starter-articulation-processes.ts`——音韻歷程預設清單(佔位,每筆都要有標示「待審核」的 `sourceNote`),10 筆
+- [x] 2.3 單元測試:注音參考表的 id 不重複、排序覆蓋 4 個類別、聲母都有 features 而韻母/聲調沒有;預設音韻歷程清單的 id 不重複、都有 `sourceNote`——`data/articulation-content.spec.ts`,16 個測試全過
 
 ## 3. 儲存
 

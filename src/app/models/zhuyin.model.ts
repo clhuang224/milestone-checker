@@ -16,6 +16,8 @@ export interface ZhuyinSymbol {
   id: string;
   /** Display glyph, e.g. 'ㄅ', 'ㄚ', 'ˊ'. */
   symbol: string;
+  /** Spelled-out name, for rows where the glyph alone is unclear (tones). */
+  label?: string;
   category: ZhuyinCategory;
   /** Table sort order, following the Ministry of Education's standard sequence. */
   order: number;
