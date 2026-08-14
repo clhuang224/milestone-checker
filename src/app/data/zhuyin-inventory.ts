@@ -4,8 +4,8 @@ import { ZhuyinCategory, ZhuyinSymbol } from '../models/zhuyin.model';
 type ZhuyinSeed = Omit<ZhuyinSymbol, 'order'>;
 
 /**
- * 聲母的構音特徵(部位/方式/送氣)是示意用佔位資料——尚未經治療師審核,正式使用前必須由
- * 治療師本人確認或修改(對應 tasks.md 6.1 的審核關卡)。這些特徵只用來顯示參考,系統不會
+ * 聲母的構音特徵（部位/方式/送氣）是示意用佔位資料——尚未經治療師審核，正式使用前必須由
+ * 治療師本人確認或修改（對應 tasks.md 6.1 的審核關卡）。這些特徵只用來顯示參考，系統不會
  * 拿它們自動推論音韻歷程。
  */
 const INITIALS: ZhuyinSeed[] = [
@@ -97,25 +97,25 @@ const INITIALS: ZhuyinSeed[] = [
     id: 'zh',
     symbol: 'ㄓ',
     category: 'initial',
-    features: { place: '舌尖後(捲舌)', manner: '塞擦音', aspiration: '不送氣' },
+    features: { place: '舌尖後（捲舌）', manner: '塞擦音', aspiration: '不送氣' },
   },
   {
     id: 'ch',
     symbol: 'ㄔ',
     category: 'initial',
-    features: { place: '舌尖後(捲舌)', manner: '塞擦音', aspiration: '送氣' },
+    features: { place: '舌尖後（捲舌）', manner: '塞擦音', aspiration: '送氣' },
   },
   {
     id: 'sh',
     symbol: 'ㄕ',
     category: 'initial',
-    features: { place: '舌尖後(捲舌)', manner: '擦音', aspiration: '不適用' },
+    features: { place: '舌尖後（捲舌）', manner: '擦音', aspiration: '不適用' },
   },
   {
     id: 'r',
     symbol: 'ㄖ',
     category: 'initial',
-    features: { place: '舌尖後(捲舌)', manner: '擦音', aspiration: '不適用' },
+    features: { place: '舌尖後（捲舌）', manner: '擦音', aspiration: '不適用' },
   },
   {
     id: 'z',
@@ -160,7 +160,7 @@ const FINALS: ZhuyinSeed[] = [
 ];
 
 const TONES: ZhuyinSeed[] = [
-  { id: 'tone1', symbol: 'ˉ', label: '一聲(陰平,通常不標符號)', category: 'tone' },
+  { id: 'tone1', symbol: 'ˉ', label: '一聲（陰平，通常不標符號）', category: 'tone' },
   { id: 'tone2', symbol: 'ˊ', label: '二聲', category: 'tone' },
   { id: 'tone3', symbol: 'ˇ', label: '三聲', category: 'tone' },
   { id: 'tone4', symbol: 'ˋ', label: '四聲', category: 'tone' },
