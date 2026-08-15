@@ -21,7 +21,7 @@ page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text
 
 // 1. create a case
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.getByPlaceholder('個案暱稱/代號').fill('小明(測試)');
+await page.getByPlaceholder('個案暱稱/代號').fill('小明（測試）');
 await page.getByRole('button', { name: '建立' }).click();
 await page.waitForURL(/\/cases\/[^/]+$/);
 out('1. created case, landed on its page');
@@ -43,8 +43,8 @@ async function recordPair({ target, errorLabel, process, word, note }) {
   if (errorLabel) await editor.locator('select').selectOption({ label: errorLabel });
   if (process) await editor.getByLabel(process).check();
   if (word) {
-    await editor.getByPlaceholder('字詞,例如「包」').fill(word);
-    if (note) await editor.getByPlaceholder('實際聽到,例如「ㄆㄠ」').fill(note);
+    await editor.getByPlaceholder('字詞，例如「包」').fill(word);
+    if (note) await editor.getByPlaceholder('實際聽到，例如「ㄆㄠ」').fill(note);
     await editor.getByRole('button', { name: '加入' }).click();
   }
   await editor.getByRole('button', { name: '儲存' }).click();

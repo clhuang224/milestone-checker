@@ -87,9 +87,9 @@ describe('Storage', () => {
 
   it('replaces an existing finding with the same id', () => {
     service.upsertFinding(finding);
-    service.upsertFinding({ ...finding, label: '流口水(修改)' });
+    service.upsertFinding({ ...finding, label: '流口水（修改）' });
 
-    expect(service.findings()).toEqual([{ ...finding, label: '流口水(修改)' }]);
+    expect(service.findings()).toEqual([{ ...finding, label: '流口水（修改）' }]);
   });
 
   it('upserts and removes a case, cascading profile removal', () => {
