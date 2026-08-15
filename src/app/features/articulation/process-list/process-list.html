@@ -3,7 +3,7 @@
     <div>
       <h2 class="text-lg font-semibold text-slate-800">音韻歷程</h2>
       <p class="text-xs text-slate-500 mt-0.5">
-        構音記錄表格貼標籤時可以挑的分類清單,可以自己增修。
+        構音記錄表格貼標籤時可以挑的分類清單，可以自己增修。
       </p>
     </div>
     <button
@@ -32,7 +32,7 @@
         <input
           id="process-description"
           type="text"
-          placeholder="例如:送氣音被不送氣音替代,如 ㄆ→ㄅ"
+          placeholder="例如:送氣音被不送氣音替代，如 ㄆ→ㄅ"
           class="w-full border border-slate-300 rounded px-2 py-1 text-sm"
           [value]="d.description"
           (input)="updateDraft('description', $any($event.target).value)"
@@ -77,7 +77,7 @@
             <span class="font-medium text-slate-800">{{ process.name }}</span>
             @if (process.builtin) {
               <span class="ml-2 text-xs text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">
-                預設項目,待審核
+                預設項目，待審核
               </span>
             }
           </div>
@@ -98,7 +98,7 @@
         }
       </div>
     } @empty {
-      <p class="text-sm text-slate-500">還沒有任何音韻歷程,點右上角「新增歷程」開始。</p>
+      <p class="text-sm text-slate-500">還沒有任何音韻歷程，點右上角「新增歷程」開始。</p>
     }
   </div>
 </div>

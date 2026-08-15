@@ -85,7 +85,9 @@
                         class="border border-slate-300 rounded px-2 py-1"
                         (change)="setErrorPhoneme($any($event.target).value)"
                       >
-                        <option value="" [selected]="!d.errorPhonemeId">(構音正確,無替代音)</option>
+                        <option value="" [selected]="!d.errorPhonemeId">
+                          （構音正確，無替代音）
+                        </option>
                         @for (group of options; track group.category) {
                           <optgroup [label]="group.label">
                             @for (option of group.symbols; track option.id) {
@@ -116,7 +118,7 @@
                           </label>
                         } @empty {
                           <span class="text-sm text-slate-500">
-                            音韻歷程清單是空的,可以到「音韻歷程」頁面新增。
+                            音韻歷程清單是空的，可以到「音韻歷程」頁面新增。
                           </span>
                         }
                       </div>
@@ -144,14 +146,14 @@
                       <div class="flex items-center gap-2 mt-1">
                         <input
                           type="text"
-                          placeholder="字詞,例如「包」"
+                          placeholder="字詞，例如「包」"
                           class="w-32 border border-slate-300 rounded px-2 py-1 text-sm"
                           [value]="draftWord()"
                           (input)="draftWord.set($any($event.target).value)"
                         />
                         <input
                           type="text"
-                          placeholder="實際聽到,例如「ㄆㄠ」"
+                          placeholder="實際聽到，例如「ㄆㄠ」"
                           class="w-40 border border-slate-300 rounded px-2 py-1 text-sm"
                           [value]="draftNote()"
                           (input)="draftNote.set($any($event.target).value)"

@@ -105,7 +105,7 @@ export class RuleList {
         this.importError.set(undefined);
       }
     } catch (error) {
-      this.importError.set(error instanceof Error ? error.message : '匯入失敗,檔案格式不正確');
+      this.importError.set(error instanceof Error ? error.message : '匯入失敗，檔案格式不正確');
     }
   }
 }

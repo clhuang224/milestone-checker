@@ -48,7 +48,7 @@
           <div>
             <span class="font-medium text-slate-800">{{ rule.name }}</span>
             @if (!rule.enabled) {
-              <span class="ml-2 text-xs text-slate-400">(已停用)</span>
+              <span class="ml-2 text-xs text-slate-400">（已停用）</span>
             }
           </div>
           <div class="flex items-center gap-3 text-sm">
@@ -74,7 +74,7 @@
         <p class="text-sm text-slate-600 mt-1">{{ rule.action.message }}</p>
       </div>
     } @empty {
-      <p class="text-sm text-slate-500">還沒有任何規則,點右上角「新增規則」開始。</p>
+      <p class="text-sm text-slate-500">還沒有任何規則，點右上角「新增規則」開始。</p>
     }
   </div>
 </div>
