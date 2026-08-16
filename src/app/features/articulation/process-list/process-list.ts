@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
 import { Storage } from '../../../core/storage/storage';
+import { PLACEHOLDER_NOTE } from '../../../data/starter-articulation-processes';
 import { PhonologicalProcessDefinition } from '../../../models/phonological-process.model';
 
 interface ProcessDraft {
@@ -32,6 +33,11 @@ export class ProcessList {
   readonly draft = signal<ProcessDraft | undefined>(undefined);
 
   readonly canSave = computed(() => (this.draft()?.name ?? '').trim().length > 0);
+
+  /** The placeholder note is bookkeeping for this repo, not a rationale worth screen space. */
+  rationaleOf(process: PhonologicalProcessDefinition): string | undefined {
+    return process.sourceNote === PLACEHOLDER_NOTE ? undefined : process.sourceNote;
+  }
 
   startCreate(): void {
     this.draft.set({

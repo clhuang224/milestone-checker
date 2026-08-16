@@ -75,11 +75,6 @@
         <div class="flex items-center justify-between gap-3">
           <div>
             <span class="font-medium text-slate-800">{{ process.name }}</span>
-            @if (process.builtin) {
-              <span class="ml-2 text-xs text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">
-                預設項目，待審核
-              </span>
-            }
           </div>
           <div class="flex items-center gap-3 text-sm">
             <button type="button" class="text-sky-700 hover:underline" (click)="startEdit(process)">
@@ -93,8 +88,8 @@
         @if (process.description) {
           <p class="text-sm text-slate-600 mt-1">{{ process.description }}</p>
         }
-        @if (process.sourceNote) {
-          <p class="text-xs text-slate-400 mt-1">依據:{{ process.sourceNote }}</p>
+        @if (rationaleOf(process); as rationale) {
+          <p class="text-xs text-slate-400 mt-1">依據:{{ rationale }}</p>
         }
       </div>
     } @empty {

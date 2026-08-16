@@ -1,6 +1,11 @@
 import { PhonologicalProcessDefinition } from '../models/phonological-process.model';
 
-const PLACEHOLDER_NOTE = '佔位資料，待治療師審核後替換為實際臨床判斷依據';
+/**
+ * Marks builtin entries as unreviewed. Kept out of the UI on purpose — it is a note to
+ * whoever maintains this file, not something a therapist needs on screen, so
+ * `ProcessList` filters it out rather than rendering it as a rationale.
+ */
+export const PLACEHOLDER_NOTE = '佔位資料，待治療師審核後替換為實際臨床判斷依據';
 
 /**
  * 示意用佔位資料——內容尚未經治療師審核，正式使用前必須由治療師本人確認、修改或整批替換
