@@ -2,7 +2,7 @@ import { Component, computed, input } from '@angular/core';
 
 import { ArticulationSubstitution } from '../../../models/articulation-record.model';
 import { PhonologicalProcessDefinition } from '../../../models/phonological-process.model';
-import { substitutionLabel } from '../substitution-label';
+import { isArticulationError, substitutionLabel } from '../substitution-label';
 
 interface ProcessGroup {
   id: string;
@@ -23,7 +23,7 @@ export class ProcessOverview {
   readonly processes = input.required<PhonologicalProcessDefinition[]>();
 
   /** Correct sounds are left out — the overview summarises errors only. */
-  private readonly errors = computed(() => this.substitutions().filter((s) => s.errorPhonemeId));
+  private readonly errors = computed(() => this.substitutions().filter(isArticulationError));
 
   readonly groups = computed<ProcessGroup[]>(() => {
     const tagged: ProcessGroup[] = this.processes()
