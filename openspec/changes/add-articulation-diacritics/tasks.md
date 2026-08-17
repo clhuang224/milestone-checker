@@ -11,9 +11,9 @@
 
 ## 3. 參考資料
 
-- [ ] 3.1 `data/zhuyin-inventory.ts` 補空韻 `ㄭ`（U+312D）到 `FINALS` 尾端，不附 `features`
-- [ ] 3.2 `data/starter-articulation-processes.ts` 補 `vowelNasalization`「母音鼻音化」與 `diphthongReduction`「複韻母簡化」，沿用 `PLACEHOLDER_NOTE`
-- [ ] 3.3 更新 `data/articulation-content.spec.ts` 的符號/歷程數量斷言
+- [x] 3.1 `data/zhuyin-inventory.ts` 補空韻 `ㄭ`（U+312D）到 `FINALS` 尾端，不附 `features`
+- [x] 3.2 `data/starter-articulation-processes.ts` 補 `vowelNasalization`「母音鼻音化」與 `diphthongReduction`「複韻母簡化」，沿用 `PLACEHOLDER_NOTE`
+- [x] 3.3 更新 `data/articulation-content.spec.ts` 的符號/歷程數量斷言
 
 ## 4. 介面
 

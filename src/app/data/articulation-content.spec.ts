@@ -21,12 +21,18 @@ describe('zhuyin inventory', () => {
     expect(new Set(glyphs).size).toBe(glyphs.length);
   });
 
-  it('covers 21 initials, 3 medials, 13 finals and 5 tones', () => {
+  it('covers 21 initials, 3 medials, 13 finals plus the empty rime, and 5 tones', () => {
     expect(symbolsIn('initial')).toHaveLength(21);
     expect(symbolsIn('medial')).toHaveLength(3);
-    expect(symbolsIn('final')).toHaveLength(13);
+    expect(symbolsIn('final')).toHaveLength(14);
     expect(symbolsIn('tone')).toHaveLength(5);
-    expect(ZHUYIN_INVENTORY).toHaveLength(42);
+    expect(ZHUYIN_INVENTORY).toHaveLength(43);
+  });
+
+  it('carries the empty rime, which is not one of the standard 37 symbols', () => {
+    expect(findZhuyin('empty')?.symbol).toBe('ㄭ');
+    expect(findZhuyin('empty')?.category).toBe('final');
+    expect(findZhuyin('empty')?.features).toBeUndefined();
   });
 
   it('numbers rows consecutively from 1 in the standard sequence', () => {
@@ -87,6 +93,12 @@ describe('starter articulation processes', () => {
     const names = STARTER_ARTICULATION_PROCESSES.map((p) => p.name);
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('covers the processes the diacritic support was added for', () => {
+    const ids = STARTER_ARTICULATION_PROCESSES.map((p) => p.id);
+    expect(ids).toContain('vowelNasalization');
+    expect(ids).toContain('diphthongReduction');
   });
 
   it('flags every entry as a builtin placeholder pending therapist review', () => {

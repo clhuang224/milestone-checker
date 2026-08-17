@@ -157,6 +157,9 @@ const FINALS: ZhuyinSeed[] = [
   { id: 'ang', symbol: 'ㄤ', category: 'final' },
   { id: 'eng', symbol: 'ㄥ', category: 'final' },
   { id: 'er', symbol: 'ㄦ', category: 'final' },
+  // 空韻 — the rime of ㄓㄔㄕㄖㄗㄘㄙ standing alone. Not one of the standard 37 symbols, but
+  // it gets written down when transcribing, so the table needs a row for it.
+  { id: 'empty', symbol: 'ㄭ', label: '空韻', category: 'final' },
 ];
 
 const TONES: ZhuyinSeed[] = [

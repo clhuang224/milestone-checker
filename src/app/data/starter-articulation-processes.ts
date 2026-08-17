@@ -83,4 +83,18 @@ export const STARTER_ARTICULATION_PROCESSES: PhonologicalProcessDefinition[] = [
     builtin: true,
     sourceNote: PLACEHOLDER_NOTE,
   },
+  {
+    id: 'vowelNasalization',
+    name: '母音鼻音化',
+    description: '母音帶上鼻音成分，如 ㄧ→ㄧⁿ、ㄨ→ㄨⁿ',
+    builtin: true,
+    sourceNote: PLACEHOLDER_NOTE,
+  },
+  {
+    id: 'diphthongReduction',
+    name: '複韻母簡化',
+    description: '複韻母失去介音或韻尾，如 ㄞ→ㄚ',
+    builtin: true,
+    sourceNote: PLACEHOLDER_NOTE,
+  },
 ];
