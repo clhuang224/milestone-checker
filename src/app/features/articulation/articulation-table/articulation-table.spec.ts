@@ -142,6 +142,48 @@ describe('ArticulationTable', () => {
     expect(select.value).toBe('b');
   });
 
+  it('records a diacritic with no substituted sound as an error, not a correct sound', async () => {
+    const fixture = setup();
+    await fixture.whenStable();
+
+    fixture.componentInstance.startAdd({ id: 'i', symbol: 'ㄧ', category: 'medial', order: 22 });
+    fixture.componentInstance.setNasalized(true);
+    fixture.componentInstance.save();
+    await fixture.whenStable();
+
+    const saved = storage.substitutionsFor('case-1');
+    expect(saved[0].errorPhonemeId).toBeUndefined();
+    expect(saved[0].errorDiacritic).toBe('nasalized');
+
+    const text = textOf(fixture);
+    expect(text).toContain('ㄧ→ㄧⁿ');
+    expect(text).not.toContain('ㄧ ✓');
+  });
+
+  it('previews the pair being drafted, so a diacritic-only entry is not read as a ✓', async () => {
+    const fixture = setup();
+    await fixture.whenStable();
+
+    fixture.componentInstance.startAdd({ id: 'i', symbol: 'ㄧ', category: 'medial', order: 22 });
+    expect(fixture.componentInstance.draftLabel()).toBe('ㄧ ✓');
+
+    fixture.componentInstance.setNasalized(true);
+    expect(fixture.componentInstance.draftLabel()).toBe('ㄧ→ㄧⁿ');
+  });
+
+  it('clears the diacritic when it is unticked', async () => {
+    const fixture = setup();
+    await fixture.whenStable();
+
+    fixture.componentInstance.startAdd({ id: 'i', symbol: 'ㄧ', category: 'medial', order: 22 });
+    fixture.componentInstance.setNasalized(true);
+    fixture.componentInstance.setNasalized(false);
+    fixture.componentInstance.save();
+    await fixture.whenStable();
+
+    expect(storage.substitutionsFor('case-1')[0].errorDiacritic).toBeUndefined();
+  });
+
   it('keeps an empty error sound as a correct-sound record rather than an empty string', async () => {
     const fixture = setup();
     await fixture.whenStable();

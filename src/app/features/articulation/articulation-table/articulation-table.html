@@ -85,9 +85,7 @@
                         class="border border-slate-300 rounded px-2 py-1"
                         (change)="setErrorPhoneme($any($event.target).value)"
                       >
-                        <option value="" [selected]="!d.errorPhonemeId">
-                          （構音正確，無替代音）
-                        </option>
+                        <option value="" [selected]="!d.errorPhonemeId">（無替代音）</option>
                         @for (group of options; track group.category) {
                           <optgroup [label]="group.label">
                             @for (option of group.symbols; track option.id) {
@@ -101,6 +99,18 @@
                           </optgroup>
                         }
                       </select>
+
+                      <label class="flex items-center gap-1.5 text-slate-700">
+                        <input
+                          type="checkbox"
+                          class="h-4 w-4"
+                          [checked]="d.errorDiacritic === 'nasalized'"
+                          (change)="setNasalized($any($event.target).checked)"
+                        />
+                        鼻音化
+                      </label>
+
+                      <span class="text-slate-500">＝ {{ draftLabel() }}</span>
                     </div>
 
                     <div>

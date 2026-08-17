@@ -7,7 +7,11 @@ import {
   ZHUYIN_CATEGORY_ORDER,
   ZHUYIN_INVENTORY,
 } from '../../../data/zhuyin-inventory';
-import { ArticulationSubstitution, WordExample } from '../../../models/articulation-record.model';
+import {
+  ArticulationDiacritic,
+  ArticulationSubstitution,
+  WordExample,
+} from '../../../models/articulation-record.model';
 import { ZhuyinCategory, ZhuyinSymbol } from '../../../models/zhuyin.model';
 import { ProcessOverview } from '../process-overview/process-overview';
 import { substitutionLabel } from '../substitution-label';
@@ -22,6 +26,7 @@ interface SubstitutionDraft {
   id: string;
   targetPhonemeId: string;
   errorPhonemeId: string;
+  errorDiacritic?: ArticulationDiacritic;
   processIds: string[];
   examples: WordExample[];
 }
@@ -55,6 +60,15 @@ export class ArticulationTable {
   readonly draft = signal<SubstitutionDraft | undefined>(undefined);
   readonly draftWord = signal('');
   readonly draftNote = signal('');
+
+  /**
+   * Live preview of what is being recorded. Worth the screen space because "no substituted
+   * sound" plus 鼻音化 resolves to 'ㄧ→ㄧⁿ', not the ✓ the empty dropdown suggests.
+   */
+  readonly draftLabel = computed(() => {
+    const draft = this.draft();
+    return draft ? substitutionLabel(this.toSubstitution(draft)) : '';
+  });
 
   substitutionsFor(targetPhonemeId: string): ArticulationSubstitution[] {
     return this.substitutions().filter((s) => s.targetPhonemeId === targetPhonemeId);
@@ -104,6 +118,7 @@ export class ArticulationTable {
       id: substitution.id,
       targetPhonemeId: substitution.targetPhonemeId,
       errorPhonemeId: substitution.errorPhonemeId ?? '',
+      errorDiacritic: substitution.errorDiacritic,
       processIds: [...substitution.processIds],
       examples: [...substitution.examples],
     });
@@ -111,6 +126,12 @@ export class ArticulationTable {
 
   setErrorPhoneme(value: string): void {
     this.draft.update((current) => (current ? { ...current, errorPhonemeId: value } : current));
+  }
+
+  setNasalized(checked: boolean): void {
+    this.draft.update((current) =>
+      current ? { ...current, errorDiacritic: checked ? 'nasalized' : undefined } : current,
+    );
   }
 
   toggleProcess(processId: string): void {
@@ -152,15 +173,7 @@ export class ArticulationTable {
       return;
     }
 
-    this.storage.upsertSubstitution({
-      id: draft.id,
-      caseId: this.id(),
-      targetPhonemeId: draft.targetPhonemeId,
-      errorPhonemeId: draft.errorPhonemeId || undefined,
-      processIds: draft.processIds,
-      examples: draft.examples,
-      updatedOnISODate: new Date().toISOString().slice(0, 10),
-    });
+    this.storage.upsertSubstitution(this.toSubstitution(draft));
     this.cancel();
   }
 
@@ -173,6 +186,19 @@ export class ArticulationTable {
     if (confirm(`確定要刪除「${substitutionLabel(substitution)}」這筆記錄嗎?`)) {
       this.storage.removeSubstitution(substitution.id);
     }
+  }
+
+  private toSubstitution(draft: SubstitutionDraft): ArticulationSubstitution {
+    return {
+      id: draft.id,
+      caseId: this.id(),
+      targetPhonemeId: draft.targetPhonemeId,
+      errorPhonemeId: draft.errorPhonemeId || undefined,
+      errorDiacritic: draft.errorDiacritic,
+      processIds: draft.processIds,
+      examples: draft.examples,
+      updatedOnISODate: new Date().toISOString().slice(0, 10),
+    };
   }
 
   private resetExampleDraft(): void {

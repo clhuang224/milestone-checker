@@ -17,12 +17,12 @@
 
 ## 4. 介面
 
-- [ ] 4.1 `features/articulation/articulation-table`——錯誤音下拉旁加「鼻音化」checkbox，`SubstitutionDraft` 帶 `errorDiacritic` 並在 `save()` 寫入
+- [x] 4.1 `features/articulation/articulation-table`——錯誤音下拉旁加「鼻音化」checkbox，`SubstitutionDraft` 帶 `errorDiacritic` 並在 `save()` 寫入
 - [x] 4.2 確認音韻歷程總覽把「只有附加符號」的音對正確歸類（不再被當成 ✓ 濾掉）
-- [ ] 4.3 元件測試:只勾鼻音化的音對會顯示 `ㄧ→ㄧⁿ` 且不被當成正確音
+- [x] 4.3 元件測試:只勾鼻音化的音對會顯示 `ㄧ→ㄧⁿ` 且不被當成正確音
 
 ## 5. 收尾
 
-- [ ] 5.1 `pnpm lint` / `pnpm test` / `pnpm build` 全過
+- [x] 5.1 `pnpm lint` / `pnpm test` / `pnpm build` 全過
 - [ ] 5.2 瀏覽器手動確認上標在構音表與音韻歷程總覽顯示正確
 - [ ] 5.3 治療師審核新增的兩個預設音韻歷程（審核關卡，故意留著不打勾）
