@@ -2,7 +2,7 @@
  * Manual round-trip check for the articulation tracker (tasks.md 5.2) — drives the real app
  * in a browser rather than the component test doubles.
  *
- * Needs a dev server first:  pnpm start -- --port 4287
+ * Needs a dev server first:  pnpm start --port 4287
  * Then:                      node e2e/articulation-smoke.mjs
  *
  * Reads state straight after a click can race the zoneless change detection, so anything
@@ -36,11 +36,13 @@ out(`2. on articulation page: ${heading.trim()}`);
 const rowFor = (glyph) =>
   page.locator('div.py-2').filter({ has: page.locator(`span.text-lg:text-is("${glyph}")`) });
 
-async function recordPair({ target, errorLabel, process, word, note }) {
+async function recordPair({ target, errorLabel, nasalized, process, word, note }) {
   const row = rowFor(target);
   await row.getByRole('button', { name: '+ 新增音對' }).click();
   const editor = row.locator('div.border-sky-200');
   if (errorLabel) await editor.locator('select').selectOption({ label: errorLabel });
+  // exact, or it also matches the 「母音鼻音化」 process checkbox
+  if (nasalized) await editor.getByLabel('鼻音化', { exact: true }).check();
   if (process) await editor.getByLabel(process).check();
   if (word) {
     await editor.getByPlaceholder('字詞，例如「包」').fill(word);
@@ -57,10 +59,24 @@ await recordPair({ target: 'ㄉ', errorLabel: 'ㄍ', process: '後置化' });
 // a correct sound (error left blank) and an untagged error
 await recordPair({ target: 'ㄅ', word: '包' });
 await recordPair({ target: 'ㄍ', errorLabel: 'ㄉ' });
-out('3. recorded 5 records');
+// nasalization: the diacritic alone (ㄧ→ㄧⁿ), and layered on a substitution (ㄓ→ㄉⁿ)
+await recordPair({ target: 'ㄧ', nasalized: true, process: '母音鼻音化' });
+await recordPair({
+  target: 'ㄓ',
+  errorLabel: 'ㄉ',
+  nasalized: true,
+  process: '塞音化',
+  word: '蜘蛛',
+  note: 'ㄉㄭⁿ ㄉㄨⁿ',
+});
+out('3. recorded 7 records');
 
+// the last save has to render before the rows are worth reading (see header note)
+await page.waitForTimeout(100);
 out(`   ㄆ row now reads: ${(await rowFor('ㄆ').textContent()).replace(/\s+/g, ' ').trim()}`);
 out(`   ㄅ row now reads: ${(await rowFor('ㄅ').textContent()).replace(/\s+/g, ' ').trim()}`);
+out(`   ㄧ row now reads: ${(await rowFor('ㄧ').textContent()).replace(/\s+/g, ' ').trim()}`);
+out(`   ㄓ row now reads: ${(await rowFor('ㄓ').textContent()).replace(/\s+/g, ' ').trim()}`);
 
 // 4. overview grouping (after a beat, so the last save has rendered)
 await page.waitForTimeout(100);
