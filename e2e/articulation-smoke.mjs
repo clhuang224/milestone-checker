@@ -111,5 +111,40 @@ await page.goBack();
 await page.waitForURL(/articulation$/);
 await page.screenshot({ path: '/tmp/shot-table.png', fullPage: false });
 
+// 9. the referral rule end to end: an 8-year-old with errors beyond ㄓㄔㄕㄖ
+await page.goto(`${BASE}/cases`, { waitUntil: 'networkidle' });
+// derived from today, so the case stays 8 years old however long this script lives
+const eightYearsAgo = new Date();
+eightYearsAgo.setFullYear(eightYearsAgo.getFullYear() - 8);
+const birthDate = eightYearsAgo.toISOString().slice(0, 10);
+
+await page.getByPlaceholder('個案暱稱/代號').fill('小切（測試）');
+await page.locator('#new-case-birth-date').fill(birthDate);
+await page.getByRole('button', { name: '建立' }).click();
+await page.waitForURL(/\/cases\/[^/]+$/);
+const caseUrl = page.url();
+out(`9. created case with birth date ${birthDate}, age shows: ${await page
+  .locator('#case-birth-date')
+  .locator('xpath=following-sibling::span[1]')
+  .textContent()}`);
+
+await page.getByRole('link', { name: /構音記錄/ }).click();
+await page.waitForURL(/\/articulation$/);
+// ㄓ→ㄉ and ㄔ→ㄎ are retroflex targets the rule sets aside; ㄘ→ㄎ and ㄧ→ㄧⁿ are not
+await recordPair({ target: 'ㄓ', errorLabel: 'ㄉ', process: '塞音化' });
+await recordPair({ target: 'ㄔ', errorLabel: 'ㄎ', process: '後置化' });
+await recordPair({ target: 'ㄘ', errorLabel: 'ㄎ', process: '塞音化' });
+await recordPair({ target: 'ㄧ', nasalized: true, process: '母音鼻音化' });
+
+await page.goto(caseUrl, { waitUntil: 'networkidle' });
+await page.waitForTimeout(100);
+const warnings = (await page.locator('app-warnings-list').textContent()).replace(/\s+/g, ' ').trim();
+out(`   warnings: ${warnings}`);
+out(`   referral rule fired: ${warnings.includes('建議安排構音治療')}`);
+
+// the draft is bound with ngModel, so it lives in the textarea's value, not its textContent
+const draft = await page.locator('app-report-draft textarea').inputValue();
+out(`   report draft: ${draft.replace(/\s+/g, ' ').trim()}`);
+
 out(errors.length ? `ERRORS: ${errors.join(' | ')}` : 'no console/page errors');
 await browser.close();
