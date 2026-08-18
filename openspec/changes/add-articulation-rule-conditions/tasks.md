@@ -29,17 +29,17 @@
 
 ## 5. 移除錯誤音數
 
-- [ ] 5.1 `data/starter-findings.ts` 刪除 `articulationErrorCount`
-- [ ] 5.2 `data/starter-rules.ts` 的 `rule-speech-intelligibility` 拆掉數量那一支，訊息文字一併改
-- [ ] 5.3 更新 `data/starter-content.spec.ts` 相關斷言
+- [x] 5.1 `data/starter-findings.ts` 刪除 `articulationErrorCount`
+- [x] 5.2 `data/starter-rules.ts` 的 `rule-speech-intelligibility` 拆掉數量那一支，訊息文字一併改
+- [x] 5.3 更新 `data/starter-content.spec.ts` 相關斷言
 
 ## 6. 新的預設規則
 
-- [ ] 6.1 `starter-rules.ts` 新增「四歲以上仍有捲舌音以外的構音錯誤」，標為佔位待審核
-- [ ] 6.2 單元測試:小切的資料會觸發、只有 ㄓㄔㄕㄖ 錯誤時不觸發
+- [x] 6.1 `starter-rules.ts` 新增「四歲以上仍有捲舌音以外的構音錯誤」，標為佔位待審核
+- [x] 6.2 單元測試:小切的資料會觸發、只有 ㄓㄔㄕㄖ 錯誤時不觸發
 
 ## 7. 收尾
 
-- [ ] 7.1 `pnpm lint` / `pnpm test` / `pnpm build` 全過
+- [x] 7.1 `pnpm lint` / `pnpm test` / `pnpm build` 全過
 - [ ] 7.2 e2e 補小切場景（生日由執行日回推，不寫死），確認警示真的跳出來
 - [ ] 7.3 治療師審核新增的預設規則（審核關卡，故意留著不打勾）

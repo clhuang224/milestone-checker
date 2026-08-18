@@ -28,14 +28,6 @@ export const STARTER_FINDINGS: FindingDefinition[] = [
     sourceNote: '佔位資料，待治療師審核後替換為實際臨床判斷依據',
   },
   {
-    id: 'articulationErrorCount',
-    categoryId: 'speech',
-    label: '構音錯誤音數',
-    kind: 'number',
-    unit: '個音',
-    sourceNote: '佔位資料，待治療師審核後替換為實際臨床判斷依據',
-  },
-  {
     id: 'unintelligibleToStrangers',
     categoryId: 'speech',
     label: '不熟悉的人難以聽懂其說話內容',

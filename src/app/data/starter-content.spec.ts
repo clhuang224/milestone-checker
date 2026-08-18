@@ -57,6 +57,44 @@ describe('starter content', () => {
     }
   });
 
+  describe('the articulation therapy referral rule', () => {
+    const rule = STARTER_RULES.find((r) => r.id === 'rule-articulation-therapy-referral');
+
+    function facts(ageInMonths: number | undefined, targetPhonemeIds: string[]) {
+      return {
+        case: { ageInMonths },
+        articulation: {
+          errors: targetPhonemeIds.map((targetPhonemeId) => ({ targetPhonemeId, processIds: [] })),
+        },
+      };
+    }
+
+    it('exists', () => {
+      expect(rule).toBeDefined();
+    });
+
+    it('fires for an 8-year-old whose errors go beyond the retroflex sounds', () => {
+      // 小切: ㄓ→ㄉ, ㄔ→ㄎ are retroflex targets, but ㄘ→ㄎ and the nasalized ㄧ/ㄨ are not.
+      expect(evaluateCondition(rule!.condition, facts(96, ['zh', 'ch', 'c', 'i', 'u']))).toBe(true);
+    });
+
+    it('does not fire when only the retroflex sounds are in error', () => {
+      expect(evaluateCondition(rule!.condition, facts(96, ['zh', 'ch', 'sh', 'r']))).toBe(false);
+    });
+
+    it('does not fire below the age threshold', () => {
+      expect(evaluateCondition(rule!.condition, facts(36, ['c']))).toBe(false);
+    });
+
+    it('does not fire when the case has no birth date', () => {
+      expect(evaluateCondition(rule!.condition, facts(undefined, ['c']))).toBe(false);
+    });
+
+    it('does not fire when the articulation table is empty', () => {
+      expect(evaluateCondition(rule!.condition, facts(96, []))).toBe(false);
+    });
+  });
+
   it('does not fire any rule against a case with nothing recorded', () => {
     for (const rule of STARTER_RULES) {
       expect(evaluateCondition(rule.condition, { case: {}, articulation: { errors: [] } })).toBe(

@@ -38,19 +38,14 @@ export const STARTER_RULES: Rule[] = [
   {
     id: 'rule-speech-intelligibility',
     name: '構音清晰度疑慮',
-    condition: {
-      or: [
-        { '>': [{ var: 'articulationErrorCount' }, 3] },
-        { '==': [{ var: 'unintelligibleToStrangers' }, true] },
-      ],
-    },
+    condition: { '==': [{ var: 'unintelligibleToStrangers' }, true] },
     action: {
-      message: '構音錯誤音數偏多或不熟悉的人難以理解，建議安排構音評估',
+      message: '不熟悉的人難以理解，建議安排構音評估',
       severity: 'warning',
       reportTemplate: '個案構音清晰度顯示疑慮，建議安排正式構音評估。',
     },
     enabled: true,
-    sourceNote: '佔位規則，待治療師審核後替換為實際臨床判斷依據（門檻值 3 個音僅為示意）',
+    sourceNote: '佔位規則，待治療師審核後替換為實際臨床判斷依據',
   },
   {
     id: 'rule-language-expression-delay',
@@ -68,5 +63,29 @@ export const STARTER_RULES: Rule[] = [
     },
     enabled: true,
     sourceNote: '佔位規則，待治療師審核後替換為實際臨床判斷依據',
+  },
+  {
+    id: 'rule-articulation-therapy-referral',
+    name: '四歲以上仍有捲舌音以外的構音錯誤',
+    condition: {
+      and: [
+        { '>': [{ var: 'case.ageInMonths' }, 48] },
+        {
+          // 「排除」是存在型:扣掉 ㄓㄔㄕㄖ 之後仍然有其他錯誤才成立，不是「完全沒有捲舌音錯誤」。
+          some: [
+            { var: 'articulation.errors' },
+            { '!': { in: [{ var: 'targetPhonemeId' }, ['zh', 'ch', 'sh', 'r']] } },
+          ],
+        },
+      ],
+    },
+    action: {
+      message: '四歲以上仍有捲舌音以外的構音錯誤，建議安排構音治療',
+      severity: 'warning',
+      reportTemplate: '個案已滿四歲，構音記錄顯示捲舌音以外仍有錯誤音，建議安排構音治療。',
+    },
+    enabled: true,
+    sourceNote:
+      '佔位規則，待治療師審核後替換為實際臨床判斷依據（四歲的年齡界線與「捲舌音先不計入」的取捨僅為示意）',
   },
 ];
