@@ -1,14 +1,29 @@
 <div class="space-y-6">
   <section class="bg-white rounded-lg border border-slate-200 p-4">
     <h2 class="font-medium text-slate-800 mb-3">新增個案</h2>
-    <form class="flex gap-2" (submit)="$event.preventDefault(); addCase()">
+    <form class="flex flex-wrap items-end gap-2" (submit)="$event.preventDefault(); addCase()">
       <input
         type="text"
         [(ngModel)]="newCaseLabel"
         name="newCaseLabel"
         placeholder="個案暱稱/代號"
-        class="flex-1 border border-slate-300 rounded px-3 py-2 text-sm"
+        class="flex-1 min-w-48 border border-slate-300 rounded px-3 py-2 text-sm"
       />
+      <div>
+        <label class="block text-xs text-slate-500 mb-1" for="new-case-birth-date"
+          >生日（選填）</label
+        >
+        <input
+          id="new-case-birth-date"
+          type="date"
+          [(ngModel)]="newCaseBirthDate"
+          name="newCaseBirthDate"
+          class="border border-slate-300 rounded px-3 py-2 text-sm"
+        />
+      </div>
+      @if (newCaseAge(); as age) {
+        <span class="text-sm text-slate-500 pb-2">{{ age }}</span>
+      }
       <button
         type="submit"
         class="bg-sky-600 text-white text-sm font-medium rounded px-4 py-2 hover:bg-sky-700"

@@ -11,6 +11,21 @@
           構音記錄 →
         </a>
       </div>
+      <div class="flex items-center gap-2 mt-2">
+        <label class="text-sm text-slate-600" for="case-birth-date">生日</label>
+        <input
+          id="case-birth-date"
+          type="date"
+          class="border border-slate-300 rounded px-2 py-1 text-sm"
+          [value]="c.birthDateISO ?? ''"
+          (change)="onBirthDateChange($any($event.target).value)"
+        />
+        @if (ageLabel(); as age) {
+          <span class="text-sm text-slate-500">{{ age }}</span>
+        } @else {
+          <span class="text-xs text-slate-400">沒填生日的話，用到年齡的規則不會判斷</span>
+        }
+      </div>
     </div>
 
     <app-findings-form

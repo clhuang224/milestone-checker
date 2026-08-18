@@ -1,11 +1,25 @@
 import { describe, expect, it } from 'vitest';
 
-import { CaseProfile } from '../../models/case.model';
 import { Rule } from '../../models/rule.model';
+import { ArticulationErrorFact, RuleFacts } from './facts';
 import { evaluateCondition, evaluateRules } from './json-logic';
 
-function profileWith(values: CaseProfile['values']): CaseProfile {
-  return { caseId: 'case-1', values, updatedOnISODate: '2026-01-01' };
+function profileWith(
+  values: Record<string, boolean | number>,
+  extra: Partial<RuleFacts> = {},
+): RuleFacts {
+  return { ...values, case: {}, articulation: { errors: [] }, ...extra };
+}
+
+function factsWithErrors(errors: Partial<ArticulationErrorFact>[]): RuleFacts {
+  return profileWith(
+    {},
+    {
+      articulation: {
+        errors: errors.map((error) => ({ targetPhonemeId: 'p', processIds: [], ...error })),
+      },
+    },
+  );
 }
 
 describe('evaluateCondition', () => {
@@ -55,6 +69,61 @@ describe('evaluateCondition', () => {
 
     expect(evaluateCondition(condition, profileWith({ oralMotorScore: 10 }))).toBe(true);
     expect(evaluateCondition(condition, profileWith({ oralMotorScore: 50 }))).toBe(false);
+  });
+});
+
+describe('evaluateCondition with case age', () => {
+  const overFour = { '>': [{ var: 'case.ageInMonths' }, 48] };
+
+  it('resolves a dotted path into the case namespace', () => {
+    expect(evaluateCondition(overFour, profileWith({}, { case: { ageInMonths: 96 } }))).toBe(true);
+    expect(evaluateCondition(overFour, profileWith({}, { case: { ageInMonths: 36 } }))).toBe(false);
+  });
+
+  it('does not fire when the case has no birth date', () => {
+    expect(evaluateCondition(overFour, profileWith({}, { case: {} }))).toBe(false);
+  });
+});
+
+describe('evaluateCondition with applicability rows', () => {
+  // 「有 ㄓㄔㄕㄖ 以外的構音錯誤」
+  const errorsBeyondRetroflex = {
+    some: [
+      { var: 'articulation.errors' },
+      { '!': { in: [{ var: 'targetPhonemeId' }, ['zh', 'ch', 'sh', 'r']] } },
+    ],
+  };
+
+  it('fires when an error remains after setting the excluded sounds aside', () => {
+    const facts = factsWithErrors([{ targetPhonemeId: 'zh' }, { targetPhonemeId: 'c' }]);
+
+    expect(evaluateCondition(errorsBeyondRetroflex, facts)).toBe(true);
+  });
+
+  it('does not fire when only the excluded sounds are in error', () => {
+    const facts = factsWithErrors([{ targetPhonemeId: 'zh' }, { targetPhonemeId: 'ch' }]);
+
+    expect(evaluateCondition(errorsBeyondRetroflex, facts)).toBe(false);
+  });
+
+  it('does not fire when nothing is recorded, rather than treating empty as a match', () => {
+    expect(evaluateCondition(errorsBeyondRetroflex, factsWithErrors([]))).toBe(false);
+  });
+
+  it('matches a process tag through the nested some', () => {
+    const condition = {
+      some: [
+        { var: 'articulation.errors' },
+        { some: [{ var: 'processIds' }, { in: [{ var: '' }, ['vowelNasalization']] }] },
+      ],
+    };
+
+    expect(evaluateCondition(condition, factsWithErrors([{ processIds: ['stopping'] }]))).toBe(
+      false,
+    );
+    expect(
+      evaluateCondition(condition, factsWithErrors([{ processIds: ['vowelNasalization'] }])),
+    ).toBe(true);
   });
 });
 

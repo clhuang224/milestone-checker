@@ -4,6 +4,7 @@ import { FindingDefinition } from '../../models/finding.model';
 import {
   ConditionGroup,
   ConditionRow,
+  ConditionSetRow,
   defaultGroup,
   defaultRow,
   fromJsonLogic,
@@ -85,6 +86,90 @@ describe('condition-mapper', () => {
 
   it('throws when a comparison row is missing a { var } reference', () => {
     expect(() => fromJsonLogic({ '==': [1, 2] })).toThrow(/var.*reference/);
+  });
+});
+
+describe('applicability (set) rows', () => {
+  const excludeRetroflex: ConditionSetRow = {
+    type: 'set',
+    subject: 'articulationTarget',
+    mode: 'excludes',
+    values: ['zh', 'ch', 'sh', 'r'],
+  };
+
+  it('serializes an includes row to a plain membership test', () => {
+    const row: ConditionSetRow = { ...excludeRetroflex, mode: 'includes' };
+
+    expect(toJsonLogic(row)).toEqual({
+      some: [
+        { var: 'articulation.errors' },
+        { in: [{ var: 'targetPhonemeId' }, ['zh', 'ch', 'sh', 'r']] },
+      ],
+    });
+  });
+
+  it('serializes an excludes row by negating the predicate, not the whole some', () => {
+    // The negation has to sit inside `some` — wrapping the outer `some` would flip the meaning
+    // to "no retroflex errors at all" instead of "some error that is not retroflex".
+    expect(toJsonLogic(excludeRetroflex)).toEqual({
+      some: [
+        { var: 'articulation.errors' },
+        { '!': { in: [{ var: 'targetPhonemeId' }, ['zh', 'ch', 'sh', 'r']] } },
+      ],
+    });
+  });
+
+  it('nests a second some for process ids, which are a list on each error', () => {
+    const row: ConditionSetRow = {
+      type: 'set',
+      subject: 'articulationProcess',
+      mode: 'includes',
+      values: ['vowelNasalization'],
+    };
+
+    expect(toJsonLogic(row)).toEqual({
+      some: [
+        { var: 'articulation.errors' },
+        { some: [{ var: 'processIds' }, { in: [{ var: '' }, ['vowelNasalization']] }] },
+      ],
+    });
+  });
+
+  it('round-trips every subject and mode combination', () => {
+    const subjects = ['articulationTarget', 'articulationProcess'] as const;
+    const modes = ['includes', 'excludes'] as const;
+
+    for (const subject of subjects) {
+      for (const mode of modes) {
+        const row: ConditionSetRow = { type: 'set', subject, mode, values: ['a', 'b'] };
+        expect(fromJsonLogic(toJsonLogic(row))).toEqual(row);
+      }
+    }
+  });
+
+  it('round-trips a set row mixed into an AND group', () => {
+    const group: ConditionGroup = {
+      type: 'group',
+      combinator: 'and',
+      children: [
+        { type: 'row', fieldId: 'case.ageInMonths', operator: '>', value: 48 },
+        excludeRetroflex,
+      ],
+    };
+
+    expect(fromJsonLogic(toJsonLogic(group))).toEqual(group);
+  });
+
+  it('rejects a some over something other than the error list', () => {
+    expect(() => fromJsonLogic({ some: [{ var: 'somethingElse' }, { '==': [1, 1] }] })).toThrow(
+      /Unsupported JsonLogic "some" target/,
+    );
+  });
+
+  it('rejects a some whose predicate is not a recognised membership test', () => {
+    expect(() =>
+      fromJsonLogic({ some: [{ var: 'articulation.errors' }, { '==': [1, 1] }] }),
+    ).toThrow(/Unsupported JsonLogic "some" predicate/);
   });
 });
 

@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
+import { ageInMonthsOn, formatAgeInMonths, todayISO } from '../../../core/age';
 import { Storage } from '../../../core/storage/storage';
 
 @Component({
@@ -15,6 +16,18 @@ export class CaseList {
 
   readonly cases = this.storage.cases;
   readonly newCaseLabel = signal('');
+  readonly newCaseBirthDate = signal('');
+
+  /** Echoes back what the app derives from the date, so a mistyped year is obvious immediately. */
+  readonly newCaseAge = computed(() => this.ageLabel(this.newCaseBirthDate()));
+
+  ageLabel(birthDateISO: string | undefined): string {
+    if (!birthDateISO) {
+      return '';
+    }
+    const months = ageInMonthsOn(birthDateISO, todayISO());
+    return months === undefined ? '' : formatAgeInMonths(months);
+  }
 
   addCase(): void {
     const label = this.newCaseLabel().trim();
@@ -26,9 +39,11 @@ export class CaseList {
     this.storage.upsertCase({
       id,
       label,
-      createdOnISODate: new Date().toISOString().slice(0, 10),
+      createdOnISODate: todayISO(),
+      birthDateISO: this.newCaseBirthDate() || undefined,
     });
     this.newCaseLabel.set('');
+    this.newCaseBirthDate.set('');
     this.router.navigate(['/cases', id]);
   }
 

@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import { ConditionNode, fromJsonLogic } from '../core/rule-engine/condition-mapper';
+import { AGE_FIELD_ID } from '../core/rule-engine/facts';
 import { evaluateCondition } from '../core/rule-engine/json-logic';
 import { STARTER_FINDINGS } from './starter-findings';
 import { STARTER_RULES } from './starter-rules';
 
 function fieldIdsIn(node: ConditionNode): string[] {
-  return node.type === 'row' ? [node.fieldId] : node.children.flatMap(fieldIdsIn);
+  if (node.type === 'row') {
+    return [node.fieldId];
+  }
+  // Applicability rows reference phoneme/process ids, not findings.
+  return node.type === 'set' ? [] : node.children.flatMap(fieldIdsIn);
 }
 
 describe('starter content', () => {
@@ -35,6 +40,10 @@ describe('starter content', () => {
     for (const rule of STARTER_RULES) {
       const node = fromJsonLogic(rule.condition);
       for (const fieldId of fieldIdsIn(node)) {
+        // Case attributes are derived facts, not findings.
+        if (fieldId === AGE_FIELD_ID) {
+          continue;
+        }
         expect(findingIds.has(fieldId)).toBe(true);
       }
     }
@@ -43,12 +52,16 @@ describe('starter content', () => {
   it('evaluates every rule condition without throwing against an empty profile', () => {
     for (const rule of STARTER_RULES) {
       expect(() =>
-        evaluateCondition(rule.condition, {
-          caseId: 'case-test',
-          values: {},
-          updatedOnISODate: '2026-01-01',
-        }),
+        evaluateCondition(rule.condition, { case: {}, articulation: { errors: [] } }),
       ).not.toThrow();
+    }
+  });
+
+  it('does not fire any rule against a case with nothing recorded', () => {
+    for (const rule of STARTER_RULES) {
+      expect(evaluateCondition(rule.condition, { case: {}, articulation: { errors: [] } })).toBe(
+        false,
+      );
     }
   });
 });
