@@ -36,6 +36,7 @@
     <app-rule-editor
       [initialRule]="editingRule()"
       [fields]="fields()"
+      [processes]="processes()"
       (saveRule)="onSave($event)"
       (cancelEdit)="closeEditor()"
     />

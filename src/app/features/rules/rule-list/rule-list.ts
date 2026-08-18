@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
 import { fromJsonLogic } from '../../../core/rule-engine/condition-mapper';
+import { ruleFields } from '../../../core/rule-engine/facts';
 import { Storage } from '../../../core/storage/storage';
 import { Rule } from '../../../models/rule.model';
 import { RuleEditor } from '../rule-editor/rule-editor';
@@ -38,7 +39,8 @@ export class RuleList {
   private readonly storage = inject(Storage);
 
   readonly rules = this.storage.rules;
-  readonly fields = this.storage.findings;
+  readonly fields = computed(() => ruleFields(this.storage.findings()));
+  readonly processes = this.storage.articulationProcesses;
 
   readonly isCreating = signal(false);
   readonly editingRuleId = signal<string | undefined>(undefined);

@@ -4,12 +4,30 @@ import {
   ArticulationSubstitution,
 } from '../../models/articulation-record.model';
 import { Case, CaseProfile } from '../../models/case.model';
+import { FindingDefinition } from '../../models/finding.model';
 import { ZhuyinCategory } from '../../models/zhuyin.model';
 import { findZhuyin } from '../../data/zhuyin-inventory';
 import { ageInMonthsOn } from '../age';
 
 /** The `case.ageInMonths` fact — derived from the birth date, never stored. */
 export const AGE_FIELD_ID = 'case.ageInMonths';
+
+/**
+ * A fact a comparison row can be written against. Wider than `FindingDefinition`, because case
+ * attributes like age are derived rather than recorded by the therapist.
+ */
+export interface RuleField {
+  id: string;
+  label: string;
+  kind: 'boolean' | 'number';
+}
+
+const CASE_FIELDS: RuleField[] = [{ id: AGE_FIELD_ID, label: '月齡', kind: 'number' }];
+
+/** Everything selectable in the rule editor's field dropdown. */
+export function ruleFields(findings: FindingDefinition[]): RuleField[] {
+  return [...CASE_FIELDS, ...findings];
+}
 
 /** One recorded articulation error, flattened into something JsonLogic can filter over. */
 export interface ArticulationErrorFact {

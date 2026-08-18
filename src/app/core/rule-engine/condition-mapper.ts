@@ -1,5 +1,5 @@
-import { FindingDefinition } from '../../models/finding.model';
 import { JsonLogicRule } from '../../models/rule.model';
+import { RuleField } from './facts';
 
 export type ConditionOperator = '==' | '!=' | '>' | '>=' | '<' | '<=';
 
@@ -198,8 +198,8 @@ function setRowFrom(args: unknown): ConditionSetRow {
   };
 }
 
-/** A starter condition row for the given findings, used when adding a new row in the editor. */
-export function defaultRow(fields: FindingDefinition[]): ConditionRow {
+/** A starter condition row for the given fields, used when adding a new row in the editor. */
+export function defaultRow(fields: RuleField[]): ConditionRow {
   const field = fields[0];
   return {
     type: 'row',
@@ -209,7 +209,12 @@ export function defaultRow(fields: FindingDefinition[]): ConditionRow {
   };
 }
 
-/** A starter condition group for the given findings, used when creating a new rule. */
-export function defaultGroup(fields: FindingDefinition[]): ConditionGroup {
+/** A starter applicability row — empty, so it matches nothing until sounds are picked. */
+export function defaultSetRow(): ConditionSetRow {
+  return { type: 'set', subject: 'articulationTarget', mode: 'excludes', values: [] };
+}
+
+/** A starter condition group for the given fields, used when creating a new rule. */
+export function defaultGroup(fields: RuleField[]): ConditionGroup {
   return { type: 'group', combinator: 'and', children: [defaultRow(fields)] };
 }

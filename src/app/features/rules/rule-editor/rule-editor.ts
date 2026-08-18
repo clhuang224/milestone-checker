@@ -7,7 +7,8 @@ import {
   fromJsonLogic,
   toJsonLogic,
 } from '../../../core/rule-engine/condition-mapper';
-import { FindingDefinition } from '../../../models/finding.model';
+import { RuleField } from '../../../core/rule-engine/facts';
+import { PhonologicalProcessDefinition } from '../../../models/phonological-process.model';
 import { Rule, RuleSeverity } from '../../../models/rule.model';
 import { ConditionEditor } from './condition-editor';
 
@@ -18,7 +19,8 @@ import { ConditionEditor } from './condition-editor';
 })
 export class RuleEditor {
   readonly initialRule = input<Rule | undefined>();
-  readonly fields = input.required<FindingDefinition[]>();
+  readonly fields = input.required<RuleField[]>();
+  readonly processes = input.required<PhonologicalProcessDefinition[]>();
   readonly saveRule = output<Rule>();
   readonly cancelEdit = output<void>();
 

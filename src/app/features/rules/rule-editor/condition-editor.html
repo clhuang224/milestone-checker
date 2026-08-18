@@ -38,6 +38,57 @@
       />
     }
   </div>
+} @else if (setRow(); as s) {
+  <div class="border border-sky-200 bg-sky-50/40 rounded p-3 space-y-2">
+    <div class="flex items-center gap-2 flex-wrap text-sm">
+      <span class="text-slate-500">適用條件</span>
+      <select
+        [ngModel]="s.subject"
+        (ngModelChange)="setSubject($event)"
+        class="border border-slate-300 rounded px-2 py-1"
+      >
+        <option value="articulationTarget">構音錯誤的目標音</option>
+        <option value="articulationProcess">音韻歷程</option>
+      </select>
+      <select
+        [ngModel]="s.mode"
+        (ngModelChange)="setMode($event)"
+        class="border border-slate-300 rounded px-2 py-1"
+      >
+        <option value="includes">包含</option>
+        <option value="excludes">排除</option>
+      </select>
+    </div>
+
+    <p class="text-xs text-slate-500">{{ modeHint() }}</p>
+
+    @for (optionGroup of setOptions(); track optionGroup.label) {
+      <div class="flex items-start gap-2">
+        <span class="text-xs text-slate-400 w-12 shrink-0 pt-1">{{ optionGroup.label }}</span>
+        <div class="flex flex-wrap gap-1">
+          @for (option of optionGroup.options; track option.id) {
+            <button
+              type="button"
+              class="border rounded px-2 py-0.5 text-sm"
+              [class]="
+                s.values.includes(option.id)
+                  ? 'border-sky-600 bg-sky-600 text-white'
+                  : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+              "
+              [attr.aria-pressed]="s.values.includes(option.id)"
+              (click)="toggleSetValue(option.id)"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    @if (s.values.length === 0) {
+      <p class="text-xs text-amber-700">還沒選任何項目，這個條件不會成立。</p>
+    }
+  </div>
 } @else if (group(); as g) {
   <div class="border border-slate-200 rounded p-3 space-y-2">
     <div class="flex items-center gap-2 text-sm">
@@ -58,6 +109,7 @@
           <app-condition-editor
             [node]="child"
             [fields]="fields()"
+            [processes]="processes()"
             (nodeChange)="updateChild($index, $event)"
             class="flex-1"
           />
@@ -75,6 +127,9 @@
     <div class="flex gap-3 text-sm">
       <button type="button" class="text-sky-700 hover:underline" (click)="addRowChild()">
         + 條件
+      </button>
+      <button type="button" class="text-sky-700 hover:underline" (click)="addSetRowChild()">
+        + 適用條件
       </button>
       <button type="button" class="text-sky-700 hover:underline" (click)="addGroupChild()">
         + 群組
