@@ -37,6 +37,44 @@ export function ageInMonthsOn(birthDateISO: string, onDateISO: string): number |
   return on[2] < birth[2] ? months - 1 : months;
 }
 
+/**
+ * Gestational weeks counted as full term — anything at or above this gets no correction.
+ * Placeholder pending therapist review: some sites treat 37 weeks as the term threshold.
+ */
+const FULL_TERM_WEEKS = 40;
+
+/**
+ * Corrected age stops being applied past this point, because the catch-up window has closed and
+ * subtracting further would understate the child's age.
+ * Placeholder pending therapist review: sites use 2 or 3 years depending on how preterm.
+ */
+const CORRECTION_APPLIES_UNTIL_MONTHS = 24;
+
+/**
+ * Age adjusted for prematurity: chronological age minus however early the birth was.
+ *
+ * Returns the chronological age unchanged when the case is full term or has no gestational age
+ * recorded — deliberately not `undefined`, so a rule written against corrected age still works
+ * for term children and rule authors do not need two variants of every condition.
+ */
+export function correctedAgeInMonthsOn(
+  birthDateISO: string,
+  gestationalWeeks: number | undefined,
+  onDateISO: string,
+): number | undefined {
+  const chronological = ageInMonthsOn(birthDateISO, onDateISO);
+  if (chronological === undefined) {
+    return undefined;
+  }
+  if (gestationalWeeks === undefined || gestationalWeeks >= FULL_TERM_WEEKS) {
+    return chronological;
+  }
+
+  const weeksEarly = FULL_TERM_WEEKS - gestationalWeeks;
+  const corrected = chronological - Math.round(weeksEarly / 4.345);
+  return corrected > CORRECTION_APPLIES_UNTIL_MONTHS ? chronological : corrected;
+}
+
 /** '8 歲 0 個月'. Empty for a negative age, which only happens on a mistyped future birth date. */
 export function formatAgeInMonths(months: number): string {
   if (months < 0) {

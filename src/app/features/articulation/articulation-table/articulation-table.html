@@ -5,6 +5,9 @@
         ← 回個案頁面
       </a>
       <h2 class="text-lg font-semibold text-slate-800 mt-1">{{ c.label }}——構音記錄</h2>
+      @if (assessment(); as a) {
+        <p class="text-xs text-slate-500 mt-0.5">記錄於 {{ a.assessedOnISODate }} 這次評估</p>
+      }
       <p class="text-xs text-slate-500 mt-0.5">
         每個注音底下可以記錄多筆「正確音→錯誤音」;錯誤音留空代表這個音構得正確。
       </p>

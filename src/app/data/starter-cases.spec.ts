@@ -14,13 +14,18 @@ describe('starter case seed', () => {
   it('derives a birth date that reads as 8 years old on the seed date', () => {
     expect(seed.caseRecord.birthDateISO).toBe('2018-08-19');
 
-    const facts = buildFacts(seed.caseRecord, seed.profile, seed.substitutions, TODAY);
+    const facts = buildFacts(seed.caseRecord, seed.assessment, seed.profile, seed.substitutions);
     expect(facts.case.ageInMonths).toBe(96);
   });
 
   it('keeps the derived age stable whenever the seed runs', () => {
     const later = starterCaseSeed('2031-01-05');
-    const facts = buildFacts(later.caseRecord, later.profile, later.substitutions, '2031-01-05');
+    const facts = buildFacts(
+      later.caseRecord,
+      later.assessment,
+      later.profile,
+      later.substitutions,
+    );
 
     expect(facts.case.ageInMonths).toBe(96);
   });
@@ -54,14 +59,14 @@ describe('starter case seed', () => {
   });
 
   it('records every pair as an error, so none of them read as a ✓', () => {
-    const facts = buildFacts(seed.caseRecord, seed.profile, seed.substitutions, TODAY);
+    const facts = buildFacts(seed.caseRecord, seed.assessment, seed.profile, seed.substitutions);
 
     expect(facts.articulation.errors).toHaveLength(seed.substitutions.length);
   });
 
   it('triggers the articulation therapy referral rule', () => {
     const rule = STARTER_RULES.find((r) => r.id === 'rule-articulation-therapy-referral');
-    const facts = buildFacts(seed.caseRecord, seed.profile, seed.substitutions, TODAY);
+    const facts = buildFacts(seed.caseRecord, seed.assessment, seed.profile, seed.substitutions);
 
     expect(evaluateCondition(rule!.condition, facts)).toBe(true);
   });

@@ -1,7 +1,8 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 import { ArticulationSubstitution } from '../../models/articulation-record.model';
-import { Case, CaseProfile } from '../../models/case.model';
+import { Assessment } from '../../models/assessment.model';
+import { AssessmentProfile, Case } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
 import { Rule } from '../../models/rule.model';
@@ -11,15 +12,16 @@ import { Rule } from '../../models/rule.model';
  * tradeoff. Seeds only run against an empty collection, so without a bump a change to the
  * starter content would be invisible to anyone who has already opened the app.
  */
-const FINDINGS_KEY = 'therapist-rule-engine:findings:v2';
-const CASES_KEY = 'therapist-rule-engine:cases:v2';
-const RULES_KEY = 'therapist-rule-engine:rules:v2';
-const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v2';
-const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v2';
+const FINDINGS_KEY = 'therapist-rule-engine:findings:v3';
+const CASES_KEY = 'therapist-rule-engine:cases:v3';
+const RULES_KEY = 'therapist-rule-engine:rules:v3';
+const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v3';
+const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v3';
+const ASSESSMENTS_KEY = 'therapist-rule-engine:assessments:v3';
 
 interface CasesData {
   cases: Case[];
-  profiles: CaseProfile[];
+  profiles: AssessmentProfile[];
 }
 
 function emptyCasesData(): CasesData {
@@ -66,6 +68,7 @@ export class Storage {
   private readonly articulationRecordsData = signal<ArticulationSubstitution[]>(
     loadArray<ArticulationSubstitution>(ARTICULATION_RECORDS_KEY),
   );
+  private readonly assessmentsData = signal<Assessment[]>(loadArray<Assessment>(ASSESSMENTS_KEY));
 
   readonly findings = computed(() => this.findingsData());
   readonly cases = computed(() => this.casesData().cases);
@@ -73,6 +76,7 @@ export class Storage {
   readonly rules = computed(() => this.rulesData());
   readonly articulationProcesses = computed(() => this.articulationProcessesData());
   readonly articulationRecords = computed(() => this.articulationRecordsData());
+  readonly assessments = computed(() => this.assessmentsData());
 
   upsertFinding(finding: FindingDefinition): void {
     this.findingsData.update((current) => [...current.filter((f) => f.id !== finding.id), finding]);
@@ -93,26 +97,67 @@ export class Storage {
   }
 
   removeCase(id: string): void {
+    const assessmentIds = new Set(
+      this.assessmentsData()
+        .filter((a) => a.caseId === id)
+        .map((a) => a.id),
+    );
+
     this.casesData.update((current) => ({
       cases: current.cases.filter((c) => c.id !== id),
-      profiles: current.profiles.filter((p) => p.caseId !== id),
+      profiles: current.profiles.filter((p) => !assessmentIds.has(p.assessmentId)),
     }));
     this.persistCases();
+
+    this.assessmentsData.update((current) => current.filter((a) => a.caseId !== id));
+    this.persistAssessments();
 
     this.articulationRecordsData.update((current) => current.filter((r) => r.caseId !== id));
     this.persistArticulationRecords();
   }
 
-  saveProfile(profile: CaseProfile): void {
+  assessmentsFor(caseId: string): Assessment[] {
+    return this.assessmentsData()
+      .filter((a) => a.caseId === caseId)
+      .sort((a, b) => b.assessedOnISODate.localeCompare(a.assessedOnISODate));
+  }
+
+  upsertAssessment(assessment: Assessment): void {
+    this.assessmentsData.update((current) => [
+      ...current.filter((a) => a.id !== assessment.id),
+      assessment,
+    ]);
+    this.persistAssessments();
+  }
+
+  /** Removes a session along with everything recorded under it, leaving no orphans behind. */
+  removeAssessment(id: string): void {
+    this.assessmentsData.update((current) => current.filter((a) => a.id !== id));
+    this.persistAssessments();
+
     this.casesData.update((current) => ({
       ...current,
-      profiles: [...current.profiles.filter((p) => p.caseId !== profile.caseId), profile],
+      profiles: current.profiles.filter((p) => p.assessmentId !== id),
+    }));
+    this.persistCases();
+
+    this.articulationRecordsData.update((current) => current.filter((r) => r.assessmentId !== id));
+    this.persistArticulationRecords();
+  }
+
+  saveProfile(profile: AssessmentProfile): void {
+    this.casesData.update((current) => ({
+      ...current,
+      profiles: [
+        ...current.profiles.filter((p) => p.assessmentId !== profile.assessmentId),
+        profile,
+      ],
     }));
     this.persistCases();
   }
 
-  profileFor(caseId: string): CaseProfile | undefined {
-    return this.casesData().profiles.find((p) => p.caseId === caseId);
+  profileFor(assessmentId: string): AssessmentProfile | undefined {
+    return this.casesData().profiles.find((p) => p.assessmentId === assessmentId);
   }
 
   upsertRule(rule: Rule): void {
@@ -159,10 +204,19 @@ export class Storage {
     return this.articulationRecordsData().filter((r) => r.caseId === caseId);
   }
 
+  substitutionsForAssessment(assessmentId: string): ArticulationSubstitution[] {
+    return this.articulationRecordsData().filter((r) => r.assessmentId === assessmentId);
+  }
+
+  /** Fills in `caseId` from the assessment, so the denormalised copy cannot drift. */
   upsertSubstitution(substitution: ArticulationSubstitution): void {
+    const caseId =
+      this.assessmentsData().find((a) => a.id === substitution.assessmentId)?.caseId ??
+      substitution.caseId;
+
     this.articulationRecordsData.update((current) => [
       ...current.filter((r) => r.id !== substitution.id),
-      substitution,
+      { ...substitution, caseId },
     ]);
     this.persistArticulationRecords();
   }
@@ -189,6 +243,10 @@ export class Storage {
       ARTICULATION_PROCESSES_KEY,
       JSON.stringify(this.articulationProcessesData()),
     );
+  }
+
+  private persistAssessments(): void {
+    localStorage.setItem(ASSESSMENTS_KEY, JSON.stringify(this.assessmentsData()));
   }
 
   private persistArticulationRecords(): void {

@@ -1,13 +1,16 @@
 import { ArticulationSubstitution } from '../models/articulation-record.model';
-import { Case, CaseProfile } from '../models/case.model';
+import { Assessment } from '../models/assessment.model';
+import { AssessmentProfile, Case } from '../models/case.model';
 
 export interface StarterCaseSeed {
   caseRecord: Case;
-  profile: CaseProfile;
+  assessment: Assessment;
+  profile: AssessmentProfile;
   substitutions: ArticulationSubstitution[];
 }
 
 const CASE_ID = 'demo-case-xiaoqie';
+const ASSESSMENT_ID = 'demo-assessment-xiaoqie';
 
 /** Subtracts whole years from an ISO date, keeping the month and day. */
 function yearsBefore(onDateISO: string, years: number): string {
@@ -30,6 +33,7 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
   ): ArticulationSubstitution => ({
     id: `${CASE_ID}-${id}`,
     caseId: CASE_ID,
+    assessmentId: ASSESSMENT_ID,
     targetPhonemeId,
     processIds: [],
     examples: [],
@@ -45,7 +49,8 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
       birthDateISO: yearsBefore(onDateISO, 8),
       note: '示範個案——改寫、簡化過的示意資料，可以直接修改或刪除。',
     },
-    profile: { caseId: CASE_ID, values: {}, updatedOnISODate: onDateISO },
+    assessment: { id: ASSESSMENT_ID, caseId: CASE_ID, assessedOnISODate: onDateISO },
+    profile: { assessmentId: ASSESSMENT_ID, values: {}, updatedOnISODate: onDateISO },
     substitutions: [
       pair('zh', 'zh', {
         errorPhonemeId: 'd',

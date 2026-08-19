@@ -15,6 +15,7 @@ function substitution(
 ): ArticulationSubstitution {
   return {
     caseId: 'case-1',
+    assessmentId: 'assessment-1',
     targetPhonemeId: 'p',
     errorPhonemeId: 'b',
     processIds: [],

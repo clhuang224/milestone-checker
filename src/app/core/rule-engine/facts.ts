@@ -3,14 +3,16 @@ import {
   ArticulationDiacritic,
   ArticulationSubstitution,
 } from '../../models/articulation-record.model';
-import { Case, CaseProfile } from '../../models/case.model';
+import { Assessment } from '../../models/assessment.model';
+import { AssessmentProfile, Case } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { ZhuyinCategory } from '../../models/zhuyin.model';
 import { findZhuyin } from '../../data/zhuyin-inventory';
-import { ageInMonthsOn } from '../age';
+import { ageInMonthsOn, correctedAgeInMonthsOn } from '../age';
 
-/** The `case.ageInMonths` fact — derived from the birth date, never stored. */
+/** Age facts — derived from the birth date and the assessment date, never stored. */
 export const AGE_FIELD_ID = 'case.ageInMonths';
+export const CORRECTED_AGE_FIELD_ID = 'case.correctedAgeInMonths';
 
 /**
  * A fact a comparison row can be written against. Wider than `FindingDefinition`, because case
@@ -22,7 +24,10 @@ export interface RuleField {
   kind: 'boolean' | 'number';
 }
 
-const CASE_FIELDS: RuleField[] = [{ id: AGE_FIELD_ID, label: '月齡', kind: 'number' }];
+const CASE_FIELDS: RuleField[] = [
+  { id: AGE_FIELD_ID, label: '月齡（實齡）', kind: 'number' },
+  { id: CORRECTED_AGE_FIELD_ID, label: '月齡（矯正齡）', kind: 'number' },
+];
 
 /** Everything selectable in the rule editor's field dropdown. */
 export function ruleFields(findings: FindingDefinition[]): RuleField[] {
@@ -40,7 +45,12 @@ export interface ArticulationErrorFact {
 }
 
 export interface RuleFacts {
-  case: { ageInMonths?: number };
+  /**
+   * Both ages are offered and neither is picked automatically. Choosing the wrong basis is a
+   * silent error — the rule still fires, just on a premise the author did not intend — so the
+   * choice belongs to whoever writes the rule.
+   */
+  case: { ageInMonths?: number; correctedAgeInMonths?: number };
   articulation: { errors: ArticulationErrorFact[] };
   /** Finding values stay flat at the top level — see buildFacts. */
   [findingId: string]: unknown;
@@ -65,17 +75,23 @@ function errorFacts(substitutions: ArticulationSubstitution[]): ArticulationErro
  */
 export function buildFacts(
   caseRecord: Case,
-  profile: CaseProfile,
+  assessment: Assessment,
+  profile: AssessmentProfile,
   substitutions: ArticulationSubstitution[],
-  onDateISO: string,
 ): RuleFacts {
-  const ageInMonths = caseRecord.birthDateISO
-    ? ageInMonthsOn(caseRecord.birthDateISO, onDateISO)
-    : undefined;
+  // The assessment date, never today: a report written a fortnight later must not age the case
+  // past a threshold it was under when the data was actually collected.
+  const onDateISO = assessment.assessedOnISODate;
+  const birthDateISO = caseRecord.birthDateISO;
 
   return {
     ...profile.values,
-    case: { ageInMonths },
+    case: {
+      ageInMonths: birthDateISO ? ageInMonthsOn(birthDateISO, onDateISO) : undefined,
+      correctedAgeInMonths: birthDateISO
+        ? correctedAgeInMonthsOn(birthDateISO, caseRecord.gestationalWeeks, onDateISO)
+        : undefined,
+    },
     articulation: { errors: errorFacts(substitutions) },
   };
 }

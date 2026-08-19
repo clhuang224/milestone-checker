@@ -7,11 +7,16 @@ export interface Case {
    * stale — rules like 「四歲以上」 read `case.ageInMonths`, computed at evaluation time.
    */
   birthDateISO?: string;
+  /**
+   * Gestational age at birth, in weeks. Drives corrected age for preterm cases; leave unset for
+   * a term birth, which is treated the same as no correction.
+   */
+  gestationalWeeks?: number;
   note?: string;
 }
 
-export interface CaseProfile {
-  caseId: string;
+export interface AssessmentProfile {
+  assessmentId: string;
   /** Key is a FindingDefinition id. */
   values: Record<string, boolean | number>;
   updatedOnISODate: string;

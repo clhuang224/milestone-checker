@@ -4,39 +4,110 @@
       <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案清單</a>
       <div class="flex items-baseline justify-between gap-3 mt-1">
         <h2 class="text-lg font-semibold text-slate-800">{{ c.label }}</h2>
-        <a
-          [routerLink]="['/cases', c.id, 'articulation']"
-          class="text-sm text-sky-700 hover:underline"
-        >
-          構音記錄 →
-        </a>
+        @if (selectedAssessment(); as a) {
+          <a
+            [routerLink]="['/cases', c.id, 'assessments', a.id, 'articulation']"
+            class="text-sm text-sky-700 hover:underline"
+          >
+            構音記錄 →
+          </a>
+        }
       </div>
-      <div class="flex items-center gap-2 mt-2">
-        <label class="text-sm text-slate-600" for="case-birth-date">生日</label>
+
+      <div class="flex items-center gap-2 mt-2 flex-wrap text-sm">
+        <label class="text-slate-600" for="case-birth-date">生日</label>
         <input
           id="case-birth-date"
           type="date"
-          class="border border-slate-300 rounded px-2 py-1 text-sm"
+          class="border border-slate-300 rounded px-2 py-1"
           [value]="c.birthDateISO ?? ''"
           (change)="onBirthDateChange($any($event.target).value)"
         />
+
+        <label class="text-slate-600 ml-2" for="case-gestational-weeks">出生週數</label>
+        <input
+          id="case-gestational-weeks"
+          type="number"
+          min="20"
+          max="44"
+          placeholder="足月免填"
+          class="w-24 border border-slate-300 rounded px-2 py-1"
+          [value]="c.gestationalWeeks ?? ''"
+          (change)="onGestationalWeeksChange($any($event.target).value)"
+        />
+
         @if (ageLabel(); as age) {
-          <span class="text-sm text-slate-500">{{ age }}</span>
+          <span class="text-slate-500">評估當日 {{ age }}</span>
+          @if (showsCorrectedAge()) {
+            <span class="text-slate-500">（矯正 {{ correctedAgeLabel() }}）</span>
+          }
         } @else {
           <span class="text-xs text-slate-400">沒填生日的話，用到年齡的規則不會判斷</span>
         }
       </div>
     </div>
 
-    <app-findings-form
-      [findings]="findings()"
-      [values]="values()"
-      (valuesChange)="onValuesChange($event)"
-    />
+    <section class="bg-white rounded-lg border border-slate-200 p-4">
+      <div class="flex items-center justify-between gap-3 mb-2">
+        <h3 class="font-medium text-slate-800">評估場次</h3>
+        <button
+          type="button"
+          class="text-sm text-sky-700 hover:underline"
+          (click)="addAssessment()"
+        >
+          + 新增評估
+        </button>
+      </div>
 
-    <app-warnings-list [triggeredRules]="triggeredRules()" />
+      @if (selectedAssessment(); as a) {
+        <div class="flex items-center gap-2 flex-wrap text-sm">
+          <select
+            class="border border-slate-300 rounded px-2 py-1"
+            (change)="selectAssessment($any($event.target).value)"
+          >
+            @for (option of assessments(); track option.id) {
+              <option [value]="option.id" [selected]="option.id === a.id">
+                {{ option.assessedOnISODate }}
+              </option>
+            }
+          </select>
 
-    <app-report-draft [generatedText]="reportText()" />
+          <label class="text-slate-600" for="assessment-date">評估日期</label>
+          <input
+            id="assessment-date"
+            type="date"
+            class="border border-slate-300 rounded px-2 py-1"
+            [value]="a.assessedOnISODate"
+            (change)="setAssessmentDate($any($event.target).value)"
+          />
+
+          <button
+            type="button"
+            class="text-red-600 hover:underline ml-auto"
+            (click)="removeAssessment()"
+          >
+            刪除這次評估
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">
+          年齡與報告都以評估日期為準，不是今天——寫報告的時間跟評估的時間常常不同天。
+        </p>
+      } @else {
+        <p class="text-sm text-slate-500">還沒有任何評估場次，點右上角「新增評估」開始記錄。</p>
+      }
+    </section>
+
+    @if (selectedAssessment()) {
+      <app-findings-form
+        [findings]="findings()"
+        [values]="values()"
+        (valuesChange)="onValuesChange($event)"
+      />
+
+      <app-warnings-list [triggeredRules]="triggeredRules()" />
+
+      <app-report-draft [generatedText]="reportText()" />
+    }
   </div>
 } @else {
   <p class="text-sm text-slate-500">找不到這個個案。</p>

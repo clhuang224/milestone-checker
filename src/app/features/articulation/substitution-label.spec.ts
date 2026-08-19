@@ -7,6 +7,7 @@ function substitution(overrides: Partial<ArticulationSubstitution> = {}): Articu
   return {
     id: 'sub-1',
     caseId: 'case-1',
+    assessmentId: 'assessment-1',
     targetPhonemeId: 'p',
     processIds: [],
     examples: [],

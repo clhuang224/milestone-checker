@@ -8,6 +8,7 @@ import { ArticulationTable } from './articulation-table';
 function setup() {
   const fixture = TestBed.createComponent(ArticulationTable);
   fixture.componentRef.setInput('id', 'case-1');
+  fixture.componentRef.setInput('assessmentId', 'assessment-1');
   return fixture;
 }
 
@@ -26,6 +27,11 @@ describe('ArticulationTable', () => {
     });
     storage = TestBed.inject(Storage);
     storage.upsertCase({ id: 'case-1', label: '個案 A', createdOnISODate: '2026-01-01' });
+    storage.upsertAssessment({
+      id: 'assessment-1',
+      caseId: 'case-1',
+      assessedOnISODate: '2026-01-02',
+    });
   });
 
   it('lists every zhuyin row grouped by category', async () => {
@@ -53,6 +59,7 @@ describe('ArticulationTable', () => {
     storage.upsertSubstitution({
       id: 'sub-1',
       caseId: 'case-1',
+      assessmentId: 'assessment-1',
       targetPhonemeId: 'p',
       errorPhonemeId: 'b',
       processIds: ['deaspiration'],
@@ -74,6 +81,7 @@ describe('ArticulationTable', () => {
     storage.upsertSubstitution({
       id: 'sub-1',
       caseId: 'case-1',
+      assessmentId: 'assessment-1',
       targetPhonemeId: 'p',
       processIds: [],
       examples: [],
@@ -86,10 +94,11 @@ describe('ArticulationTable', () => {
     expect(textOf(fixture)).toContain('ㄆ ✓');
   });
 
-  it('only shows substitutions belonging to this case', async () => {
+  it('only shows substitutions belonging to this assessment', async () => {
     storage.upsertSubstitution({
       id: 'sub-other',
       caseId: 'case-2',
+      assessmentId: 'assessment-other',
       targetPhonemeId: 'p',
       errorPhonemeId: 'b',
       processIds: [],
@@ -123,6 +132,7 @@ describe('ArticulationTable', () => {
     storage.upsertSubstitution({
       id: 'sub-1',
       caseId: 'case-1',
+      assessmentId: 'assessment-1',
       targetPhonemeId: 'p',
       errorPhonemeId: 'b',
       processIds: [],
@@ -209,6 +219,7 @@ describe('ArticulationTable', () => {
   it('shows a message when the case does not exist', async () => {
     const fixture = TestBed.createComponent(ArticulationTable);
     fixture.componentRef.setInput('id', 'missing');
+    fixture.componentRef.setInput('assessmentId', 'assessment-1');
     await fixture.whenStable();
 
     expect(textOf(fixture)).toContain('找不到這個個案');

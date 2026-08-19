@@ -33,6 +33,7 @@ export class App {
     if (this.storage.cases().length === 0) {
       const seed = starterCaseSeed(todayISO());
       this.storage.upsertCase(seed.caseRecord);
+      this.storage.upsertAssessment(seed.assessment);
       this.storage.saveProfile(seed.profile);
       seed.substitutions.forEach((substitution) => this.storage.upsertSubstitution(substitution));
     }

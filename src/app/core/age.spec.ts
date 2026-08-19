@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ageInMonthsOn, formatAgeInMonths, todayISO } from './age';
+import { ageInMonthsOn, correctedAgeInMonthsOn, formatAgeInMonths, todayISO } from './age';
 
 describe('ageInMonthsOn', () => {
   it('counts whole months between the two dates', () => {
@@ -34,6 +34,37 @@ describe('ageInMonthsOn', () => {
     expect(ageInMonthsOn('', '2026-08-17')).toBeUndefined();
     expect(ageInMonthsOn('2018/08/17', '2026-08-17')).toBeUndefined();
     expect(ageInMonthsOn('2018-08-17', 'not-a-date')).toBeUndefined();
+  });
+});
+
+describe('correctedAgeInMonthsOn', () => {
+  it('subtracts how early the birth was', () => {
+    // 32 weeks is 8 weeks early, i.e. about 2 months
+    expect(correctedAgeInMonthsOn('2025-02-17', 32, '2026-08-17')).toBe(16);
+    expect(ageInMonthsOn('2025-02-17', '2026-08-17')).toBe(18);
+  });
+
+  it('returns the chronological age for a full-term birth', () => {
+    expect(correctedAgeInMonthsOn('2025-02-17', 40, '2026-08-17')).toBe(18);
+    expect(correctedAgeInMonthsOn('2025-02-17', 41, '2026-08-17')).toBe(18);
+  });
+
+  it('returns the chronological age when prematurity was never recorded', () => {
+    // Not undefined — a rule written against corrected age must still work for term children.
+    expect(correctedAgeInMonthsOn('2025-02-17', undefined, '2026-08-17')).toBe(18);
+  });
+
+  it('stops correcting once the catch-up window has passed', () => {
+    // 28 weeks is 3 months early, but at 5 years old that adjustment is no longer meaningful
+    expect(correctedAgeInMonthsOn('2021-08-17', 28, '2026-08-17')).toBe(60);
+  });
+
+  it('still corrects right up to the cutoff', () => {
+    expect(correctedAgeInMonthsOn('2024-08-17', 28, '2026-08-17')).toBe(21);
+  });
+
+  it('returns undefined for a birth date that is not real', () => {
+    expect(correctedAgeInMonthsOn('2025-02-31', 32, '2026-08-17')).toBeUndefined();
   });
 });
 

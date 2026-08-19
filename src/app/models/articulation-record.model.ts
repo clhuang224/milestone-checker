@@ -10,7 +10,13 @@ export type ArticulationDiacritic = 'nasalized';
 
 export interface ArticulationSubstitution {
   id: string;
+  /**
+   * Denormalised from the assessment on purpose — filtering by case is by far the most common
+   * read. MUST match the `caseId` of `assessmentId`'s assessment; go through Storage rather
+   * than assembling this by hand so the two cannot drift apart.
+   */
   caseId: string;
+  assessmentId: string;
   /** A ZhuyinSymbol id — decides which row of the table this belongs to. */
   targetPhonemeId: string;
   /** Set means the target sound was replaced by this one. */

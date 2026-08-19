@@ -40,12 +40,16 @@ export class ArticulationTable {
   private readonly storage = inject(Storage);
 
   readonly id = input.required<string>();
+  readonly assessmentId = input.required<string>();
 
   readonly caseRecord = computed(() => this.storage.cases().find((c) => c.id === this.id()));
+  readonly assessment = computed(() =>
+    this.storage.assessments().find((a) => a.id === this.assessmentId()),
+  );
   readonly processes = this.storage.articulationProcesses;
 
   readonly substitutions = computed(() =>
-    this.storage.articulationRecords().filter((r) => r.caseId === this.id()),
+    this.storage.articulationRecords().filter((r) => r.assessmentId === this.assessmentId()),
   );
 
   readonly sections: CategorySection[] = ZHUYIN_CATEGORY_ORDER.map((category) => ({
@@ -192,6 +196,7 @@ export class ArticulationTable {
     return {
       id: draft.id,
       caseId: this.id(),
+      assessmentId: this.assessmentId(),
       targetPhonemeId: draft.targetPhonemeId,
       errorPhonemeId: draft.errorPhonemeId || undefined,
       errorDiacritic: draft.errorDiacritic,

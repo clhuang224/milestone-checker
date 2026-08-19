@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ArticulationSubstitution } from '../../models/articulation-record.model';
-import { Case, CaseProfile } from '../../models/case.model';
+import { Assessment } from '../../models/assessment.model';
+import { AssessmentProfile, Case } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
 import { Rule } from '../../models/rule.model';
@@ -21,8 +22,14 @@ const caseRecord: Case = {
   createdOnISODate: '2026-01-01',
 };
 
-const profile: CaseProfile = {
+const assessment: Assessment = {
+  id: 'assessment-1',
   caseId: 'case-1',
+  assessedOnISODate: '2026-01-02',
+};
+
+const profile: AssessmentProfile = {
+  assessmentId: 'assessment-1',
   values: { drooling: true },
   updatedOnISODate: '2026-01-02',
 };
@@ -45,6 +52,7 @@ const process: PhonologicalProcessDefinition = {
 const substitution: ArticulationSubstitution = {
   id: 'sub-1',
   caseId: 'case-1',
+  assessmentId: 'assessment-1',
   targetPhonemeId: 'p',
   errorPhonemeId: 'b',
   processIds: ['deaspiration'],
@@ -78,7 +86,7 @@ describe('Storage', () => {
     service.upsertFinding(finding);
     expect(service.findings()).toEqual([finding]);
 
-    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:findings:v2')!);
+    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:findings:v3')!);
     expect(persisted).toEqual([finding]);
 
     service.removeFinding(finding.id);
@@ -94,6 +102,7 @@ describe('Storage', () => {
 
   it('upserts and removes a case, cascading profile removal', () => {
     service.upsertCase(caseRecord);
+    service.upsertAssessment(assessment);
     service.saveProfile(profile);
     expect(service.cases()).toEqual([caseRecord]);
     expect(service.profiles()).toEqual([profile]);
@@ -103,20 +112,21 @@ describe('Storage', () => {
     expect(service.profiles()).toEqual([]);
   });
 
-  it('saveProfile replaces the existing profile for the same case', () => {
+  it('saveProfile replaces the existing profile for the same assessment', () => {
     service.upsertCase(caseRecord);
+    service.upsertAssessment(assessment);
     service.saveProfile(profile);
-    const updated: CaseProfile = { ...profile, values: { drooling: false } };
+    const updated: AssessmentProfile = { ...profile, values: { drooling: false } };
     service.saveProfile(updated);
 
-    expect(service.profileFor(caseRecord.id)).toEqual(updated);
+    expect(service.profileFor(assessment.id)).toEqual(updated);
   });
 
   it('upserts, removes, and bulk-replaces rules', () => {
     service.upsertRule(rule);
     expect(service.rules()).toEqual([rule]);
 
-    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:rules:v2')!);
+    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:rules:v3')!);
     expect(persisted).toEqual([rule]);
 
     service.removeRule(rule.id);
@@ -131,7 +141,7 @@ describe('Storage', () => {
     expect(service.articulationProcesses()).toEqual([process]);
 
     const persisted = JSON.parse(
-      localStorage.getItem('therapist-rule-engine:articulation-processes:v2')!,
+      localStorage.getItem('therapist-rule-engine:articulation-processes:v3')!,
     );
     expect(persisted).toEqual([process]);
 
@@ -152,7 +162,7 @@ describe('Storage', () => {
     expect(service.substitutionsFor('case-2')).toEqual([otherCase]);
 
     const persisted = JSON.parse(
-      localStorage.getItem('therapist-rule-engine:articulation-records:v2')!,
+      localStorage.getItem('therapist-rule-engine:articulation-records:v3')!,
     );
     expect(persisted).toEqual([substitution, otherCase]);
 
@@ -177,13 +187,64 @@ describe('Storage', () => {
     expect(service.articulationRecords()[0].processIds).toEqual(['backing']);
   });
 
-  it('removing a case also drops its substitutions', () => {
+  it('removing an assessment drops its profile and substitutions', () => {
     service.upsertCase(caseRecord);
+    service.upsertAssessment(assessment);
+    service.upsertAssessment({
+      ...assessment,
+      id: 'assessment-2',
+      assessedOnISODate: '2026-02-01',
+    });
+    service.saveProfile(profile);
+    service.saveProfile({ ...profile, assessmentId: 'assessment-2' });
     service.upsertSubstitution(substitution);
-    service.upsertSubstitution({ ...substitution, id: 'sub-2', caseId: 'case-2' });
+    service.upsertSubstitution({ ...substitution, id: 'sub-2', assessmentId: 'assessment-2' });
+
+    service.removeAssessment('assessment-1');
+
+    expect(service.assessmentsFor('case-1').map((a) => a.id)).toEqual(['assessment-2']);
+    expect(service.profileFor('assessment-1')).toBeUndefined();
+    expect(service.profileFor('assessment-2')).toBeDefined();
+    expect(service.substitutionsForAssessment('assessment-1')).toEqual([]);
+    expect(service.substitutionsForAssessment('assessment-2')).toHaveLength(1);
+  });
+
+  it('lists a case’s assessments newest first', () => {
+    service.upsertAssessment({ ...assessment, id: 'older', assessedOnISODate: '2025-06-01' });
+    service.upsertAssessment({ ...assessment, id: 'newer', assessedOnISODate: '2026-06-01' });
+
+    expect(service.assessmentsFor('case-1').map((a) => a.id)).toEqual(['newer', 'older']);
+  });
+
+  it('fills a substitution’s caseId from its assessment, so the two cannot drift', () => {
+    service.upsertAssessment(assessment);
+    service.upsertSubstitution({ ...substitution, caseId: 'wrong-case' });
+
+    expect(service.articulationRecords()[0].caseId).toBe('case-1');
+  });
+
+  it('removing a case also drops its assessments and substitutions', () => {
+    service.upsertCase(caseRecord);
+    service.upsertAssessment(assessment);
+    service.upsertAssessment({
+      id: 'assessment-other',
+      caseId: 'case-2',
+      assessedOnISODate: '2026-01-02',
+    });
+    service.saveProfile(profile);
+    service.upsertSubstitution(substitution);
+    service.upsertSubstitution({
+      ...substitution,
+      id: 'sub-2',
+      caseId: 'case-2',
+      assessmentId: 'assessment-other',
+    });
 
     service.removeCase(caseRecord.id);
 
+    expect(service.assessmentsFor('case-1')).toEqual([]);
+    expect(service.assessmentsFor('case-2')).toHaveLength(1);
+    expect(service.profileFor('assessment-1')).toBeUndefined();
     expect(service.substitutionsFor('case-1')).toEqual([]);
     expect(service.substitutionsFor('case-2')).toHaveLength(1);
   });
@@ -191,6 +252,7 @@ describe('Storage', () => {
   it('a fresh instance picks up what an earlier instance persisted', () => {
     service.upsertFinding(finding);
     service.upsertCase(caseRecord);
+    service.upsertAssessment(assessment);
     service.saveProfile(profile);
     service.upsertRule(rule);
     service.upsertArticulationProcess(process);
@@ -209,11 +271,11 @@ describe('Storage', () => {
   });
 
   it('falls back to empty data when localStorage holds corrupt JSON', () => {
-    localStorage.setItem('therapist-rule-engine:findings:v2', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:cases:v2', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:rules:v2', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:articulation-processes:v2', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:articulation-records:v2', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:findings:v3', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:cases:v3', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:rules:v3', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:articulation-processes:v3', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:articulation-records:v3', '{not valid json');
 
     const corrupted = TestBed.inject(Storage);
     expect(corrupted.findings()).toEqual([]);
