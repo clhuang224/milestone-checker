@@ -6,11 +6,16 @@ import { FindingDefinition } from '../../models/finding.model';
 import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
 import { Rule } from '../../models/rule.model';
 
-const FINDINGS_KEY = 'therapist-rule-engine:findings:v1';
-const CASES_KEY = 'therapist-rule-engine:cases:v1';
-const RULES_KEY = 'therapist-rule-engine:rules:v1';
-const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v1';
-const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v1';
+/**
+ * Bumping a version discards the old data rather than migrating it — a deliberate PoC-stage
+ * tradeoff. Seeds only run against an empty collection, so without a bump a change to the
+ * starter content would be invisible to anyone who has already opened the app.
+ */
+const FINDINGS_KEY = 'therapist-rule-engine:findings:v2';
+const CASES_KEY = 'therapist-rule-engine:cases:v2';
+const RULES_KEY = 'therapist-rule-engine:rules:v2';
+const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v2';
+const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v2';
 
 interface CasesData {
   cases: Case[];
