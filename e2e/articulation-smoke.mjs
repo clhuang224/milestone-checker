@@ -26,7 +26,9 @@ await page.getByRole('button', { name: '建立' }).click();
 await page.waitForURL(/\/cases\/[^/]+$/);
 out('1. created case, landed on its page');
 
-// 2. into the articulation table
+// 2. an assessment session, then into the articulation table
+await page.getByRole('button', { name: '+ 新增評估' }).click();
+await page.waitForTimeout(100);
 await page.getByRole('link', { name: /構音記錄/ }).click();
 await page.waitForURL(/\/articulation$/);
 const heading = await page.locator('h2').first().textContent();
@@ -123,7 +125,23 @@ await page.locator('#new-case-birth-date').fill(birthDate);
 await page.getByRole('button', { name: '建立' }).click();
 await page.waitForURL(/\/cases\/[^/]+$/);
 const caseUrl = page.url();
-out(`9. created case with birth date ${birthDate}, age shows: ${await page
+
+// two sessions: an old one that predates the fourth birthday, and today's
+await page.getByRole('button', { name: '+ 新增評估' }).click();
+await page.waitForTimeout(100);
+const beforeFour = new Date();
+beforeFour.setFullYear(beforeFour.getFullYear() - 4);
+beforeFour.setDate(beforeFour.getDate() - 1);
+await page.locator('#assessment-date').fill(beforeFour.toISOString().slice(0, 10));
+await page.waitForTimeout(100);
+out(`9. assessment on ${beforeFour.toISOString().slice(0, 10)} → age reads ${await page
+  .locator('#case-birth-date')
+  .locator('xpath=following-sibling::span[1]')
+  .textContent()}`);
+
+await page.getByRole('button', { name: '+ 新增評估' }).click();
+await page.waitForTimeout(100);
+out(`   assessment today → age reads ${await page
   .locator('#case-birth-date')
   .locator('xpath=following-sibling::span[1]')
   .textContent()}`);
