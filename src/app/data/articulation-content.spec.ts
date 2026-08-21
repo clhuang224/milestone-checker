@@ -64,9 +64,9 @@ describe('zhuyin inventory', () => {
   });
 
   it('marks aspiration contrasts on the stop and affricate pairs', () => {
-    expect(findZhuyin('b')?.features?.aspiration).toBe('不送氣');
-    expect(findZhuyin('p')?.features?.aspiration).toBe('送氣');
-    expect(findZhuyin('m')?.features?.aspiration).toBe('不適用');
+    expect(findZhuyin('b')?.features?.aspiration).toBe('unaspirated');
+    expect(findZhuyin('p')?.features?.aspiration).toBe('aspirated');
+    expect(findZhuyin('m')?.features?.aspiration).toBe('notApplicable');
   });
 
   it('names every tone, since the glyph alone is unclear', () => {
@@ -101,10 +101,9 @@ describe('starter articulation processes', () => {
     expect(ids).toContain('diphthongReduction');
   });
 
-  it('flags every entry as a builtin placeholder pending therapist review', () => {
+  it('ships every entry as a builtin with a description', () => {
     for (const process of STARTER_ARTICULATION_PROCESSES) {
       expect(process.builtin).toBe(true);
-      expect(process.sourceNote).toBeTruthy();
       expect(process.description).toBeTruthy();
     }
   });

@@ -1,15 +1,35 @@
 /** 聲母 / 介音 / 韻母 / 聲調 */
 export type ZhuyinCategory = 'initial' | 'medial' | 'final' | 'tone';
 
-export type Aspiration = '送氣' | '不送氣' | '不適用';
+/** 部位 — display labels live in PLACE_LABELS. */
+export type Place =
+  | 'bilabial'
+  | 'labiodental'
+  | 'alveolar'
+  | 'velar'
+  | 'alveolopalatal'
+  | 'retroflex'
+  | 'dentalAlveolar';
 
-/** Reference-only articulation features, shown to help the therapist tag processes by hand. */
+/** 方式 */
+export type Manner = 'stop' | 'affricate' | 'fricative' | 'nasal' | 'lateral';
+
+/** 送氣 */
+export type Aspiration = 'aspirated' | 'unaspirated' | 'notApplicable';
+
+/** 清濁 */
+export type Voicing = 'voiced' | 'voiceless';
+
+/**
+ * Reference-only articulation features, shown to help the therapist tag processes by hand.
+ *
+ * Values are English ids; see `references/zhuyin-initials.md` for the reviewed source table.
+ */
 export interface ArticulationFeatures {
-  /** 部位, e.g. 雙唇 / 舌尖 / 舌根. */
-  place: string;
-  /** 方式, e.g. 塞音 / 鼻音 / 擦音. */
-  manner: string;
+  place: Place;
+  manner: Manner;
   aspiration: Aspiration;
+  voicing: Voicing;
 }
 
 export interface ZhuyinSymbol {

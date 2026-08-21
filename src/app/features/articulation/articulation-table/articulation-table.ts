@@ -3,6 +3,10 @@ import { RouterLink } from '@angular/router';
 
 import { Storage } from '../../../core/storage/storage';
 import {
+  ASPIRATION_LABELS,
+  MANNER_LABELS,
+  PLACE_LABELS,
+  VOICING_LABELS,
   ZHUYIN_CATEGORY_LABELS,
   ZHUYIN_CATEGORY_ORDER,
   ZHUYIN_INVENTORY,
@@ -82,16 +86,20 @@ export class ArticulationTable {
     return substitutionLabel(substitution);
   }
 
-  /** '雙唇/塞音/送氣' — built here rather than in the template so it renders without stray spaces. */
+  /**
+   * '雙唇/塞音/不送氣/清音' — built here rather than in the template so it renders without stray
+   * spaces, and so the English feature ids are mapped to Chinese in one place.
+   */
   featureLabel(symbol: ZhuyinSymbol): string {
     const features = symbol.features;
     if (!features) {
       return '';
     }
-    const parts = [features.place, features.manner];
-    if (features.aspiration !== '不適用') {
-      parts.push(features.aspiration);
+    const parts = [PLACE_LABELS[features.place], MANNER_LABELS[features.manner]];
+    if (features.aspiration !== 'notApplicable') {
+      parts.push(ASPIRATION_LABELS[features.aspiration]);
     }
+    parts.push(VOICING_LABELS[features.voicing]);
     return parts.join('/');
   }
 

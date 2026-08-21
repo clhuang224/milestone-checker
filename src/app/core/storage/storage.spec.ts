@@ -46,7 +46,6 @@ const process: PhonologicalProcessDefinition = {
   id: 'deaspiration',
   name: '不送氣化',
   builtin: true,
-  sourceNote: '佔位資料',
 };
 
 const substitution: ArticulationSubstitution = {

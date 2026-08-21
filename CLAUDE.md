@@ -25,6 +25,9 @@ This is an experiment project for trying Claude Code + Angular. The first OpenSp
 - Code, comments, commit messages: **English** (per global `CLAUDE.md`).
 - User-facing app content (labels, finding/rule descriptions, warning and report text): **Traditional Chinese (Taiwan usage)** — this app's audience is Chinese-speaking speech-language therapists.
 - OpenSpec docs (`proposal.md`, `design.md`, `tasks.md`, `specs/**/spec.md`): **Traditional Chinese**, prose only — keep OpenSpec's structural keywords (`ADDED Requirements`, `Requirement:`, `Scenario:`, `WHEN`/`THEN`/`AND`, `SHALL`/`SHALL NOT`) in English since the tooling parses on them.
+- **Identifiers and union-type members are English, including domain vocabulary.** Don't make
+  Chinese strings the type — `Voicing = 'voiced' | 'voiceless'`, not `'濁音' | '清音'`. Map the id
+  to its Chinese label at the display layer (see `PLACE_LABELS` beside `ZHUYIN_CATEGORY_LABELS`).
 
 ### Punctuation in Chinese text
 
@@ -35,9 +38,24 @@ strings, Chinese code comments, and the Chinese docs above. Exceptions:
 - A comment written as English that merely names a Chinese term keeps English punctuation
   (`/** 測試字詞, e.g. 「包」 */`).
 
-## Health-content caution
+## Clinical content: never invent it
 
-Finding/rule content is health-adjacent. Sample findings and rules are placeholders until a therapist reviews and replaces them — don't ship them as if they were validated clinical logic. A rule's `sourceNote` records the therapist's own clinical rationale, not a literature citation (unlike the shelved parent-facing concept, this content's authority comes from the therapist who wrote it, not from WHO/ASHA-style sources). The disclaimer ("reference only, does not replace professional judgment") must stay visible in the UI, not buried in the README.
+Speech-language pathology content — phonetic features, phonological processes, swallowing
+criteria, age thresholds, severity scales — **must come from the user, not from you**. Don't
+generate a plausible-looking table and ship it. If you don't know, split the gap into small
+concrete questions and ask them one at a time.
+
+This rule exists because it already went wrong: the initial consonant feature table, the
+phonological process list, the "over four with errors beyond ㄓㄔㄕㄖ" thresholds and the
+corrected-age constants were all model-generated. Marking such content as "placeholder pending
+therapist review" used to be the mitigation — **that convention is retired**. The user is the
+reviewer, so a placeholder marker just adds noise while leaving invented content in place.
+
+- Clinical reference data lives in `references/` as markdown tables, so it can be read, queried,
+  and handed to another therapist to check. Code reads the same values; a test keeps the two in
+  step.
+- The UI disclaimer ("reference only, does not replace professional judgment") must stay visible,
+  not buried in the README.
 
 ## Stack specifics
 

@@ -21,7 +21,7 @@ describe('ProcessList', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('還沒有任何音韻歷程');
   });
 
-  it('keeps the placeholder bookkeeping note off the screen', async () => {
+  it('lists a builtin process without any review-status wording', async () => {
     storage.upsertArticulationProcess(STARTER_ARTICULATION_PROCESSES[0]);
 
     const fixture = TestBed.createComponent(ProcessList);
@@ -33,7 +33,7 @@ describe('ProcessList', () => {
     expect(text).not.toContain('預設項目');
   });
 
-  it('still shows a rationale the therapist wrote themselves', async () => {
+  it('shows a rationale the therapist wrote themselves', async () => {
     storage.upsertArticulationProcess({
       id: 'custom',
       name: '自訂歷程',

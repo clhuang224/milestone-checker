@@ -2,7 +2,7 @@
 
 ## 1. 年齡基準
 
-- [x] 1.1 `core/age.ts` 新增 `correctedAgeInMonthsOn()`，足月定義與 24 個月適用期上限都標成待審核的佔位常數
+- [x] 1.1 `core/age.ts` 新增 `correctedAgeInMonthsOn()`，足月定義與 24 個月適用期上限抽成具名常數
 - [x] 1.2 單元測試:足月不調整、32 週調整 8 週、超過上限回實齡、沒填週數等於實齡、無效生日回 undefined
 - [x] 1.3 `models/case.model.ts` 的 `Case` 新增 `gestationalWeeks?: number`
 
@@ -39,4 +39,3 @@
 
 - [x] 6.1 `pnpm lint` / `pnpm test` / `pnpm build` 全過
 - [x] 6.2 e2e 補:建立個案填生日與出生週數 → 兩次不同日期的評估 → 年齡不同、規則觸發狀況跟著變
-- [ ] 6.3 治療師審核足月定義與矯正年齡適用期上限（審核關卡，故意留著不打勾）

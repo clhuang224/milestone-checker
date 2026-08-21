@@ -9,7 +9,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "typecheck": "ngc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:references": "node scripts/check-references.mjs"
   },
   "private": true,
   "packageManager": "pnpm@11.6.0",

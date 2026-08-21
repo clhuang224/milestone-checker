@@ -88,8 +88,8 @@
         @if (process.description) {
           <p class="text-sm text-slate-600 mt-1">{{ process.description }}</p>
         }
-        @if (rationaleOf(process); as rationale) {
-          <p class="text-xs text-slate-400 mt-1">依據:{{ rationale }}</p>
+        @if (process.sourceNote) {
+          <p class="text-xs text-slate-400 mt-1">依據:{{ process.sourceNote }}</p>
         }
       </div>
     } @empty {

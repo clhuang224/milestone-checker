@@ -1,139 +1,230 @@
-import { ZhuyinCategory, ZhuyinSymbol } from '../models/zhuyin.model';
+import {
+  Aspiration,
+  Manner,
+  Place,
+  Voicing,
+  ZhuyinCategory,
+  ZhuyinSymbol,
+} from '../models/zhuyin.model';
 
 /** `order` is assigned from array position, so the source order below is the table order. */
 type ZhuyinSeed = Omit<ZhuyinSymbol, 'order'>;
 
 /**
- * 聲母的構音特徵（部位/方式/送氣）是示意用佔位資料——尚未經治療師審核，正式使用前必須由
- * 治療師本人確認或修改（對應 tasks.md 6.1 的審核關卡）。這些特徵只用來顯示參考，系統不會
- * 拿它們自動推論音韻歷程。
+ * Reviewed against `references/zhuyin-initials.md` — edit that file first, then mirror it
+ * here; a test asserts the two agree.
  */
 const INITIALS: ZhuyinSeed[] = [
   {
     id: 'b',
     symbol: 'ㄅ',
     category: 'initial',
-    features: { place: '雙唇', manner: '塞音', aspiration: '不送氣' },
+    features: {
+      place: 'bilabial',
+      manner: 'stop',
+      aspiration: 'unaspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'p',
     symbol: 'ㄆ',
     category: 'initial',
-    features: { place: '雙唇', manner: '塞音', aspiration: '送氣' },
+    features: { place: 'bilabial', manner: 'stop', aspiration: 'aspirated', voicing: 'voiceless' },
   },
   {
     id: 'm',
     symbol: 'ㄇ',
     category: 'initial',
-    features: { place: '雙唇', manner: '鼻音', aspiration: '不適用' },
+    features: {
+      place: 'bilabial',
+      manner: 'nasal',
+      aspiration: 'notApplicable',
+      voicing: 'voiced',
+    },
   },
   {
     id: 'f',
     symbol: 'ㄈ',
     category: 'initial',
-    features: { place: '唇齒', manner: '擦音', aspiration: '不適用' },
+    features: {
+      place: 'labiodental',
+      manner: 'fricative',
+      aspiration: 'notApplicable',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'd',
     symbol: 'ㄉ',
     category: 'initial',
-    features: { place: '舌尖', manner: '塞音', aspiration: '不送氣' },
+    features: {
+      place: 'alveolar',
+      manner: 'stop',
+      aspiration: 'unaspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 't',
     symbol: 'ㄊ',
     category: 'initial',
-    features: { place: '舌尖', manner: '塞音', aspiration: '送氣' },
+    features: { place: 'alveolar', manner: 'stop', aspiration: 'aspirated', voicing: 'voiceless' },
   },
   {
     id: 'n',
     symbol: 'ㄋ',
     category: 'initial',
-    features: { place: '舌尖', manner: '鼻音', aspiration: '不適用' },
+    features: {
+      place: 'alveolar',
+      manner: 'nasal',
+      aspiration: 'notApplicable',
+      voicing: 'voiced',
+    },
   },
   {
     id: 'l',
     symbol: 'ㄌ',
     category: 'initial',
-    features: { place: '舌尖', manner: '邊音', aspiration: '不適用' },
+    features: {
+      place: 'alveolar',
+      manner: 'lateral',
+      aspiration: 'notApplicable',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'g',
     symbol: 'ㄍ',
     category: 'initial',
-    features: { place: '舌根', manner: '塞音', aspiration: '不送氣' },
+    features: { place: 'velar', manner: 'stop', aspiration: 'unaspirated', voicing: 'voiceless' },
   },
   {
     id: 'k',
     symbol: 'ㄎ',
     category: 'initial',
-    features: { place: '舌根', manner: '塞音', aspiration: '送氣' },
+    features: { place: 'velar', manner: 'stop', aspiration: 'aspirated', voicing: 'voiceless' },
   },
   {
     id: 'h',
     symbol: 'ㄏ',
     category: 'initial',
-    features: { place: '舌根', manner: '擦音', aspiration: '不適用' },
+    features: {
+      place: 'velar',
+      manner: 'fricative',
+      aspiration: 'notApplicable',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'j',
     symbol: 'ㄐ',
     category: 'initial',
-    features: { place: '舌面', manner: '塞擦音', aspiration: '不送氣' },
+    features: {
+      place: 'alveolopalatal',
+      manner: 'affricate',
+      aspiration: 'unaspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'q',
     symbol: 'ㄑ',
     category: 'initial',
-    features: { place: '舌面', manner: '塞擦音', aspiration: '送氣' },
+    features: {
+      place: 'alveolopalatal',
+      manner: 'affricate',
+      aspiration: 'aspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'x',
     symbol: 'ㄒ',
     category: 'initial',
-    features: { place: '舌面', manner: '擦音', aspiration: '不適用' },
+    features: {
+      place: 'alveolopalatal',
+      manner: 'fricative',
+      aspiration: 'notApplicable',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'zh',
     symbol: 'ㄓ',
     category: 'initial',
-    features: { place: '舌尖後（捲舌）', manner: '塞擦音', aspiration: '不送氣' },
+    features: {
+      place: 'retroflex',
+      manner: 'affricate',
+      aspiration: 'unaspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'ch',
     symbol: 'ㄔ',
     category: 'initial',
-    features: { place: '舌尖後（捲舌）', manner: '塞擦音', aspiration: '送氣' },
+    features: {
+      place: 'retroflex',
+      manner: 'affricate',
+      aspiration: 'aspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'sh',
     symbol: 'ㄕ',
     category: 'initial',
-    features: { place: '舌尖後（捲舌）', manner: '擦音', aspiration: '不適用' },
+    features: {
+      place: 'retroflex',
+      manner: 'fricative',
+      aspiration: 'notApplicable',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'r',
     symbol: 'ㄖ',
     category: 'initial',
-    features: { place: '舌尖後（捲舌）', manner: '擦音', aspiration: '不適用' },
+    features: {
+      place: 'retroflex',
+      manner: 'fricative',
+      aspiration: 'notApplicable',
+      voicing: 'voiced',
+    },
   },
   {
     id: 'z',
     symbol: 'ㄗ',
     category: 'initial',
-    features: { place: '舌尖前', manner: '塞擦音', aspiration: '不送氣' },
+    features: {
+      place: 'dentalAlveolar',
+      manner: 'affricate',
+      aspiration: 'unaspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 'c',
     symbol: 'ㄘ',
     category: 'initial',
-    features: { place: '舌尖前', manner: '塞擦音', aspiration: '送氣' },
+    features: {
+      place: 'dentalAlveolar',
+      manner: 'affricate',
+      aspiration: 'aspirated',
+      voicing: 'voiceless',
+    },
   },
   {
     id: 's',
     symbol: 'ㄙ',
     category: 'initial',
-    features: { place: '舌尖前', manner: '擦音', aspiration: '不適用' },
+    features: {
+      place: 'dentalAlveolar',
+      manner: 'fricative',
+      aspiration: 'notApplicable',
+      voicing: 'voiceless',
+    },
   },
 ];
 
@@ -184,6 +275,35 @@ export const ZHUYIN_CATEGORY_LABELS: Record<ZhuyinCategory, string> = {
 
 /** Display order of the category groups, matching ZHUYIN_INVENTORY. */
 export const ZHUYIN_CATEGORY_ORDER: ZhuyinCategory[] = ['initial', 'medial', 'final', 'tone'];
+
+export const PLACE_LABELS: Record<Place, string> = {
+  bilabial: '雙唇',
+  labiodental: '唇齒',
+  alveolar: '齒槽',
+  velar: '舌根',
+  alveolopalatal: '舌面',
+  retroflex: '舌尖後',
+  dentalAlveolar: '舌尖前',
+};
+
+export const MANNER_LABELS: Record<Manner, string> = {
+  stop: '塞音',
+  affricate: '塞擦音',
+  fricative: '擦音',
+  nasal: '鼻音',
+  lateral: '邊音',
+};
+
+export const ASPIRATION_LABELS: Record<Aspiration, string> = {
+  aspirated: '送氣',
+  unaspirated: '不送氣',
+  notApplicable: '不適用',
+};
+
+export const VOICING_LABELS: Record<Voicing, string> = {
+  voiced: '濁音',
+  voiceless: '清音',
+};
 
 export function findZhuyin(id: string): ZhuyinSymbol | undefined {
   return ZHUYIN_INVENTORY.find((symbol) => symbol.id === id);

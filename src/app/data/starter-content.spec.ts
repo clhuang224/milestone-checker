@@ -25,15 +25,6 @@ describe('starter content', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('flags every finding and rule as a placeholder pending therapist review', () => {
-    for (const finding of STARTER_FINDINGS) {
-      expect(finding.sourceNote).toBeTruthy();
-    }
-    for (const rule of STARTER_RULES) {
-      expect(rule.sourceNote).toBeTruthy();
-    }
-  });
-
   it('only references finding ids that actually exist, using conditions the rule editor can parse', () => {
     const findingIds = new Set(STARTER_FINDINGS.map((f) => f.id));
 

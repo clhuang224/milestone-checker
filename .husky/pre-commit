@@ -1,1 +1,3 @@
 pnpm exec lint-staged
+# references/ and src/app/data/ hold the same clinical data; block a commit that splits them.
+pnpm check:references
