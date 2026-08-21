@@ -97,7 +97,48 @@ function checkInitials() {
   return { name: 'zhuyin-initials', count: rows.length, problems };
 }
 
-const results = [checkInitials()];
+/**
+ * The finals table is checked by id and glyph only. Their features sit in nested objects that a
+ * regex reads badly; the unit tests in articulation-content.spec.ts assert the values instead.
+ * This catches the mistake that actually happens — adding or renaming a symbol in one place.
+ */
+function checkFinals() {
+  const markdown = readFileSync('references/zhuyin-finals.md', 'utf8');
+  const source = readFileSync('src/app/data/zhuyin-inventory.ts', 'utf8');
+
+  const rows = [
+    ...markdownTable(markdown, '## 單元音').filter((cells) => cells[1] !== 'id'),
+    ...markdownTable(markdown, '## 複合韻母').filter((cells) => cells[1] !== 'id'),
+  ].map(([symbol, id]) => ({ symbol, id }));
+
+  const block = source.slice(source.indexOf('const MEDIALS'), source.indexOf('const TONES'));
+  const code = [...block.matchAll(/id: '([^']+)',\s*symbol: '([^']+)'/g)].map(([, id, symbol]) => ({
+    symbol,
+    id,
+  }));
+
+  const problems = [];
+  const byId = new Map(code.map((entry) => [entry.id, entry]));
+  for (const row of rows) {
+    const entry = byId.get(row.id);
+    if (!entry) {
+      problems.push(`程式碼裡找不到 ${row.symbol} (${row.id})`);
+    } else if (entry.symbol !== row.symbol) {
+      problems.push(`${row.id} 的符號:references 是 ${row.symbol}，程式碼是 ${entry.symbol}`);
+    }
+  }
+
+  const referencedIds = new Set(rows.map((row) => row.id));
+  for (const entry of code) {
+    if (!referencedIds.has(entry.id)) {
+      problems.push(`references 裡找不到 ${entry.symbol} (${entry.id})`);
+    }
+  }
+
+  return { name: 'zhuyin-finals', count: rows.length, problems };
+}
+
+const results = [checkInitials(), checkFinals()];
 const failed = results.filter((result) => result.problems.length > 0);
 
 for (const result of results) {

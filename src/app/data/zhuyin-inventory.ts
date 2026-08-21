@@ -2,7 +2,11 @@ import {
   Aspiration,
   Manner,
   Place,
+  Rounding,
   Voicing,
+  VowelBackness,
+  VowelFeatures,
+  VowelHeight,
   ZhuyinCategory,
   ZhuyinSymbol,
 } from '../models/zhuyin.model';
@@ -228,29 +232,53 @@ const INITIALS: ZhuyinSeed[] = [
   },
 ];
 
+/** Shorthand for the three features every non-apical vowel carries. */
+function v(height: VowelHeight, backness: VowelBackness, rounding: Rounding): VowelFeatures {
+  return { height, backness, rounding };
+}
+
 const MEDIALS: ZhuyinSeed[] = [
-  { id: 'i', symbol: 'ㄧ', category: 'medial' },
-  { id: 'u', symbol: 'ㄨ', category: 'medial' },
-  { id: 'yu', symbol: 'ㄩ', category: 'medial' },
+  { id: 'i', symbol: 'ㄧ', category: 'medial', vowel: v('close', 'front', 'unrounded') },
+  { id: 'u', symbol: 'ㄨ', category: 'medial', vowel: v('close', 'back', 'rounded') },
+  { id: 'yu', symbol: 'ㄩ', category: 'medial', vowel: v('close', 'front', 'rounded') },
 ];
 
 const FINALS: ZhuyinSeed[] = [
-  { id: 'a', symbol: 'ㄚ', category: 'final' },
-  { id: 'o', symbol: 'ㄛ', category: 'final' },
-  { id: 'e', symbol: 'ㄜ', category: 'final' },
-  { id: 'eh', symbol: 'ㄝ', category: 'final' },
-  { id: 'ai', symbol: 'ㄞ', category: 'final' },
-  { id: 'ei', symbol: 'ㄟ', category: 'final' },
-  { id: 'ao', symbol: 'ㄠ', category: 'final' },
-  { id: 'ou', symbol: 'ㄡ', category: 'final' },
-  { id: 'an', symbol: 'ㄢ', category: 'final' },
-  { id: 'en', symbol: 'ㄣ', category: 'final' },
-  { id: 'ang', symbol: 'ㄤ', category: 'final' },
-  { id: 'eng', symbol: 'ㄥ', category: 'final' },
-  { id: 'er', symbol: 'ㄦ', category: 'final' },
-  // 空韻 — the rime of ㄓㄔㄕㄖㄗㄘㄙ standing alone. Not one of the standard 37 symbols, but
-  // it gets written down when transcribing, so the table needs a row for it.
-  { id: 'empty', symbol: 'ㄭ', label: '空韻', category: 'final' },
+  { id: 'a', symbol: 'ㄚ', category: 'final', vowel: v('open', 'central', 'unrounded') },
+  { id: 'o', symbol: 'ㄛ', category: 'final', vowel: v('closeMid', 'back', 'rounded') },
+  { id: 'e', symbol: 'ㄜ', category: 'final', vowel: v('closeMid', 'back', 'unrounded') },
+  { id: 'eh', symbol: 'ㄝ', category: 'final', vowel: v('closeMid', 'front', 'unrounded') },
+  { id: 'ai', symbol: 'ㄞ', category: 'final', rime: { nucleusId: 'a', coda: 'i' } },
+  { id: 'ei', symbol: 'ㄟ', category: 'final', rime: { nucleusId: 'eh', coda: 'i' } },
+  { id: 'ao', symbol: 'ㄠ', category: 'final', rime: { nucleusId: 'a', coda: 'u' } },
+  { id: 'ou', symbol: 'ㄡ', category: 'final', rime: { nucleusId: 'o', coda: 'u' } },
+  { id: 'an', symbol: 'ㄢ', category: 'final', rime: { nucleusId: 'a', coda: 'n' } },
+  { id: 'en', symbol: 'ㄣ', category: 'final', rime: { nucleusId: 'e', coda: 'n' } },
+  { id: 'ang', symbol: 'ㄤ', category: 'final', rime: { nucleusId: 'a', coda: 'ng' } },
+  { id: 'eng', symbol: 'ㄥ', category: 'final', rime: { nucleusId: 'e', coda: 'ng' } },
+  {
+    id: 'er',
+    symbol: 'ㄦ',
+    category: 'final',
+    // Same tongue position as ㄜ; rhoticity is the only difference.
+    vowel: { ...v('closeMid', 'back', 'unrounded'), rhotic: true },
+  },
+  // 空韻 — one symbol in the 1932 chart, but two vowels: ɿ after ㄗㄘㄙ, ʅ after ㄓㄔㄕㄖ.
+  // Height and backness are deliberately unset; the literature does not settle them.
+  {
+    id: 'ihFront',
+    symbol: 'ɿ',
+    label: '空韻（舌尖前，ㄗㄘㄙ 的韻母）',
+    category: 'final',
+    vowel: { rounding: 'unrounded', apical: true },
+  },
+  {
+    id: 'ihBack',
+    symbol: 'ʅ',
+    label: '空韻（舌尖後，ㄓㄔㄕㄖ 的韻母）',
+    category: 'final',
+    vowel: { rounding: 'unrounded', apical: true },
+  },
 ];
 
 const TONES: ZhuyinSeed[] = [
@@ -261,7 +289,7 @@ const TONES: ZhuyinSeed[] = [
   { id: 'tone5', symbol: '˙', label: '輕聲', category: 'tone' },
 ];
 
-/** 依教育部標準順序排列:聲母 21、介音 3、韻母 13、聲調 5。 */
+/** 依教育部標準順序排列:聲母 21、介音 3、韻母 15、聲調 5。 */
 export const ZHUYIN_INVENTORY: ZhuyinSymbol[] = [...INITIALS, ...MEDIALS, ...FINALS, ...TONES].map(
   (seed, index) => ({ ...seed, order: index + 1 }),
 );

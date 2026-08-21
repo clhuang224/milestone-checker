@@ -21,18 +21,46 @@ describe('zhuyin inventory', () => {
     expect(new Set(glyphs).size).toBe(glyphs.length);
   });
 
-  it('covers 21 initials, 3 medials, 13 finals plus the empty rime, and 5 tones', () => {
+  it('covers 21 initials, 3 medials, 15 finals and 5 tones', () => {
     expect(symbolsIn('initial')).toHaveLength(21);
     expect(symbolsIn('medial')).toHaveLength(3);
-    expect(symbolsIn('final')).toHaveLength(14);
+    expect(symbolsIn('final')).toHaveLength(15);
     expect(symbolsIn('tone')).toHaveLength(5);
-    expect(ZHUYIN_INVENTORY).toHaveLength(43);
+    expect(ZHUYIN_INVENTORY).toHaveLength(44);
   });
 
-  it('carries the empty rime, which is not one of the standard 37 symbols', () => {
-    expect(findZhuyin('empty')?.symbol).toBe('ㄭ');
-    expect(findZhuyin('empty')?.category).toBe('final');
-    expect(findZhuyin('empty')?.features).toBeUndefined();
+  it('splits the empty rime into its two apical vowels', () => {
+    // ㄭ is one symbol in the 1932 chart but two sounds, depending on the initial before it.
+    expect(findZhuyin('ihFront')?.symbol).toBe('ɿ');
+    expect(findZhuyin('ihBack')?.symbol).toBe('ʅ');
+    for (const id of ['ihFront', 'ihBack']) {
+      expect(findZhuyin(id)?.vowel?.apical).toBe(true);
+      expect(findZhuyin(id)?.vowel?.height).toBeUndefined();
+      expect(findZhuyin(id)?.vowel?.backness).toBeUndefined();
+    }
+  });
+
+  it('gives ㄦ the same tongue position as ㄜ, differing only in rhoticity', () => {
+    const e = findZhuyin('e')?.vowel;
+    const er = findZhuyin('er')?.vowel;
+
+    expect(er?.height).toBe(e?.height);
+    expect(er?.backness).toBe(e?.backness);
+    expect(er?.rounding).toBe(e?.rounding);
+    expect(er?.rhotic).toBe(true);
+    expect(e?.rhotic).toBeUndefined();
+  });
+
+  it('decomposes every compound rime into a nucleus that exists, plus a coda', () => {
+    const compounds = ZHUYIN_INVENTORY.filter((s) => s.rime);
+    expect(compounds.map((s) => s.id)).toEqual(['ai', 'ei', 'ao', 'ou', 'an', 'en', 'ang', 'eng']);
+
+    for (const symbol of compounds) {
+      expect(findZhuyin(symbol.rime!.nucleusId)?.vowel, symbol.id).toBeDefined();
+      expect(symbol.rime!.coda, symbol.id).toBeTruthy();
+      // Their features come from the nucleus, so they carry none themselves.
+      expect(symbol.vowel, symbol.id).toBeUndefined();
+    }
   });
 
   it('numbers rows consecutively from 1 in the standard sequence', () => {

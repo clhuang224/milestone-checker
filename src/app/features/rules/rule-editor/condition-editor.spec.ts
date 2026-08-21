@@ -57,7 +57,7 @@ describe('ConditionEditor applicability rows', () => {
       .setOptions()
       .flatMap((g) => g.options.map((o) => o.id));
     expect(labels).toContain('zh');
-    expect(labels).toContain('empty');
+    expect(labels).toContain('ihFront');
   });
 
   it('offers the process catalogue for the process subject', async () => {

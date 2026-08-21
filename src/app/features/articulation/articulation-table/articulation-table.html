@@ -21,9 +21,19 @@
             <div class="py-2">
               <div class="flex items-start gap-3">
                 <div class="w-24 shrink-0">
-                  <span class="text-lg text-slate-800">{{ symbol.symbol }}</span>
-                  @if (symbol.label) {
-                    <span class="ml-1 text-xs text-slate-500">{{ symbol.label }}</span>
+                  @if (symbol.vowel?.apical) {
+                    <!-- ɿ/ʅ are unfamiliar glyphs; the label explains which 空韻 on hover
+                         rather than spending a line of the table on it. -->
+                    <span
+                      class="text-lg text-slate-800 underline decoration-dotted cursor-help"
+                      [title]="symbol.label"
+                      >{{ symbol.symbol }}</span
+                    >
+                  } @else {
+                    <span class="text-lg text-slate-800">{{ symbol.symbol }}</span>
+                    @if (symbol.label) {
+                      <span class="ml-1 text-xs text-slate-500">{{ symbol.label }}</span>
+                    }
                   }
                   @if (symbol.features) {
                     <p class="text-xs text-slate-400">{{ featureLabel(symbol) }}</p>
