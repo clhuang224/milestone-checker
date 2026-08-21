@@ -9,7 +9,7 @@ src/app/
 ├── core/
 │   └── storage/                          StorageService 加兩個新 key(articulation processes / records)
 ├── data/
-│   └── zhuyin-inventory.ts               靜態注音參考表（37 符號 + 5 聲調 + 聲母構音特徵）
+│   └── zhuyin-inventory.ts               靜態注音參考表（37 符號 + 5 聲調 + 聲母辨異徵性）
 │   └── starter-articulation-processes.ts 音韻歷程預設清單（佔位，待審核）
 ├── features/
 │   └── articulation/
@@ -17,7 +17,7 @@ src/app/
 │       ├── process-list/                 音韻歷程目錄管理（新增/編輯/刪除）
 │       └── process-overview/             依音韻歷程分組的總覽畫面
 └── models/
-    ├── zhuyin.model.ts                   ZhuyinSymbol、ZhuyinCategory、ArticulationFeatures
+    ├── zhuyin.model.ts                   ZhuyinSymbol、ZhuyinCategory、DistinctiveFeatures
     ├── phonological-process.model.ts     PhonologicalProcessDefinition
     └── articulation-record.model.ts      ArticulationSubstitution、WordExample
 ```
@@ -29,7 +29,7 @@ src/app/
 type ZhuyinCategory = 'initial' | 'medial' | 'final' | 'tone';
 //                     聲母        介音        韻母       聲調
 
-interface ArticulationFeatures {
+interface DistinctiveFeatures {
   place?: string; // 部位，例如「雙唇」「舌尖」「舌根」「舌面」「舌尖前」「舌尖後（捲舌）」「唇齒」
   manner?: string; // 方式，例如「塞音」「鼻音」「邊音」「擦音」「塞擦音」
   aspiration?: '送氣' | '不送氣' | '不適用';
@@ -40,7 +40,7 @@ interface ZhuyinSymbol {
   symbol: string; // 顯示用符號，例如 'ㄅ'、'ㄚ'、'ˊ'
   category: ZhuyinCategory;
   order: number; // 表格排序（教育部標準順序）
-  features?: ArticulationFeatures; // 目前只有 category === 'initial' 會填
+  features?: DistinctiveFeatures; // 目前只有 category === 'initial' 會填
 }
 
 // phonological-process.model.ts
@@ -78,7 +78,7 @@ interface ArticulationSubstitution {
 - **韻母(13)**:ㄚ ㄛ ㄜ ㄝ ㄞ ㄟ ㄠ ㄡ ㄢ ㄣ ㄤ ㄥ ㄦ
 - **聲調(5)**:一聲（陰平，通常不標符號）、ˊ 二聲、ˇ 三聲、ˋ 四聲、˙ 輕聲
 
-聲母的構音特徵草案（部位/方式/送氣），供你審核調整:
+聲母的辨異徵性草案（部位/方式/送氣），供你審核調整:
 
 | 聲母  | 部位           | 方式   | 送氣        |
 | ----- | -------------- | ------ | ----------- |

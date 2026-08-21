@@ -29,6 +29,14 @@ This is an experiment project for trying Claude Code + Angular. The first OpenSp
   Chinese strings the type — `Voicing = 'voiced' | 'voiceless'`, not `'濁音' | '清音'`. Map the id
   to its Chinese label at the display layer (see `PLACE_LABELS` beside `ZHUYIN_CATEGORY_LABELS`).
 
+### Fixed terminology
+
+Some domain terms have a settled translation in this project. Use it and no other:
+
+| English             | 用這個   | 不要用                   |
+| ------------------- | -------- | ------------------------ |
+| distinctive feature | 辨異徵性 | 特徵、構音特徵、區別特徵 |
+
 ### Punctuation in Chinese text
 
 Chinese prose uses **fullwidth punctuation** — `，` not `,`, `（）` not `()`. This applies to UI

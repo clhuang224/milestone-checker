@@ -21,11 +21,11 @@ export type Aspiration = 'aspirated' | 'unaspirated' | 'notApplicable';
 export type Voicing = 'voiced' | 'voiceless';
 
 /**
- * Reference-only articulation features, shown to help the therapist tag processes by hand.
+ * 辨異徵性 — the distinctive features separating one sound from another.
  *
  * Values are English ids; see `references/zhuyin-initials.md` for the reviewed source table.
  */
-export interface ArticulationFeatures {
+export interface DistinctiveFeatures {
   place: Place;
   manner: Manner;
   aspiration: Aspiration;
@@ -42,5 +42,5 @@ export interface ZhuyinSymbol {
   /** Table sort order, following the Ministry of Education's standard sequence. */
   order: number;
   /** Only populated for category === 'initial' in this change. */
-  features?: ArticulationFeatures;
+  features?: DistinctiveFeatures;
 }
