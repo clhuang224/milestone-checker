@@ -138,7 +138,48 @@ function checkFinals() {
   return { name: 'zhuyin-finals', count: rows.length, problems };
 }
 
-const results = [checkInitials(), checkFinals()];
+function checkProcesses() {
+  const markdown = readFileSync('references/phonological-processes.md', 'utf8');
+  const source = readFileSync('src/app/data/starter-articulation-processes.ts', 'utf8');
+
+  const rows = markdownTable(markdown, '## 清單')
+    .filter((cells) => cells[0] !== 'id')
+    .map(([id, name, description]) => ({ id, name, description }));
+
+  const pattern = /id: '([^']+)',\s*name: '([^']+)',\s*description: '([^']+)'/g;
+  const code = [...source.matchAll(pattern)].map(([, id, name, description]) => ({
+    id,
+    name,
+    description,
+  }));
+
+  const problems = [];
+  const byId = new Map(code.map((entry) => [entry.id, entry]));
+  for (const row of rows) {
+    const entry = byId.get(row.id);
+    if (!entry) {
+      problems.push(`程式碼裡找不到 ${row.name} (${row.id})`);
+      continue;
+    }
+    if (entry.name !== row.name) {
+      problems.push(`${row.id} 的名稱:references 是 ${row.name}，程式碼是 ${entry.name}`);
+    }
+    if (entry.description !== row.description) {
+      problems.push(`${row.name} 的說明不一致`);
+    }
+  }
+
+  const referencedIds = new Set(rows.map((row) => row.id));
+  for (const entry of code) {
+    if (!referencedIds.has(entry.id)) {
+      problems.push(`references 裡找不到 ${entry.name} (${entry.id})`);
+    }
+  }
+
+  return { name: 'phonological-processes', count: rows.length, problems };
+}
+
+const results = [checkInitials(), checkFinals(), checkProcesses()];
 const failed = results.filter((result) => result.problems.length > 0);
 
 for (const result of results) {

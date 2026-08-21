@@ -18,13 +18,22 @@
 | --------------------------- | --------------------------------- | -------------- |
 | `zhuyin-initials.md`        | 21 個聲母的部位／方式／送氣／清濁 | 已由開發者確認 |
 | `zhuyin-finals.md`          | 韻母與介音的辨異徵性              | 尚未提供       |
-| `phonological-processes.md` | 音韻歷程定義與推導條件            | 尚未提供       |
+| `phonological-processes.md` | 音韻歷程定義                      | 已由開發者確認 |
+| `open-questions.md`         | 擱置的臨床問題                    | 持續更新       |
+
+## 不引用標準化測驗
+
+坊間的標準化語音測驗有版權，內容不能抄進這個專案。這裡的臨床定義是**開發者依自己的臨床經驗寫下的**，不是文獻引用。
+
+這跟規則的 `sourceNote` 是同一種性質:內容的權威來自寫下它的治療師，不是來自某份出版品。所以交給別的治療師檢查時，問的是「你同不同意」，不是「這出自哪裡」。
 
 ## 跟程式碼的關係
 
 `references/` 是給人看的、`src/app/data/` 是給程式讀的，兩邊放同一份資料。要改的時候**先改這裡**，再同步過去；有測試比對兩邊是否一致，改到不一樣會紅燈。
 
 - `zhuyin-initials.md` ↔ `src/app/data/zhuyin-inventory.ts`
+- `zhuyin-finals.md` ↔ `src/app/data/zhuyin-inventory.ts`
+- `phonological-processes.md` ↔ `src/app/data/starter-articulation-processes.ts`
 
 表格用英文 id 那一欄對應程式碼裡的值，中文欄位是畫面顯示用的。
 

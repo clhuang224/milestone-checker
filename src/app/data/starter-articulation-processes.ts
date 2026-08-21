@@ -13,13 +13,13 @@ export const STARTER_ARTICULATION_PROCESSES: PhonologicalProcessDefinition[] = [
   {
     id: 'fronting',
     name: '前置化',
-    description: '構音部位往前移，如 ㄍ→ㄉ（舌根音變舌尖音）',
+    description: '構音部位往前移，如 ㄍ→ㄉ（舌根音變齒槽音）、ㄓ→ㄗ（舌尖後音變舌尖前音）',
     builtin: true,
   },
   {
     id: 'backing',
     name: '後置化',
-    description: '構音部位往後移，如 ㄉ→ㄍ（舌尖音變舌根音）',
+    description: '構音部位往後移，如 ㄉ→ㄍ（齒槽音變舌根音）',
     builtin: true,
   },
   {
@@ -35,33 +35,21 @@ export const STARTER_ARTICULATION_PROCESSES: PhonologicalProcessDefinition[] = [
     builtin: true,
   },
   {
-    id: 'deretroflexion',
-    name: '捲舌音舌尖化',
-    description: '捲舌音被舌尖前音替代，如 ㄓ→ㄗ、ㄕ→ㄙ',
-    builtin: true,
-  },
-  {
-    id: 'nasalLateralConfusion',
-    name: '邊音化（ㄋ/ㄌ 混淆）',
-    description: 'ㄋ 與 ㄌ 互相替代或混用',
+    id: 'fricativization',
+    name: '擦音化',
+    description: '塞音或塞擦音被擦音替代',
     builtin: true,
   },
   {
     id: 'nasalFinalReduction',
-    name: '聲隨韻母簡化',
-    description: '聲隨韻母的鼻音被省略或簡化，如 ㄤ→ㄚ',
+    name: '鼻音聲隨韻母簡化',
+    description: '鼻音聲隨韻母的鼻音被省略，如 ㄤ→ㄚ',
     builtin: true,
   },
   {
     id: 'medialDeletion',
     name: '介音省略',
     description: '省略介音，如 ㄧㄠ→ㄠ',
-    builtin: true,
-  },
-  {
-    id: 'toneConfusion',
-    name: '聲調混淆',
-    description: '聲調使用錯誤，如三聲念成二聲',
     builtin: true,
   },
   {
@@ -73,7 +61,7 @@ export const STARTER_ARTICULATION_PROCESSES: PhonologicalProcessDefinition[] = [
   {
     id: 'diphthongReduction',
     name: '複韻母簡化',
-    description: '複韻母失去介音或韻尾，如 ㄞ→ㄚ',
+    description: '複韻母失去韻尾，如 ㄞ→ㄚ',
     builtin: true,
   },
 ];

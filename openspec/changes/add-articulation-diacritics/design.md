@@ -52,4 +52,4 @@ export interface ArticulationSubstitution {
 - `vowelNasalization`「母音鼻音化」——母音帶上鼻音成分，如 ㄧ→ㄧⁿ
 - `diphthongReduction`「複韻母簡化」——複韻母失去介音或韻尾，如 ㄞ→ㄚ
 
-既有的 `nasalLateralConfusion`（邊音化，ㄋ/ㄌ 混淆）跟母音鼻音化是兩件不同的事，不動它。既有的 `medialDeletion`（介音省略）也留著。
+既有的 `medialDeletion`（介音省略）留著不動。
