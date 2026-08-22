@@ -39,14 +39,14 @@ export function ageInMonthsOn(birthDateISO: string, onDateISO: string): number |
 
 /**
  * Gestational weeks counted as full term — anything at or above this gets no correction.
- * Placeholder pending therapist review: some sites treat 37 weeks as the term threshold.
+ * Not confirmed by the developer; see references/open-questions.md.
  */
 const FULL_TERM_WEEKS = 40;
 
 /**
  * Corrected age stops being applied past this point, because the catch-up window has closed and
  * subtracting further would understate the child's age.
- * Placeholder pending therapist review: sites use 2 or 3 years depending on how preterm.
+ * Not confirmed by the developer; see references/open-questions.md.
  */
 const CORRECTION_APPLIES_UNTIL_MONTHS = 24;
 
