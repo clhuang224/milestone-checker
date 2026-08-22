@@ -35,7 +35,13 @@
       }
     </div>
 
-    <router-outlet />
+    @if (activeForm(); as formKey) {
+      <app-articulation-table [caseId]="caseId()" [recordId]="r.id" />
+    } @else if (formId() === warningsTab) {
+      <app-warnings-list [triggeredRules]="triggeredRules()" />
+    } @else if (formId() === reportTab) {
+      <app-report-draft [recordId]="r.id" [generatedText]="reportText()" />
+    }
   </div>
 } @else {
   <p class="text-sm text-slate-500">找不到這筆課節紀錄。</p>

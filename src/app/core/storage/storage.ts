@@ -1,7 +1,11 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 import { ArticulationProbe, PhonologicalSummary } from '../../models/articulation-record.model';
-import { AssessmentFormDefinition, SessionRecord } from '../../models/session-record.model';
+import {
+  AssessmentFormDefinition,
+  ReportDraftRecord,
+  SessionRecord,
+} from '../../models/session-record.model';
 import { Case, RecordProfile } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
@@ -20,6 +24,7 @@ const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v5'
 const PHONOLOGICAL_SUMMARIES_KEY = 'therapist-rule-engine:phonological-summaries:v5';
 const SESSION_RECORDS_KEY = 'therapist-rule-engine:session-records:v5';
 const FORMS_KEY = 'therapist-rule-engine:assessment-forms:v5';
+const REPORTS_KEY = 'therapist-rule-engine:reports:v5';
 
 interface CasesData {
   cases: Case[];
@@ -72,6 +77,9 @@ export class Storage {
   );
   private readonly sessionRecordsData = signal<SessionRecord[]>(
     loadArray<SessionRecord>(SESSION_RECORDS_KEY),
+  );
+  private readonly reportsData = signal<ReportDraftRecord[]>(
+    loadArray<ReportDraftRecord>(REPORTS_KEY),
   );
   private readonly formsData = signal<AssessmentFormDefinition[]>(
     loadArray<AssessmentFormDefinition>(FORMS_KEY),
@@ -257,6 +265,18 @@ export class Storage {
       ARTICULATION_PROCESSES_KEY,
       JSON.stringify(this.articulationProcessesData()),
     );
+  }
+
+  reportFor(recordId: string): ReportDraftRecord | undefined {
+    return this.reportsData().find((r) => r.recordId === recordId);
+  }
+
+  saveReport(report: ReportDraftRecord): void {
+    this.reportsData.update((current) => [
+      ...current.filter((r) => r.recordId !== report.recordId),
+      report,
+    ]);
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(this.reportsData()));
   }
 
   upsertAssessmentForm(form: AssessmentFormDefinition): void {

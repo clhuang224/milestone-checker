@@ -40,7 +40,11 @@ Do not let a subagent invent clinical content either — the rule below binds th
 
 ## Scope discipline
 
-This is an experiment project for trying Claude Code + Angular. The first OpenSpec change is scoped to **language / speech / swallowing** domains only. Don't silently expand scope to other clinical domains (motor, cognition, etc.) — that belongs in a later OpenSpec change.
+This is an experiment project for trying Claude Code + Angular. Scope is bounded by **the
+assessment forms that exist now**, not by clinical domain — the old 語言／言語／吞嚥 split was
+approximate, covered only the finding items, and was never followed by articulation or
+swallowing. Adding a form for a domain the app does not have yet belongs in its own OpenSpec
+change.
 
 ## Content vs. code language
 

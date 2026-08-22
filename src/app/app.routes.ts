@@ -17,15 +17,6 @@ export const routes: Routes = [
     path: 'cases/:caseId/records/:recordId/forms/:formId',
     loadComponent: () =>
       import('./features/records/record-detail/record-detail').then((m) => m.RecordDetail),
-    children: [
-      {
-        path: '',
-        loadComponent: () =>
-          import('./features/articulation/articulation-table/articulation-table').then(
-            (m) => m.ArticulationTable,
-          ),
-      },
-    ],
   },
   {
     path: 'forms',

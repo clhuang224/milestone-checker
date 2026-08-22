@@ -8,10 +8,15 @@
       <button type="button" class="text-sky-700 hover:underline" (click)="copy()">複製</button>
     </div>
   </div>
+  @if (hasEdits()) {
+    <p class="text-xs text-amber-700 mb-2">這份草稿已經手動改過，重新產生會蓋掉。</p>
+  }
   <textarea
-    [(ngModel)]="draftText"
-    rows="6"
+    rows="8"
+    aria-label="報告草稿"
     placeholder="目前沒有觸發任何附報告範本的規則。"
     class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+    [value]="draftText()"
+    (input)="setText($any($event.target).value)"
   ></textarea>
 </section>

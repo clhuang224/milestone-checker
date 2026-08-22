@@ -38,3 +38,9 @@ export interface AssessmentFormDefinition {
   body: FormBody;
   builtin: boolean;
 }
+
+/** A report draft, stored per record so edits survive leaving the page. */
+export interface ReportDraftRecord {
+  recordId: string;
+  text: string;
+}
