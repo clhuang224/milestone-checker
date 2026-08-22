@@ -2,10 +2,10 @@
 
 ## 1. 推導核心
 
-- [ ] 1.1 `core/articulation/parse-heard.ts`——取第一個注音符號、辨識緊接的上標 `ⁿ`、解析失敗回空結果
-- [ ] 1.2 `core/articulation/derive-processes.ts`——依推導條件比對辨異徵性，回傳所有命中的歷程 id
-- [ ] 1.3 `applicableProcessIds(targetPhonemeId)`——拿目標音跟所有符號配對跑推導，得出可能出現的歷程
-- [ ] 1.4 單元測試涵蓋十條歷程的判準、一筆中多條、以及解析的邊界情況
+- [x] 1.1 `core/articulation/parse-heard.ts`——取第一個注音符號、辨識緊接的上標 `ⁿ`、解析失敗回空結果
+- [x] 1.2 `core/articulation/derive-processes.ts`——依推導條件比對辨異徵性，回傳所有命中的歷程 id
+- [x] 1.3 `applicableProcessIds(targetPhonemeId)`——拿目標音跟所有符號配對跑推導，得出可能出現的歷程
+- [x] 1.4 單元測試涵蓋十條歷程的判準、一筆中多條、以及解析的邊界情況
 
 ## 2. 資料模型
 
