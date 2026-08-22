@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 
-import { ArticulationSubstitution } from '../../models/articulation-record.model';
+import { ArticulationProbe, PhonologicalSummary } from '../../models/articulation-record.model';
 import { Assessment } from '../../models/assessment.model';
 import { AssessmentProfile, Case } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
@@ -12,12 +12,13 @@ import { Rule } from '../../models/rule.model';
  * tradeoff. Seeds only run against an empty collection, so without a bump a change to the
  * starter content would be invisible to anyone who has already opened the app.
  */
-const FINDINGS_KEY = 'therapist-rule-engine:findings:v3';
-const CASES_KEY = 'therapist-rule-engine:cases:v3';
-const RULES_KEY = 'therapist-rule-engine:rules:v3';
-const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v3';
-const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v3';
-const ASSESSMENTS_KEY = 'therapist-rule-engine:assessments:v3';
+const FINDINGS_KEY = 'therapist-rule-engine:findings:v4';
+const CASES_KEY = 'therapist-rule-engine:cases:v4';
+const RULES_KEY = 'therapist-rule-engine:rules:v4';
+const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v4';
+const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v4';
+const PHONOLOGICAL_SUMMARIES_KEY = 'therapist-rule-engine:phonological-summaries:v4';
+const ASSESSMENTS_KEY = 'therapist-rule-engine:assessments:v4';
 
 interface CasesData {
   cases: Case[];
@@ -65,10 +66,13 @@ export class Storage {
   private readonly articulationProcessesData = signal<PhonologicalProcessDefinition[]>(
     loadArray<PhonologicalProcessDefinition>(ARTICULATION_PROCESSES_KEY),
   );
-  private readonly articulationRecordsData = signal<ArticulationSubstitution[]>(
-    loadArray<ArticulationSubstitution>(ARTICULATION_RECORDS_KEY),
+  private readonly articulationRecordsData = signal<ArticulationProbe[]>(
+    loadArray<ArticulationProbe>(ARTICULATION_RECORDS_KEY),
   );
   private readonly assessmentsData = signal<Assessment[]>(loadArray<Assessment>(ASSESSMENTS_KEY));
+  private readonly summariesData = signal<PhonologicalSummary[]>(
+    loadArray<PhonologicalSummary>(PHONOLOGICAL_SUMMARIES_KEY),
+  );
 
   readonly findings = computed(() => this.findingsData());
   readonly cases = computed(() => this.casesData().cases);
@@ -77,6 +81,7 @@ export class Storage {
   readonly articulationProcesses = computed(() => this.articulationProcessesData());
   readonly articulationRecords = computed(() => this.articulationRecordsData());
   readonly assessments = computed(() => this.assessmentsData());
+  readonly phonologicalSummaries = computed(() => this.summariesData());
 
   upsertFinding(finding: FindingDefinition): void {
     this.findingsData.update((current) => [...current.filter((f) => f.id !== finding.id), finding]);
@@ -114,6 +119,11 @@ export class Storage {
 
     this.articulationRecordsData.update((current) => current.filter((r) => r.caseId !== id));
     this.persistArticulationRecords();
+
+    this.summariesData.update((current) =>
+      current.filter((s) => !assessmentIds.has(s.assessmentId)),
+    );
+    this.persistSummaries();
   }
 
   assessmentsFor(caseId: string): Assessment[] {
@@ -143,6 +153,9 @@ export class Storage {
 
     this.articulationRecordsData.update((current) => current.filter((r) => r.assessmentId !== id));
     this.persistArticulationRecords();
+
+    this.summariesData.update((current) => current.filter((s) => s.assessmentId !== id));
+    this.persistSummaries();
   }
 
   saveProfile(profile: AssessmentProfile): void {
@@ -188,40 +201,39 @@ export class Storage {
     this.articulationProcessesData.update((current) => current.filter((p) => p.id !== id));
     this.persistArticulationProcesses();
 
-    // Drop the tag from any substitution still carrying it, so the overview can't
-    // group by a process that no longer exists.
-    this.articulationRecordsData.update((current) =>
-      current.map((record) =>
-        record.processIds.includes(id)
-          ? { ...record, processIds: record.processIds.filter((p) => p !== id) }
-          : record,
-      ),
+    // Drop the process from any manual summary still naming it, so the overview can't group
+    // by a process that no longer exists. Derived summaries need no cleanup — they are
+    // recomputed from the probes and simply stop producing it.
+    this.summariesData.update((current) =>
+      current.map((summary) => ({
+        ...summary,
+        manual: summary.manual.filter((group) => group.processId !== id),
+      })),
     );
-    this.persistArticulationRecords();
+    this.persistSummaries();
   }
 
-  substitutionsFor(caseId: string): ArticulationSubstitution[] {
+  probesFor(caseId: string): ArticulationProbe[] {
     return this.articulationRecordsData().filter((r) => r.caseId === caseId);
   }
 
-  substitutionsForAssessment(assessmentId: string): ArticulationSubstitution[] {
+  probesForAssessment(assessmentId: string): ArticulationProbe[] {
     return this.articulationRecordsData().filter((r) => r.assessmentId === assessmentId);
   }
 
   /** Fills in `caseId` from the assessment, so the denormalised copy cannot drift. */
-  upsertSubstitution(substitution: ArticulationSubstitution): void {
+  upsertProbe(probe: ArticulationProbe): void {
     const caseId =
-      this.assessmentsData().find((a) => a.id === substitution.assessmentId)?.caseId ??
-      substitution.caseId;
+      this.assessmentsData().find((a) => a.id === probe.assessmentId)?.caseId ?? probe.caseId;
 
     this.articulationRecordsData.update((current) => [
-      ...current.filter((r) => r.id !== substitution.id),
-      { ...substitution, caseId },
+      ...current.filter((r) => r.id !== probe.id),
+      { ...probe, caseId },
     ]);
     this.persistArticulationRecords();
   }
 
-  removeSubstitution(id: string): void {
+  removeProbe(id: string): void {
     this.articulationRecordsData.update((current) => current.filter((r) => r.id !== id));
     this.persistArticulationRecords();
   }
@@ -243,6 +255,22 @@ export class Storage {
       ARTICULATION_PROCESSES_KEY,
       JSON.stringify(this.articulationProcessesData()),
     );
+  }
+
+  summaryFor(assessmentId: string): PhonologicalSummary | undefined {
+    return this.summariesData().find((s) => s.assessmentId === assessmentId);
+  }
+
+  saveSummary(summary: PhonologicalSummary): void {
+    this.summariesData.update((current) => [
+      ...current.filter((s) => s.assessmentId !== summary.assessmentId),
+      summary,
+    ]);
+    this.persistSummaries();
+  }
+
+  private persistSummaries(): void {
+    localStorage.setItem(PHONOLOGICAL_SUMMARIES_KEY, JSON.stringify(this.summariesData()));
   }
 
   private persistAssessments(): void {

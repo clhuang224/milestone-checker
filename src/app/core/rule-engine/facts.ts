@@ -1,8 +1,10 @@
-import { isArticulationError } from '../../features/articulation/substitution-label';
 import {
   ArticulationDiacritic,
-  ArticulationSubstitution,
+  ArticulationProbe,
+  ManualProcessGroup,
 } from '../../models/articulation-record.model';
+import { probeErrors } from '../articulation/probe-errors';
+import { processIdsForTarget } from '../articulation/summary';
 import { Assessment } from '../../models/assessment.model';
 import { AssessmentProfile, Case } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
@@ -56,13 +58,21 @@ export interface RuleFacts {
   [findingId: string]: unknown;
 }
 
-function errorFacts(substitutions: ArticulationSubstitution[]): ArticulationErrorFact[] {
-  return substitutions.filter(isArticulationError).map((substitution) => ({
-    targetPhonemeId: substitution.targetPhonemeId,
-    targetCategory: findZhuyin(substitution.targetPhonemeId)?.category,
-    errorPhonemeId: substitution.errorPhonemeId,
-    diacritic: substitution.errorDiacritic,
-    processIds: substitution.processIds,
+/**
+ * Process ids come from the summary in force, not from the derivation directly — a therapist
+ * who overrode the grouping expects their rules to fire on what they wrote, not on what the
+ * app would have concluded.
+ */
+function errorFacts(
+  probes: ArticulationProbe[],
+  groups: ManualProcessGroup[],
+): ArticulationErrorFact[] {
+  return probeErrors(probes).map((error) => ({
+    targetPhonemeId: error.targetPhonemeId,
+    targetCategory: findZhuyin(error.targetPhonemeId)?.category,
+    errorPhonemeId: error.sound.symbolId,
+    diacritic: error.sound.diacritic,
+    processIds: processIdsForTarget(groups, error.targetPhonemeId),
   }));
 }
 
@@ -77,7 +87,8 @@ export function buildFacts(
   caseRecord: Case,
   assessment: Assessment,
   profile: AssessmentProfile,
-  substitutions: ArticulationSubstitution[],
+  probes: ArticulationProbe[],
+  processGroups: ManualProcessGroup[],
 ): RuleFacts {
   // The assessment date, never today: a report written a fortnight later must not age the case
   // past a threshold it was under when the data was actually collected.
@@ -92,6 +103,6 @@ export function buildFacts(
         ? correctedAgeInMonthsOn(birthDateISO, caseRecord.gestationalWeeks, onDateISO)
         : undefined,
     },
-    articulation: { errors: errorFacts(substitutions) },
+    articulation: { errors: errorFacts(probes, processGroups) },
   };
 }

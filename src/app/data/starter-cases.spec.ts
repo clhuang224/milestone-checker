@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { derivedProcessGroups } from '../core/articulation/summary';
 import { buildFacts } from '../core/rule-engine/facts';
 import { evaluateCondition } from '../core/rule-engine/json-logic';
 import { findZhuyin } from './zhuyin-inventory';
@@ -10,64 +11,64 @@ import { starterCaseSeed } from './starter-cases';
 const TODAY = '2026-08-19';
 const seed = starterCaseSeed(TODAY);
 
+function factsFor(current = seed) {
+  return buildFacts(
+    current.caseRecord,
+    current.assessment,
+    current.profile,
+    current.probes,
+    derivedProcessGroups(current.probes),
+  );
+}
+
 describe('starter case seed', () => {
   it('derives a birth date that reads as 8 years old on the seed date', () => {
     expect(seed.caseRecord.birthDateISO).toBe('2018-08-19');
-
-    const facts = buildFacts(seed.caseRecord, seed.assessment, seed.profile, seed.substitutions);
-    expect(facts.case.ageInMonths).toBe(96);
+    expect(factsFor().case.ageInMonths).toBe(96);
   });
 
   it('keeps the derived age stable whenever the seed runs', () => {
-    const later = starterCaseSeed('2031-01-05');
-    const facts = buildFacts(
-      later.caseRecord,
-      later.assessment,
-      later.profile,
-      later.substitutions,
-    );
-
-    expect(facts.case.ageInMonths).toBe(96);
+    expect(factsFor(starterCaseSeed('2031-01-05')).case.ageInMonths).toBe(96);
   });
 
-  it('has unique substitution ids all belonging to the demo case', () => {
-    const ids = seed.substitutions.map((s) => s.id);
+  it('has unique probe ids all belonging to the demo case', () => {
+    const ids = seed.probes.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
 
-    for (const substitution of seed.substitutions) {
-      expect(substitution.caseId).toBe(seed.caseRecord.id);
+    for (const probe of seed.probes) {
+      expect(probe.caseId).toBe(seed.caseRecord.id);
+      expect(probe.assessmentId).toBe(seed.assessment.id);
     }
   });
 
-  it('only references zhuyin symbols that exist', () => {
-    for (const substitution of seed.substitutions) {
-      expect(findZhuyin(substitution.targetPhonemeId)).toBeDefined();
-      if (substitution.errorPhonemeId) {
-        expect(findZhuyin(substitution.errorPhonemeId)).toBeDefined();
-      }
+  it('only targets zhuyin symbols that exist', () => {
+    for (const probe of seed.probes) {
+      expect(findZhuyin(probe.targetPhonemeId), probe.targetPhonemeId).toBeDefined();
     }
   });
 
-  it('only references phonological processes that exist', () => {
-    const processIds = new Set(STARTER_ARTICULATION_PROCESSES.map((p) => p.id));
+  it('records at least one error for every probe', () => {
+    expect(factsFor().articulation.errors.length).toBeGreaterThanOrEqual(seed.probes.length);
+  });
 
-    for (const substitution of seed.substitutions) {
-      for (const processId of substitution.processIds) {
-        expect(processIds.has(processId)).toBe(true);
-      }
+  it('derives only processes that exist in the catalogue', () => {
+    const known = new Set(STARTER_ARTICULATION_PROCESSES.map((p) => p.id));
+
+    for (const group of derivedProcessGroups(seed.probes)) {
+      expect(known.has(group.processId), group.processId).toBe(true);
     }
   });
 
-  it('records every pair as an error, so none of them read as a ✓', () => {
-    const facts = buildFacts(seed.caseRecord, seed.assessment, seed.profile, seed.substitutions);
+  it('derives the processes the demo exists to show', () => {
+    const derived = derivedProcessGroups(seed.probes).map((g) => g.processId);
 
-    expect(facts.articulation.errors).toHaveLength(seed.substitutions.length);
+    expect(derived).toContain('stopping');
+    expect(derived).toContain('vowelNasalization');
   });
 
   it('triggers the articulation therapy referral rule', () => {
     const rule = STARTER_RULES.find((r) => r.id === 'rule-articulation-therapy-referral');
-    const facts = buildFacts(seed.caseRecord, seed.assessment, seed.profile, seed.substitutions);
 
-    expect(evaluateCondition(rule!.condition, facts)).toBe(true);
+    expect(evaluateCondition(rule!.condition, factsFor())).toBe(true);
   });
 });

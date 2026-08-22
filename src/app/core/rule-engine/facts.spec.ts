@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ArticulationSubstitution } from '../../models/articulation-record.model';
+import { ArticulationProbe, ManualProcessGroup } from '../../models/articulation-record.model';
 import { Assessment } from '../../models/assessment.model';
 import { AssessmentProfile, Case } from '../../models/case.model';
 import { buildFacts } from './facts';
@@ -19,122 +19,106 @@ function assessmentOn(dateISO = TODAY): Assessment {
   return { id: 'assessment-1', caseId: 'case-1', assessedOnISODate: dateISO };
 }
 
-function substitution(overrides: Partial<ArticulationSubstitution> = {}): ArticulationSubstitution {
+function probe(targetPhonemeId: string, heard: string): ArticulationProbe {
   return {
-    id: 'sub-1',
+    id: `probe-${targetPhonemeId}`,
     caseId: 'case-1',
     assessmentId: 'assessment-1',
-    targetPhonemeId: 'zh',
-    processIds: [],
-    examples: [],
+    targetPhonemeId,
+    items: [{ word: '詞', heard }],
     updatedOnISODate: TODAY,
-    ...overrides,
   };
+}
+
+function facts(
+  caseOverrides: Partial<Case> = {},
+  probes: ArticulationProbe[] = [],
+  groups: ManualProcessGroup[] = [],
+  dateISO = TODAY,
+  values: AssessmentProfile['values'] = {},
+) {
+  return buildFacts(
+    caseRecord(caseOverrides),
+    assessmentOn(dateISO),
+    profile(values),
+    probes,
+    groups,
+  );
 }
 
 describe('buildFacts', () => {
   it('keeps finding values flat at the top level so existing rules still resolve', () => {
-    const facts = buildFacts(
-      caseRecord(),
-      assessmentOn(),
-      profile({ drooling: true, oralMotorScore: 35 }),
-      [],
-    );
+    const result = facts({}, [], [], TODAY, { drooling: true, oralMotorScore: 35 });
 
-    expect(facts['drooling']).toBe(true);
-    expect(facts['oralMotorScore']).toBe(35);
+    expect(result['drooling']).toBe(true);
+    expect(result['oralMotorScore']).toBe(35);
   });
 
   it('ages the case at the assessment date, not at the date the report is written', () => {
-    const born = caseRecord({ birthDateISO: '2022-09-05' });
-
     // Assessed one day before the fourth birthday, written up a fortnight later.
-    const atAssessment = buildFacts(born, assessmentOn('2026-09-04'), profile(), []);
-    const ifItUsedToday = buildFacts(born, assessmentOn('2026-09-19'), profile(), []);
+    const born = { birthDateISO: '2022-09-05' };
 
-    expect(atAssessment.case.ageInMonths).toBe(47);
-    expect(ifItUsedToday.case.ageInMonths).toBe(48);
+    expect(facts(born, [], [], '2026-09-04').case.ageInMonths).toBe(47);
+    expect(facts(born, [], [], '2026-09-19').case.ageInMonths).toBe(48);
   });
 
   it('exposes corrected age alongside chronological for a preterm case', () => {
-    const preterm = caseRecord({ birthDateISO: '2025-02-17', gestationalWeeks: 32 });
-    const facts = buildFacts(preterm, assessmentOn('2026-08-17'), profile(), []);
+    const result = facts({ birthDateISO: '2025-02-17', gestationalWeeks: 32 });
 
-    expect(facts.case.ageInMonths).toBe(18);
-    expect(facts.case.correctedAgeInMonths).toBe(16);
+    expect(result.case.ageInMonths).toBe(18);
+    expect(result.case.correctedAgeInMonths).toBe(16);
   });
 
   it('reports corrected age equal to chronological for a term case', () => {
-    const term = caseRecord({ birthDateISO: '2025-02-17' });
-    const facts = buildFacts(term, assessmentOn('2026-08-17'), profile(), []);
+    const result = facts({ birthDateISO: '2025-02-17' });
 
-    expect(facts.case.correctedAgeInMonths).toBe(facts.case.ageInMonths);
-  });
-
-  it('derives the age from the birth date', () => {
-    const facts = buildFacts(
-      caseRecord({ birthDateISO: '2018-08-17' }),
-      assessmentOn(),
-      profile(),
-      [],
-    );
-
-    expect(facts.case.ageInMonths).toBe(96);
+    expect(result.case.correctedAgeInMonths).toBe(result.case.ageInMonths);
   });
 
   it('leaves the age undefined when there is no birth date', () => {
-    expect(
-      buildFacts(caseRecord(), assessmentOn(), profile(), []).case.ageInMonths,
-    ).toBeUndefined();
+    expect(facts().case.ageInMonths).toBeUndefined();
   });
 
   it('leaves the age undefined when the birth date is not a real date', () => {
-    const facts = buildFacts(
-      caseRecord({ birthDateISO: '2018-02-31' }),
-      assessmentOn(),
-      profile(),
-      [],
-    );
-
-    expect(facts.case.ageInMonths).toBeUndefined();
+    expect(facts({ birthDateISO: '2018-02-31' }).case.ageInMonths).toBeUndefined();
   });
 
-  it('collects substituted and diacritic-marked sounds as errors', () => {
-    const facts = buildFacts(caseRecord(), assessmentOn(), profile(), [
-      substitution({ id: 'a', targetPhonemeId: 'zh', errorPhonemeId: 'd' }),
-      substitution({ id: 'b', targetPhonemeId: 'i', errorDiacritic: 'nasalized' }),
-    ]);
+  it('collects recorded errors, including diacritic-only ones', () => {
+    const result = facts({}, [probe('zh', 'ㄉ'), probe('i', 'ㄧⁿ')]);
 
-    expect(facts.articulation.errors).toHaveLength(2);
-    expect(facts.articulation.errors[1]).toMatchObject({
+    expect(result.articulation.errors).toHaveLength(2);
+    expect(result.articulation.errors[1]).toMatchObject({
       targetPhonemeId: 'i',
       diacritic: 'nasalized',
     });
   });
 
-  it('leaves correct sounds out of the error list', () => {
-    const facts = buildFacts(caseRecord(), assessmentOn(), profile(), [
-      substitution({ id: 'ok', targetPhonemeId: 'b' }),
-    ]);
-
-    expect(facts.articulation.errors).toEqual([]);
+  it('leaves correctly produced sounds out of the error list', () => {
+    expect(facts({}, [probe('b', '')]).articulation.errors).toEqual([]);
   });
 
   it('tags each error with the target sound category', () => {
-    const facts = buildFacts(caseRecord(), assessmentOn(), profile(), [
-      substitution({ id: 'a', targetPhonemeId: 'zh', errorPhonemeId: 'd' }),
-      substitution({ id: 'b', targetPhonemeId: 'i', errorDiacritic: 'nasalized' }),
-    ]);
+    const result = facts({}, [probe('zh', 'ㄉ'), probe('i', 'ㄧⁿ')]);
 
-    expect(facts.articulation.errors[0].targetCategory).toBe('initial');
-    expect(facts.articulation.errors[1].targetCategory).toBe('medial');
+    expect(result.articulation.errors[0].targetCategory).toBe('initial');
+    expect(result.articulation.errors[1].targetCategory).toBe('medial');
   });
 
-  it('carries process tags through for applicability conditions', () => {
-    const facts = buildFacts(caseRecord(), assessmentOn(), profile(), [
-      substitution({ errorPhonemeId: 'd', processIds: ['stopping', 'backing'] }),
-    ]);
+  it('takes process ids from the summary in force, not from the derivation', () => {
+    // The therapist overrode the grouping; rules must fire on what they wrote.
+    const groups: ManualProcessGroup[] = [
+      { processId: 'somethingTheyChose', targetPhonemeIds: ['s'] },
+    ];
 
-    expect(facts.articulation.errors[0].processIds).toEqual(['stopping', 'backing']);
+    const result = facts({}, [probe('s', 'ㄉ')], groups);
+
+    expect(result.articulation.errors[0].processIds).toEqual(['somethingTheyChose']);
+  });
+
+  it('keeps the error itself even when no process is attributed to it', () => {
+    const result = facts({}, [probe('s', 'ㄉ')], []);
+
+    expect(result.articulation.errors).toHaveLength(1);
+    expect(result.articulation.errors[0].processIds).toEqual([]);
   });
 });

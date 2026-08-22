@@ -1,4 +1,4 @@
-import { ArticulationSubstitution } from '../models/articulation-record.model';
+import { ArticulationProbe, ProbeItem } from '../models/articulation-record.model';
 import { Assessment } from '../models/assessment.model';
 import { AssessmentProfile, Case } from '../models/case.model';
 
@@ -6,7 +6,7 @@ export interface StarterCaseSeed {
   caseRecord: Case;
   assessment: Assessment;
   profile: AssessmentProfile;
-  substitutions: ArticulationSubstitution[];
+  probes: ArticulationProbe[];
 }
 
 const CASE_ID = 'demo-case-xiaoqie';
@@ -18,27 +18,32 @@ function yearsBefore(onDateISO: string, years: number): string {
   return `${year - years}${rest}`;
 }
 
+function items(...recorded: [word: string, heard: string][]): ProbeItem[] {
+  const filled = recorded.map(([word, heard]) => ({ word, heard }));
+  while (filled.length < 3) {
+    filled.push({ word: '', heard: '' });
+  }
+  return filled;
+}
+
 /**
  * A demo case, so a first-time user sees warnings and a report draft instead of empty lists.
  * Rewritten and simplified sample content — not a real case.
  *
  * The birth date is derived from `onDateISO` rather than hard-coded: a fixed date would make the
  * demo drift older every year, until 「8 歲」 no longer matches what the app shows.
+ *
+ * No phonological summary is seeded — the processes derive from these probes, which is the
+ * point of the demo.
  */
 export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
-  const pair = (
-    id: string,
-    targetPhonemeId: string,
-    rest: Partial<ArticulationSubstitution>,
-  ): ArticulationSubstitution => ({
-    id: `${CASE_ID}-${id}`,
+  const probe = (targetPhonemeId: string, probeItems: ProbeItem[]): ArticulationProbe => ({
+    id: `${CASE_ID}-${targetPhonemeId}`,
     caseId: CASE_ID,
     assessmentId: ASSESSMENT_ID,
     targetPhonemeId,
-    processIds: [],
-    examples: [],
+    items: probeItems,
     updatedOnISODate: onDateISO,
-    ...rest,
   });
 
   return {
@@ -51,43 +56,13 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
     },
     assessment: { id: ASSESSMENT_ID, caseId: CASE_ID, assessedOnISODate: onDateISO },
     profile: { assessmentId: ASSESSMENT_ID, values: {}, updatedOnISODate: onDateISO },
-    substitutions: [
-      pair('zh', 'zh', {
-        errorPhonemeId: 'd',
-        errorDiacritic: 'nasalized',
-        processIds: ['stopping', 'vowelNasalization'],
-        examples: [{ word: '蜘蛛', note: 'ㄉㄭⁿ ㄉㄨⁿ' }],
-      }),
-      pair('ch-nasal', 'ch', {
-        errorPhonemeId: 'k',
-        errorDiacritic: 'nasalized',
-        processIds: ['stopping', 'backing', 'vowelNasalization'],
-        examples: [{ word: '吃飯', note: 'ㄎㄭⁿ 飯' }],
-      }),
-      // Same pair without the nasalization — the mark comes and goes between words.
-      pair('ch', 'ch', {
-        errorPhonemeId: 'k',
-        processIds: ['stopping', 'backing'],
-        examples: [{ word: '吃菜', note: 'ㄎㄭ ㄎㄚˋ' }],
-      }),
-      pair('c', 'c', {
-        errorPhonemeId: 'k',
-        processIds: ['stopping', 'backing'],
-        examples: [{ word: '菜', note: 'ㄎㄚˋ' }],
-      }),
-      pair('ai', 'ai', {
-        errorPhonemeId: 'a',
-        processIds: ['diphthongReduction'],
-        examples: [{ word: '菜', note: 'ㄎㄚˋ' }],
-      }),
-      pair('i', 'i', {
-        errorDiacritic: 'nasalized',
-        processIds: ['vowelNasalization'],
-      }),
-      pair('u', 'u', {
-        errorDiacritic: 'nasalized',
-        processIds: ['vowelNasalization'],
-      }),
+    probes: [
+      probe('zh', items(['蜘蛛', 'ㄉㄭⁿ'])),
+      probe('ch', items(['吃飯', 'ㄎㄭⁿ'], ['吃菜', 'ㄎㄭ'])),
+      probe('c', items(['菜', 'ㄎㄚˋ'])),
+      probe('ai', items(['菜', 'ㄚ'])),
+      probe('i', items(['衣', 'ㄧⁿ'])),
+      probe('u', items(['烏', 'ㄨⁿ'])),
     ],
   };
 }

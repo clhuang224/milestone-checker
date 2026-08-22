@@ -35,7 +35,7 @@ export class App {
       this.storage.upsertCase(seed.caseRecord);
       this.storage.upsertAssessment(seed.assessment);
       this.storage.saveProfile(seed.profile);
-      seed.substitutions.forEach((substitution) => this.storage.upsertSubstitution(substitution));
+      seed.probes.forEach((probe) => this.storage.upsertProbe(probe));
     }
   }
 }

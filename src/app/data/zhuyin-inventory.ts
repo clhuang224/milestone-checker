@@ -320,6 +320,22 @@ export const PLACE_ORDER: Place[] = [
   'velar',
 ];
 
+/**
+ * The initials laid out as the standard bopomofo chart: each inner array is one column.
+ *
+ * The arrangement is clinically meaningful, not decorative — a column shares a place of
+ * articulation, and reading left to right walks the place from the front of the mouth to the
+ * back, matching PLACE_ORDER.
+ */
+export const INITIAL_COLUMNS: string[][] = [
+  ['b', 'p', 'm', 'f'],
+  ['d', 't', 'n', 'l'],
+  ['g', 'k', 'h'],
+  ['j', 'q', 'x'],
+  ['zh', 'ch', 'sh', 'r'],
+  ['z', 'c', 's'],
+];
+
 export const PLACE_LABELS: Record<Place, string> = {
   bilabial: '雙唇',
   labiodental: '唇齒',

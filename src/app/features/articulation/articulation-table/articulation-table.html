@@ -9,214 +9,85 @@
         <p class="text-xs text-slate-500 mt-0.5">記錄於 {{ a.assessedOnISODate }} 這次評估</p>
       }
       <p class="text-xs text-slate-500 mt-0.5">
-        每個注音底下可以記錄多筆「正確音→錯誤音」;錯誤音留空代表這個音構得正確。
+        每個音三組「目標詞 ＋ 錯音」。錯音照聽到的寫（例如「ㄆㄠ」），構音正確就留白。
       </p>
     </div>
 
-    @for (section of sections; track section.category) {
+    @for (section of sections(); track section.label) {
       <section class="bg-white rounded-lg border border-slate-200 p-4">
-        <h3 class="font-medium text-slate-800 mb-3">{{ section.label }}</h3>
-        <div class="divide-y divide-slate-100">
-          @for (symbol of section.symbols; track symbol.id) {
-            <div class="py-2">
-              <div class="flex items-start gap-3">
-                <div class="w-24 shrink-0">
-                  @if (symbol.vowel?.apical) {
-                    <!-- ɿ/ʅ are unfamiliar glyphs; the label explains which 空韻 on hover
-                         rather than spending a line of the table on it. -->
-                    <span
-                      class="text-lg text-slate-800 underline decoration-dotted cursor-help"
-                      [title]="symbol.label"
-                      >{{ symbol.symbol }}</span
+        <h3 class="font-medium text-slate-800">{{ section.label }}</h3>
+        @if (section.explainsColumns) {
+          <p class="text-xs text-slate-500 mt-0.5 mb-3">
+            同一欄是同一個構音部位，由左至右部位由前到後。
+          </p>
+        } @else {
+          <div class="mb-3"></div>
+        }
+
+        <!-- The columns must stay side by side: reading left to right is what carries the
+             place ordering, so wrapping ㄍ under ㄅ would destroy the meaning. If the viewport
+             really is too narrow, this box scrolls rather than the columns rearranging. -->
+        <div class="overflow-x-auto">
+          <div class="flex gap-x-4 gap-y-4" [class.flex-wrap]="!section.explainsColumns">
+            @for (column of section.columns; track $index) {
+              <div class="flex flex-col gap-2" [class.flex-wrap]="!section.explainsColumns">
+                @for (cell of column; track cell.symbol.id) {
+                  <div class="flex items-start gap-1.5">
+                    <div
+                      class="shrink-0 pt-0.5"
+                      [class]="section.explainsColumns ? 'w-10 text-center' : 'w-28'"
                     >
-                  } @else {
-                    <span class="text-lg text-slate-800">{{ symbol.symbol }}</span>
-                    @if (symbol.label) {
-                      <span class="ml-1 text-xs text-slate-500">{{ symbol.label }}</span>
-                    }
-                  }
-                  @if (symbol.features) {
-                    <p class="text-xs text-slate-400">{{ featureLabel(symbol) }}</p>
-                  }
-                </div>
-
-                <div class="grow space-y-1.5">
-                  @for (sub of substitutionsFor(symbol.id); track sub.id) {
-                    <div class="flex items-start justify-between gap-3 text-sm">
-                      <div>
-                        <span class="font-medium text-slate-800">{{ label(sub) }}</span>
-                        @for (name of processNames(sub); track name) {
-                          <span class="ml-1.5 text-xs bg-sky-50 text-sky-800 rounded px-1.5 py-0.5">
-                            {{ name }}
-                          </span>
-                        }
-                        @if (sub.examples.length > 0) {
-                          <p class="text-xs text-slate-500 mt-0.5">
-                            @for (example of sub.examples; track $index) {
-                              <span class="mr-2">{{ exampleLabel(example) }}</span>
-                            }
-                          </p>
-                        }
-                      </div>
-                      <div class="flex gap-2 shrink-0">
-                        <button
-                          type="button"
-                          class="text-sky-700 hover:underline"
-                          (click)="startEdit(sub)"
-                        >
-                          編輯
-                        </button>
-                        <button
-                          type="button"
-                          class="text-red-600 hover:underline"
-                          (click)="remove(sub)"
-                        >
-                          刪除
-                        </button>
-                      </div>
-                    </div>
-                  }
-
-                  <button
-                    type="button"
-                    class="text-sm text-sky-700 hover:underline"
-                    (click)="startAdd(symbol)"
-                  >
-                    + 新增音對
-                  </button>
-                </div>
-              </div>
-
-              @if (draft(); as d) {
-                @if (d.targetPhonemeId === symbol.id) {
-                  <div class="mt-2 ml-24 border border-sky-200 rounded p-3 space-y-3">
-                    <div class="flex items-center gap-2 text-sm">
-                      <span class="text-slate-700">{{ symbol.symbol }} →</span>
-                      <!-- Each option owns its own [selected]: binding [value] on the select
-                           runs before the @for options exist, leaving the box blank on edit. -->
-                      <select
-                        class="border border-slate-300 rounded px-2 py-1"
-                        (change)="setErrorPhoneme($any($event.target).value)"
+                      <!-- In the initials grid the features live in the tooltip: spelling them
+                           out under every symbol makes the cell too wide for six columns to fit.
+                           The other sections have the room, and a bare tone mark is unreadable
+                           without its name. -->
+                      <span
+                        class="text-lg text-slate-800"
+                        [class]="
+                          section.explainsColumns && (cell.symbol.features || cell.symbol.label)
+                            ? 'underline decoration-dotted cursor-help'
+                            : ''
+                        "
+                        [title]="cell.symbol.label || featureLabel(cell.symbol)"
+                        >{{ cell.symbol.symbol }}</span
                       >
-                        <option value="" [selected]="!d.errorPhonemeId">（無替代音）</option>
-                        @for (group of options; track group.category) {
-                          <optgroup [label]="group.label">
-                            @for (option of group.symbols; track option.id) {
-                              <option
-                                [value]="option.id"
-                                [selected]="option.id === d.errorPhonemeId"
-                              >
-                                {{ option.symbol }}{{ option.label ? ' ' + option.label : '' }}
-                              </option>
-                            }
-                          </optgroup>
-                        }
-                      </select>
-
-                      <label class="flex items-center gap-1.5 text-slate-700">
-                        <input
-                          type="checkbox"
-                          class="h-4 w-4"
-                          [checked]="d.errorDiacritic === 'nasalized'"
-                          (change)="setNasalized($any($event.target).checked)"
-                        />
-                        鼻音化
-                      </label>
-
-                      <span class="text-slate-500">＝ {{ draftLabel() }}</span>
+                      @if (!section.explainsColumns && cell.symbol.label) {
+                        <span class="ml-1 text-xs text-slate-500">{{ cell.symbol.label }}</span>
+                      }
                     </div>
 
-                    <div>
-                      <p class="text-sm text-slate-700 mb-1">音韻歷程</p>
-                      <div class="flex flex-wrap gap-x-4 gap-y-1">
-                        @for (process of processes(); track process.id) {
-                          <label class="flex items-center gap-1.5 text-sm text-slate-700">
-                            <input
-                              type="checkbox"
-                              class="h-4 w-4"
-                              [checked]="d.processIds.includes(process.id)"
-                              (change)="toggleProcess(process.id)"
-                            />
-                            {{ process.name }}
-                          </label>
-                        } @empty {
-                          <span class="text-sm text-slate-500">
-                            音韻歷程清單是空的，可以到「音韻歷程」頁面新增。
-                          </span>
-                        }
-                      </div>
-                    </div>
-
-                    <div>
-                      <p class="text-sm text-slate-700 mb-1">範例字詞</p>
-                      @for (example of d.examples; track $index) {
-                        <div class="flex items-center gap-2 text-sm text-slate-700">
-                          <span>
-                            {{ example.word }}
-                            @if (example.note) {
-                              <span class="text-slate-500">({{ example.note }})</span>
-                            }
-                          </span>
-                          <button
-                            type="button"
-                            class="text-red-600 hover:underline text-xs"
-                            (click)="removeExample($index)"
-                          >
-                            移除
-                          </button>
+                    <div class="flex flex-col gap-1">
+                      @for (item of cell.items; track $index) {
+                        <div class="flex gap-1">
+                          <input
+                            type="text"
+                            placeholder="詞"
+                            aria-label="目標詞"
+                            class="w-12 border border-slate-300 rounded px-1 py-0.5 text-sm"
+                            [value]="item.word"
+                            (change)="setWord(cell.symbol.id, $index, $any($event.target).value)"
+                          />
+                          <input
+                            type="text"
+                            placeholder="錯音"
+                            aria-label="錯音"
+                            class="w-16 border border-slate-300 rounded px-1 py-0.5 text-sm"
+                            [value]="item.heard"
+                            (change)="setHeard(cell.symbol.id, $index, $any($event.target).value)"
+                          />
                         </div>
                       }
-                      <div class="flex items-center gap-2 mt-1">
-                        <input
-                          type="text"
-                          placeholder="字詞，例如「包」"
-                          class="w-32 border border-slate-300 rounded px-2 py-1 text-sm"
-                          [value]="draftWord()"
-                          (input)="draftWord.set($any($event.target).value)"
-                        />
-                        <input
-                          type="text"
-                          placeholder="實際聽到，例如「ㄆㄠ」"
-                          class="w-40 border border-slate-300 rounded px-2 py-1 text-sm"
-                          [value]="draftNote()"
-                          (input)="draftNote.set($any($event.target).value)"
-                        />
-                        <button
-                          type="button"
-                          class="text-sm text-sky-700 hover:underline"
-                          (click)="addExample()"
-                        >
-                          加入
-                        </button>
-                      </div>
-                    </div>
-
-                    <div class="flex gap-2 text-sm">
-                      <button
-                        type="button"
-                        class="bg-sky-600 text-white font-medium rounded px-3 py-1.5 hover:bg-sky-700"
-                        (click)="save()"
-                      >
-                        儲存
-                      </button>
-                      <button
-                        type="button"
-                        class="border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
-                        (click)="cancel()"
-                      >
-                        取消
-                      </button>
                     </div>
                   </div>
                 }
-              }
-            </div>
-          }
+              </div>
+            }
+          </div>
         </div>
       </section>
     }
 
-    <app-process-overview [substitutions]="substitutions()" [processes]="processes()" />
+    <app-process-summary [assessmentId]="assessmentId()" [probes]="probes()" />
   </div>
 } @else {
   <p class="text-sm text-slate-500">找不到這個個案。</p>

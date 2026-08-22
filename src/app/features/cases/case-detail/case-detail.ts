@@ -7,6 +7,7 @@ import {
   formatAgeInMonths,
   todayISO,
 } from '../../../core/age';
+import { effectiveProcessGroups } from '../../../core/articulation/summary';
 import { buildFacts } from '../../../core/rule-engine/facts';
 import { evaluateRules } from '../../../core/rule-engine/json-logic';
 import { buildReportDraft } from '../../../core/rule-engine/report-draft';
@@ -66,7 +67,11 @@ export class CaseDetail {
         caseRecord,
         assessment,
         { assessmentId: assessment.id, values: this.values(), updatedOnISODate: todayISO() },
-        this.storage.substitutionsForAssessment(assessment.id),
+        this.storage.probesForAssessment(assessment.id),
+        effectiveProcessGroups(
+          this.storage.probesForAssessment(assessment.id),
+          this.storage.summaryFor(assessment.id),
+        ),
       ),
     );
   });
