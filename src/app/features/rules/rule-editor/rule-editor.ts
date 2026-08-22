@@ -36,6 +36,19 @@ export class RuleEditor {
     children: [],
   });
 
+  /**
+   * Placeholders buildReportDraft() substitutes. They live here rather than in the template because
+   * Angular reads `{{` as interpolation wherever it appears, HTML entities included.
+   */
+  readonly reportPlaceholders = [
+    { token: '{{case.label}}', meaning: '個案的暱稱／代號' },
+    { token: '{{assessment.date}}', meaning: '課節日期' },
+    {
+      token: '{{value:欄位ID}}',
+      meaning: '該項目在這次課節記錄的數值，例如 {{value:oralMotorScore}}',
+    },
+  ];
+
   readonly canSave = computed(() => this.name().trim() !== '' && this.message().trim() !== '');
 
   constructor() {

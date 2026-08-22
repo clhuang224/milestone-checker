@@ -59,8 +59,7 @@
 
   <div>
     <label for="rule-report-template" class="block text-sm text-slate-600 mb-1"
-      >報告範本片段（選填，可用 case.label 代表個案暱稱、value:欄位ID 代表該項目數值，例如
-      value:oralMotorScore）</label
+      >報告範本片段（選填）</label
     >
     <textarea
       id="rule-report-template"
@@ -69,6 +68,15 @@
       rows="3"
       class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
     ></textarea>
+    <p class="text-xs text-slate-500 mt-1">可代入（大括號要寫兩層）：</p>
+    <ul class="text-xs text-slate-500 mt-1 space-y-0.5">
+      @for (placeholder of reportPlaceholders; track placeholder.token) {
+        <li>
+          <code class="bg-slate-100 px-1 rounded">{{ placeholder.token }}</code>
+          — {{ placeholder.meaning }}
+        </li>
+      }
+    </ul>
   </div>
 
   <div>
