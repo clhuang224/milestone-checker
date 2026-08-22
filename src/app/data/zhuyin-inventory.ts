@@ -305,27 +305,12 @@ export const ZHUYIN_CATEGORY_LABELS: Record<ZhuyinCategory, string> = {
 export const ZHUYIN_CATEGORY_ORDER: ZhuyinCategory[] = ['initial', 'medial', 'final', 'tone'];
 
 /**
- * Places of articulation from front of the mouth to back.
- *
- * This ordering is what makes 前置化 and 後置化 decidable: a substitution moves earlier in this
- * list or later in it. Reviewed by the user; see references/taiwan-mandarin-consonants.md.
- */
-export const PLACE_ORDER: Place[] = [
-  'bilabial',
-  'labiodental',
-  'dentalAlveolar',
-  'alveolar',
-  'retroflex',
-  'alveolopalatal',
-  'velar',
-];
-
-/**
  * The initials laid out as the standard bopomofo chart: each inner array is one column.
  *
  * The arrangement is clinically meaningful, not decorative — a column shares a place of
  * articulation, and reading left to right walks the place from the front of the mouth to the
- * back, matching PLACE_ORDER.
+ * back. This is the standard bopomofo chart, used here for legibility only; it is deliberately
+ * NOT used to decide 前置化/後置化. See references/taiwan-mandarin-consonants.md.
  */
 export const INITIAL_COLUMNS: string[][] = [
   ['b', 'p', 'm', 'f'],

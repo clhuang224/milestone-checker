@@ -33,16 +33,13 @@ describe('parseHeard', () => {
 });
 
 describe('deriveProcessIds', () => {
-  it('reads a place shift towards the back as 後置化', () => {
-    expect(from('d', 'ㄍㄜ')).toEqual(['backing']);
-  });
-
-  it('reads a place shift towards the front as 前置化', () => {
-    expect(from('g', 'ㄉㄜ')).toEqual(['fronting']);
-  });
-
-  it('treats ㄓ→ㄗ as fronting rather than a category of its own', () => {
-    expect(from('zh', 'ㄗ')).toContain('fronting');
+  it('does not derive a place process from a place change', () => {
+    // No source derives 前置化/後置化 from a place ordering — they are enumerated
+    // target→error patterns, and the Taiwanese literature warns that widening 前置化 to any
+    // forward movement distorts how often it appears. Manual tagging only.
+    expect(from('d', 'ㄍㄜ')).toEqual([]);
+    expect(from('g', 'ㄉㄜ')).toEqual([]);
+    expect(from('zh', 'ㄗ')).toEqual([]);
   });
 
   it('reads loss of aspiration', () => {
@@ -55,9 +52,10 @@ describe('deriveProcessIds', () => {
     expect(from('j', 'ㄒ')).toContain('fricativization');
   });
 
-  it('returns every process a single error demonstrates', () => {
-    // ㄙ→ㄉ moves the place back and changes the manner; both count.
-    expect(from('s', 'ㄉ')).toEqual(['backing', 'stopping']);
+  it('reads ㄙ→ㄉ as stopping alone, with no place process attached', () => {
+    // The strongest Taiwanese source lists 後置化's error sounds as ㄍㄎㄏㄐㄑㄒ only — ㄉ is not
+    // among them — and gives ㄙ→ㄉ as a plain example of 塞音化.
+    expect(from('s', 'ㄉ')).toEqual(['stopping']);
   });
 
   it('reads a nasal coda dropping', () => {
@@ -91,6 +89,8 @@ describe('deriveProcessIds', () => {
     );
 
     expect(everything).not.toContain('medialDeletion');
+    expect(everything).not.toContain('fronting');
+    expect(everything).not.toContain('backing');
   });
 });
 
@@ -111,14 +111,11 @@ describe('applicableProcessIds', () => {
     expect(applicableProcessIds('p')).toContain('deaspiration');
   });
 
-  it('offers only fronting to the backmost place', () => {
-    expect(applicableProcessIds('g')).toContain('fronting');
-    expect(applicableProcessIds('g')).not.toContain('backing');
-  });
-
-  it('offers only backing to the frontmost place', () => {
-    expect(applicableProcessIds('b')).toContain('backing');
-    expect(applicableProcessIds('b')).not.toContain('fronting');
+  it('never offers the place processes, which are not derivable', () => {
+    for (const id of ['b', 'g', 's', 'zh']) {
+      expect(applicableProcessIds(id), id).not.toContain('fronting');
+      expect(applicableProcessIds(id), id).not.toContain('backing');
+    }
   });
 
   it('offers the coda processes only to rimes that have a coda', () => {

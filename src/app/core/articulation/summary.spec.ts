@@ -37,26 +37,27 @@ describe('probeErrors', () => {
 
 describe('derivedProcessGroups', () => {
   it('groups the sounds that demonstrated each process', () => {
-    const groups = derivedProcessGroups([probe('d', 'ㄍ'), probe('t', 'ㄎ')]);
+    const groups = derivedProcessGroups([probe('s', 'ㄉ'), probe('sh', 'ㄉ')]);
 
-    expect(groups).toEqual([{ processId: 'backing', targetPhonemeIds: ['d', 't'] }]);
+    expect(groups).toEqual([{ processId: 'stopping', targetPhonemeIds: ['s', 'sh'] }]);
   });
 
   it('lists a sound under every process its error demonstrates', () => {
-    const groups = derivedProcessGroups([probe('s', 'ㄉ')]);
+    // ㄑ→ㄅ loses aspiration and becomes a stop.
+    const groups = derivedProcessGroups([probe('q', 'ㄅ')]);
 
-    expect(groups.map((g) => g.processId).sort()).toEqual(['backing', 'stopping']);
+    expect(groups.map((g) => g.processId).sort()).toEqual(['deaspiration', 'stopping']);
   });
 
   it('does not repeat a target that errs the same way twice', () => {
-    const groups = derivedProcessGroups([probe('d', 'ㄍ', 'ㄍㄜ')]);
+    const groups = derivedProcessGroups([probe('s', 'ㄉ', 'ㄉㄜ')]);
 
-    expect(groups).toEqual([{ processId: 'backing', targetPhonemeIds: ['d'] }]);
+    expect(groups).toEqual([{ processId: 'stopping', targetPhonemeIds: ['s'] }]);
   });
 });
 
 describe('effectiveProcessGroups', () => {
-  const probes = [probe('d', 'ㄍ')];
+  const probes = [probe('s', 'ㄉ')];
 
   it('derives when there is no stored summary at all', () => {
     expect(effectiveProcessGroups(probes, undefined)).toEqual(derivedProcessGroups(probes));
@@ -66,7 +67,7 @@ describe('effectiveProcessGroups', () => {
     const summary: PhonologicalSummary = {
       assessmentId: 'assessment-1',
       useDerived: true,
-      manual: [{ processId: 'ignored', targetPhonemeIds: ['d'] }],
+      manual: [{ processId: 'ignored', targetPhonemeIds: ['s'] }],
     };
 
     expect(effectiveProcessGroups(probes, summary)).toEqual(derivedProcessGroups(probes));
@@ -76,7 +77,7 @@ describe('effectiveProcessGroups', () => {
     const summary: PhonologicalSummary = {
       assessmentId: 'assessment-1',
       useDerived: false,
-      manual: [{ processId: 'fronting', targetPhonemeIds: ['d'] }],
+      manual: [{ processId: 'fronting', targetPhonemeIds: ['s'] }],
     };
 
     expect(effectiveProcessGroups(probes, summary)).toEqual(summary.manual);

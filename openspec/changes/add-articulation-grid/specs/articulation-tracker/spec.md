@@ -47,20 +47,25 @@
 
 系統 SHALL 依 `references/phonological-processes.md` 的推導條件，從整份構音記錄推導音韻歷程。一筆錯誤 SHALL 可以同時命中多條歷程。推導結果 SHALL NOT 被寫入儲存。
 
-#### Scenario: 部位移動
+#### Scenario: 方式改變
 
-- WHEN 記錄了 ㄉ→ㄍ
-- THEN 推導出後置化
+- WHEN 記錄了 ㄙ→ㄉ
+- THEN 推導出塞音化，且 SHALL NOT 附加任何位置歷程
 
 #### Scenario: 一筆錯誤命中多條
 
-- WHEN 記錄了 ㄙ→ㄉ
-- THEN 同時推導出後置化與塞音化
+- WHEN 記錄了 ㄑ→ㄅ
+- THEN 同時推導出不送氣化與塞音化
+
+#### Scenario: 位置歷程不推導
+
+- WHEN 記錄了 ㄉ→ㄍ
+- THEN 系統 SHALL NOT 推導出後置化——前置化與後置化在文獻裡是列舉的替代型態，不是位置差的函數，只能手動貼
 
 #### Scenario: 歸納呈現
 
-- WHEN 記錄了 ㄉ→ㄍ 與 ㄊ→ㄎ
-- THEN 歷程區塊顯示「後置化:ㄉ ㄊ」
+- WHEN 記錄了 ㄙ→ㄉ 與 ㄕ→ㄉ
+- THEN 歷程區塊顯示「塞音化:ㄕ ㄙ」
 
 ### Requirement: 可改用手動歸納
 

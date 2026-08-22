@@ -1,21 +1,20 @@
-import { PLACE_ORDER, ZHUYIN_INVENTORY, findZhuyin } from '../../data/zhuyin-inventory';
+import { ZHUYIN_INVENTORY, findZhuyin } from '../../data/zhuyin-inventory';
 import { Manner, ZhuyinSymbol } from '../../models/zhuyin.model';
 import { HeardSound } from './parse-heard';
 
 /**
  * Which distinctive-feature change counts as which phonological process.
  *
- * The judgements come from `references/phonological-processes.md`; the place ordering they lean
- * on is `PLACE_ORDER`. Both are the user's, not inferred here.
+ * The judgements come from `references/phonological-processes.md`.
  *
- * A single error can satisfy several of these at once — ㄙ→ㄉ moves the place backwards *and*
- * changes the manner, so it is both 後置化 and 塞音化. Nothing picks a winner.
+ * A single error can satisfy several of these at once — nothing picks a winner.
+ *
+ * 前置化 and 後置化 are deliberately absent. No source derives them from a place ordering; every
+ * one enumerates which target sounds may become which error sounds, and the Taiwanese literature
+ * explicitly warns that widening 前置化 to any forward movement distorts how often it appears.
+ * They stay available as manual tags. See references/open-questions.md.
  */
 type Rule = (target: ZhuyinSymbol, error: ZhuyinSymbol, heard: HeardSound) => boolean;
-
-function placeIndex(symbol: ZhuyinSymbol): number {
-  return symbol.features ? PLACE_ORDER.indexOf(symbol.features.place) : -1;
-}
 
 function mannerIs(symbol: ZhuyinSymbol, ...manners: Manner[]): boolean {
   return symbol.features !== undefined && manners.includes(symbol.features.manner);
@@ -30,16 +29,6 @@ function codaDropped(target: ZhuyinSymbol, error: ZhuyinSymbol, codas: string[])
 const RULES: Record<string, Rule> = {
   deaspiration: (target, error) =>
     target.features?.aspiration === 'aspirated' && error.features?.aspiration === 'unaspirated',
-
-  fronting: (target, error) => {
-    const [from, to] = [placeIndex(target), placeIndex(error)];
-    return from !== -1 && to !== -1 && to < from;
-  },
-
-  backing: (target, error) => {
-    const [from, to] = [placeIndex(target), placeIndex(error)];
-    return from !== -1 && to !== -1 && to > from;
-  },
 
   stopping: (target, error) =>
     mannerIs(target, 'fricative', 'affricate') && mannerIs(error, 'stop'),

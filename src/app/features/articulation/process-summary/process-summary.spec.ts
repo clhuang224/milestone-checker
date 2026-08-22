@@ -44,11 +44,11 @@ describe('ProcessSummary', () => {
   });
 
   it('derives by default, with no summary record written', async () => {
-    const fixture = setup([probe('d', 'ㄍ'), probe('t', 'ㄎ')]);
+    const fixture = setup([probe('s', 'ㄉ'), probe('sh', 'ㄉ')]);
     await fixture.whenStable();
 
-    expect(textOf(fixture)).toContain('後置化');
-    expect(textOf(fixture)).toContain('ㄉ ㄊ');
+    expect(textOf(fixture)).toContain('塞音化');
+    expect(textOf(fixture)).toContain('ㄕ ㄙ');
     expect(storage.summaryFor('assessment-1')).toBeUndefined();
   });
 
@@ -60,7 +60,7 @@ describe('ProcessSummary', () => {
   });
 
   it('starts the manual grouping blank rather than seeded from the derived one', async () => {
-    const fixture = setup([probe('d', 'ㄍ')]);
+    const fixture = setup([probe('s', 'ㄉ')]);
     await fixture.whenStable();
 
     fixture.componentInstance.setUseDerived(false);
@@ -71,27 +71,27 @@ describe('ProcessSummary', () => {
   });
 
   it('returns to the derived grouping when switched back', async () => {
-    const fixture = setup([probe('d', 'ㄍ')]);
+    const fixture = setup([probe('s', 'ㄉ')]);
     await fixture.whenStable();
 
     fixture.componentInstance.setUseDerived(false);
     fixture.componentInstance.setUseDerived(true);
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.groups().map((g) => g.processId)).toEqual(['backing']);
+    expect(fixture.componentInstance.groups().map((g) => g.processId)).toEqual(['stopping']);
   });
 
   it('records a manual choice and drops it when toggled off', async () => {
-    const fixture = setup([probe('d', 'ㄍ')]);
+    const fixture = setup([probe('s', 'ㄉ')]);
     await fixture.whenStable();
 
     fixture.componentInstance.setUseDerived(false);
-    fixture.componentInstance.toggleManual('stopping', 'd');
+    fixture.componentInstance.toggleManual('stopping', 's');
     expect(storage.summaryFor('assessment-1')?.manual).toEqual([
-      { processId: 'stopping', targetPhonemeIds: ['d'] },
+      { processId: 'stopping', targetPhonemeIds: ['s'] },
     ]);
 
-    fixture.componentInstance.toggleManual('stopping', 'd');
+    fixture.componentInstance.toggleManual('stopping', 's');
     expect(storage.summaryFor('assessment-1')?.manual).toEqual([]);
   });
 
@@ -105,18 +105,17 @@ describe('ProcessSummary', () => {
 
     const offered = fixture.componentInstance.manualOptions().map((o) => o.processId);
     expect(offered).not.toContain('stopping');
-    expect(offered).toContain('backing');
   });
 
   it('offers only the sounds that were actually recorded', async () => {
-    const fixture = setup([probe('d', 'ㄍ')]);
+    const fixture = setup([probe('s', 'ㄉ')]);
     await fixture.whenStable();
 
     fixture.componentInstance.setUseDerived(false);
     await fixture.whenStable();
 
     for (const option of fixture.componentInstance.manualOptions()) {
-      expect(option.targets.map((t) => t.id)).toEqual(['d']);
+      expect(option.targets.map((t) => t.id)).toEqual(['s']);
     }
   });
 });
