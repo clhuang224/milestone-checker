@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ArticulationProbe } from '../../models/articulation-record.model';
-import { SessionRecord } from '../../models/session-record.model';
+import { ReportDraftRecord, SessionRecord } from '../../models/session-record.model';
+import { SwallowTrial } from '../../models/swallow-trial.model';
 import { RecordProfile, Case } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
@@ -57,6 +58,20 @@ const probe: ArticulationProbe = {
   updatedOnISODate: '2026-01-02',
 };
 
+/** 稀薄 3cc，3 口中嗆咳 1 口 — ids from the starter swallow catalogue. */
+const trial: SwallowTrial = {
+  id: 'trial-1',
+  caseId: 'case-1',
+  recordId: 'assessment-1',
+  consistencyId: 'thin',
+  volumeCc: 3,
+  flagIds: [],
+  outcome: { kind: 'counted', unitId: 'mouthful', attempts: 3, chokes: 1, comparison: 'eq' },
+  updatedOnISODate: '2026-01-02',
+};
+
+const report: ReportDraftRecord = { recordId: 'assessment-1', text: '個案於本次評估…' };
+
 describe('Storage', () => {
   let service: Storage;
 
@@ -77,6 +92,7 @@ describe('Storage', () => {
     expect(service.rules()).toEqual([]);
     expect(service.articulationProcesses()).toEqual([]);
     expect(service.articulationRecords()).toEqual([]);
+    expect(service.swallowTrials()).toEqual([]);
   });
 
   it('upserts and removes a finding, persisting to localStorage', () => {
@@ -215,6 +231,10 @@ describe('Storage', () => {
     service.saveProfile({ ...profile, recordId: 'assessment-2' });
     service.upsertProbe(probe);
     service.upsertProbe({ ...probe, id: 'sub-2', recordId: 'assessment-2' });
+    service.upsertTrial(trial);
+    service.upsertTrial({ ...trial, id: 'trial-2', recordId: 'assessment-2' });
+    service.saveReport(report);
+    service.saveReport({ ...report, recordId: 'assessment-2' });
 
     service.removeRecord('assessment-1');
 
@@ -223,6 +243,52 @@ describe('Storage', () => {
     expect(service.profileFor('assessment-2')).toBeDefined();
     expect(service.probesForSessionRecord('assessment-1')).toEqual([]);
     expect(service.probesForSessionRecord('assessment-2')).toHaveLength(1);
+    expect(service.trialsForSessionRecord('assessment-1')).toEqual([]);
+    expect(service.trialsForSessionRecord('assessment-2')).toHaveLength(1);
+    expect(service.reportFor('assessment-1')).toBeUndefined();
+    expect(service.reportFor('assessment-2')).toBeDefined();
+  });
+
+  it('upserts, filters by case, and removes swallow trials', () => {
+    const otherCase: SwallowTrial = { ...trial, id: 'trial-2', caseId: 'case-2' };
+    service.upsertTrial(trial);
+    service.upsertTrial(otherCase);
+
+    expect(service.trialsFor('case-1')).toEqual([trial]);
+    expect(service.trialsFor('case-2')).toEqual([otherCase]);
+
+    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:swallow-trials:v5')!);
+    expect(persisted).toEqual([trial, otherCase]);
+
+    service.removeTrial(trial.id);
+    expect(service.trialsFor('case-1')).toEqual([]);
+  });
+
+  it('replaces an existing swallow trial with the same id', () => {
+    service.upsertTrial(trial);
+    const edited: SwallowTrial = { ...trial, volumeCc: 5 };
+    service.upsertTrial(edited);
+
+    expect(service.swallowTrials()).toEqual([edited]);
+  });
+
+  it('fills a trial’s caseId from its session record, so the two cannot drift', () => {
+    service.upsertSessionRecord(assessment);
+    service.upsertTrial({ ...trial, caseId: 'wrong-case' });
+
+    expect(service.swallowTrials()[0].caseId).toBe('case-1');
+  });
+
+  it('keeps a trial’s optional volume absent rather than defaulting it', () => {
+    // The discharge trial has no cc to measure, and a rule’s `!= null` guard depends on the
+    // absence surviving a round trip through localStorage.
+    service.upsertSessionRecord(assessment);
+    service.upsertTrial({ ...trial, volumeCc: undefined });
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+
+    expect(TestBed.inject(Storage).swallowTrials()[0].volumeCc).toBeUndefined();
   });
 
   it('lists a case’s assessments newest first', () => {
@@ -266,6 +332,10 @@ describe('Storage', () => {
       caseId: 'case-2',
       recordId: 'assessment-other',
     });
+    service.upsertTrial(trial);
+    service.upsertTrial({ ...trial, id: 'trial-2', recordId: 'assessment-other' });
+    service.saveReport(report);
+    service.saveReport({ ...report, recordId: 'assessment-other' });
 
     service.removeCase(caseRecord.id);
 
@@ -274,6 +344,10 @@ describe('Storage', () => {
     expect(service.profileFor('assessment-1')).toBeUndefined();
     expect(service.probesFor('case-1')).toEqual([]);
     expect(service.probesFor('case-2')).toHaveLength(1);
+    expect(service.trialsFor('case-1')).toEqual([]);
+    expect(service.trialsFor('case-2')).toHaveLength(1);
+    expect(service.reportFor('assessment-1')).toBeUndefined();
+    expect(service.reportFor('assessment-other')).toBeDefined();
   });
 
   it('a fresh instance picks up what an earlier instance persisted', () => {
@@ -284,6 +358,7 @@ describe('Storage', () => {
     service.upsertRule(rule);
     service.upsertArticulationProcess(process);
     service.upsertProbe(probe);
+    service.upsertTrial(trial);
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
@@ -295,6 +370,7 @@ describe('Storage', () => {
     expect(reloaded.rules()).toEqual([rule]);
     expect(reloaded.articulationProcesses()).toEqual([process]);
     expect(reloaded.articulationRecords()).toEqual([probe]);
+    expect(reloaded.swallowTrials()).toEqual([trial]);
   });
 
   it('falls back to empty data when localStorage holds corrupt JSON', () => {
@@ -303,6 +379,7 @@ describe('Storage', () => {
     localStorage.setItem('therapist-rule-engine:rules:v5', '{not valid json');
     localStorage.setItem('therapist-rule-engine:articulation-processes:v5', '{not valid json');
     localStorage.setItem('therapist-rule-engine:articulation-records:v5', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:swallow-trials:v5', '{not valid json');
 
     const corrupted = TestBed.inject(Storage);
     expect(corrupted.findings()).toEqual([]);
@@ -311,5 +388,6 @@ describe('Storage', () => {
     expect(corrupted.rules()).toEqual([]);
     expect(corrupted.articulationProcesses()).toEqual([]);
     expect(corrupted.articulationRecords()).toEqual([]);
+    expect(corrupted.swallowTrials()).toEqual([]);
   });
 });

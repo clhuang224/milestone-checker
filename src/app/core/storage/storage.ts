@@ -10,6 +10,7 @@ import { Case, RecordProfile } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
 import { Rule } from '../../models/rule.model';
+import { SwallowTrial } from '../../models/swallow-trial.model';
 
 /**
  * Bumping a version discards the old data rather than migrating it — a deliberate PoC-stage
@@ -22,6 +23,7 @@ const RULES_KEY = 'therapist-rule-engine:rules:v5';
 const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v5';
 const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v5';
 const PHONOLOGICAL_SUMMARIES_KEY = 'therapist-rule-engine:phonological-summaries:v5';
+const SWALLOW_TRIALS_KEY = 'therapist-rule-engine:swallow-trials:v5';
 const SESSION_RECORDS_KEY = 'therapist-rule-engine:session-records:v5';
 const FORMS_KEY = 'therapist-rule-engine:assessment-forms:v5';
 const REPORTS_KEY = 'therapist-rule-engine:reports:v5';
@@ -87,6 +89,9 @@ export class Storage {
   private readonly summariesData = signal<PhonologicalSummary[]>(
     loadArray<PhonologicalSummary>(PHONOLOGICAL_SUMMARIES_KEY),
   );
+  private readonly swallowTrialsData = signal<SwallowTrial[]>(
+    loadArray<SwallowTrial>(SWALLOW_TRIALS_KEY),
+  );
 
   readonly findings = computed(() => this.findingsData());
   readonly cases = computed(() => this.casesData().cases);
@@ -96,6 +101,7 @@ export class Storage {
   readonly articulationRecords = computed(() => this.articulationRecordsData());
   readonly sessionRecords = computed<SessionRecord[]>(() => this.sessionRecordsData());
   readonly phonologicalSummaries = computed(() => this.summariesData());
+  readonly swallowTrials = computed(() => this.swallowTrialsData());
   readonly assessmentForms = computed(() => this.formsData());
 
   upsertFinding(finding: FindingDefinition): void {
@@ -135,8 +141,14 @@ export class Storage {
     this.articulationRecordsData.update((current) => current.filter((r) => r.caseId !== id));
     this.persistArticulationRecords();
 
+    this.swallowTrialsData.update((current) => current.filter((t) => t.caseId !== id));
+    this.persistSwallowTrials();
+
     this.summariesData.update((current) => current.filter((s) => !recordIds.has(s.recordId)));
     this.persistSummaries();
+
+    this.reportsData.update((current) => current.filter((r) => !recordIds.has(r.recordId)));
+    this.persistReports();
   }
 
   recordsFor(caseId: string): SessionRecord[] {
@@ -167,8 +179,14 @@ export class Storage {
     this.articulationRecordsData.update((current) => current.filter((r) => r.recordId !== id));
     this.persistArticulationRecords();
 
+    this.swallowTrialsData.update((current) => current.filter((t) => t.recordId !== id));
+    this.persistSwallowTrials();
+
     this.summariesData.update((current) => current.filter((s) => s.recordId !== id));
     this.persistSummaries();
+
+    this.reportsData.update((current) => current.filter((r) => r.recordId !== id));
+    this.persistReports();
   }
 
   saveProfile(profile: RecordProfile): void {
@@ -248,6 +266,31 @@ export class Storage {
     this.persistArticulationRecords();
   }
 
+  trialsFor(caseId: string): SwallowTrial[] {
+    return this.swallowTrialsData().filter((t) => t.caseId === caseId);
+  }
+
+  trialsForSessionRecord(recordId: string): SwallowTrial[] {
+    return this.swallowTrialsData().filter((t) => t.recordId === recordId);
+  }
+
+  /** Fills in `caseId` from the session record, so the denormalised copy cannot drift. */
+  upsertTrial(trial: SwallowTrial): void {
+    const caseId =
+      this.sessionRecordsData().find((a) => a.id === trial.recordId)?.caseId ?? trial.caseId;
+
+    this.swallowTrialsData.update((current) => [
+      ...current.filter((t) => t.id !== trial.id),
+      { ...trial, caseId },
+    ]);
+    this.persistSwallowTrials();
+  }
+
+  removeTrial(id: string): void {
+    this.swallowTrialsData.update((current) => current.filter((t) => t.id !== id));
+    this.persistSwallowTrials();
+  }
+
   private persistFindings(): void {
     localStorage.setItem(FINDINGS_KEY, JSON.stringify(this.findingsData()));
   }
@@ -276,6 +319,10 @@ export class Storage {
       ...current.filter((r) => r.recordId !== report.recordId),
       report,
     ]);
+    this.persistReports();
+  }
+
+  private persistReports(): void {
     localStorage.setItem(REPORTS_KEY, JSON.stringify(this.reportsData()));
   }
 
@@ -306,5 +353,9 @@ export class Storage {
 
   private persistArticulationRecords(): void {
     localStorage.setItem(ARTICULATION_RECORDS_KEY, JSON.stringify(this.articulationRecordsData()));
+  }
+
+  private persistSwallowTrials(): void {
+    localStorage.setItem(SWALLOW_TRIALS_KEY, JSON.stringify(this.swallowTrialsData()));
   }
 }
