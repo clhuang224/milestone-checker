@@ -18,6 +18,7 @@ function factsFor(current = seed) {
     current.profile,
     current.probes,
     derivedProcessGroups(current.probes),
+    [],
   );
 }
 

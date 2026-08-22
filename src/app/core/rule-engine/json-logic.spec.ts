@@ -8,7 +8,13 @@ function profileWith(
   values: Record<string, boolean | number>,
   extra: Partial<RuleFacts> = {},
 ): RuleFacts {
-  return { ...values, case: {}, articulation: { errors: [] }, ...extra };
+  return {
+    ...values,
+    case: {},
+    articulation: { errors: [] },
+    swallowing: { trials: [] },
+    ...extra,
+  };
 }
 
 function factsWithErrors(errors: Partial<ArticulationErrorFact>[]): RuleFacts {

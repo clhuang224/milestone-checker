@@ -6,7 +6,7 @@ import {
   fromJsonLogic,
   toJsonLogic,
 } from '../rule-engine/condition-mapper';
-import { RuleFacts } from '../rule-engine/facts';
+import { RuleFacts, SwallowTrialFact } from '../rule-engine/facts';
 import { evaluateCondition } from '../rule-engine/json-logic';
 
 /** 「清水 3cc 以下會嗆咳」 */
@@ -17,12 +17,16 @@ const thinLiquidUnder3cc: ConditionTrialRow = {
   successPercent: { operator: '<', percent: 100 },
 };
 
-function factsWith(trials: Record<string, unknown>[]): RuleFacts {
+/**
+ * Compilation-level facts. Whether Storage and buildFacts actually produce this shape is what
+ * `rule-engine/trial-path.spec.ts` covers — it must, or these tests prove nothing.
+ */
+function factsWith(trials: SwallowTrialFact[]): RuleFacts {
   return {
     case: {},
     articulation: { errors: [] },
     swallowing: { trials },
-  } as unknown as RuleFacts;
+  };
 }
 
 describe('trial conditions', () => {

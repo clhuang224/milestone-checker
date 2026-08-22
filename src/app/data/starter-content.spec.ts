@@ -43,7 +43,11 @@ describe('starter content', () => {
   it('evaluates every rule condition without throwing against an empty profile', () => {
     for (const rule of STARTER_RULES) {
       expect(() =>
-        evaluateCondition(rule.condition, { case: {}, articulation: { errors: [] } }),
+        evaluateCondition(rule.condition, {
+          case: {},
+          articulation: { errors: [] },
+          swallowing: { trials: [] },
+        }),
       ).not.toThrow();
     }
   });
@@ -57,6 +61,7 @@ describe('starter content', () => {
         articulation: {
           errors: targetPhonemeIds.map((targetPhonemeId) => ({ targetPhonemeId, processIds: [] })),
         },
+        swallowing: { trials: [] },
       };
     }
 
@@ -88,9 +93,13 @@ describe('starter content', () => {
 
   it('does not fire any rule against a case with nothing recorded', () => {
     for (const rule of STARTER_RULES) {
-      expect(evaluateCondition(rule.condition, { case: {}, articulation: { errors: [] } })).toBe(
-        false,
-      );
+      expect(
+        evaluateCondition(rule.condition, {
+          case: {},
+          articulation: { errors: [] },
+          swallowing: { trials: [] },
+        }),
+      ).toBe(false);
     }
   });
 });

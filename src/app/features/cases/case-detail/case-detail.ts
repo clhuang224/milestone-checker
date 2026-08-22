@@ -141,6 +141,7 @@ export class CaseDetail {
         },
         probes,
         effectiveProcessGroups(probes, this.storage.summaryFor(record.id)),
+        this.storage.trialsForSessionRecord(record.id),
       ),
     );
   }

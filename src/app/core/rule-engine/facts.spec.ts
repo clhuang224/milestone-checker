@@ -43,6 +43,7 @@ function facts(
     profile(values),
     probes,
     groups,
+    [],
   );
 }
 
