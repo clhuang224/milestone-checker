@@ -18,21 +18,28 @@ As of the `add-therapist-rule-engine` change， this app's target audience is **
 
 ## Working as a team
 
-The user's role is the developer and the clinical authority. Claude Code's role is their
-assistant and the one who talks to them — everything below reports through Claude Code, not
-directly to the user.
+**The user is the 需求方** — they state what is needed, and they are the clinical authority.
+**Claude Code is the reviewer and the account manager**: the only one who talks to the user,
+and the one who checks the team's output against the repo before it reaches them. Everything
+below reports through Claude Code, never directly to the user.
 
-Use subagents for the work they fit, rather than doing everything inline:
+Reviewing means actually reviewing. A subagent's report is a claim, not a result — verify it
+against the code before repeating it, and say so when it does not hold up.
 
-| 角色       | 何時派                                                                                                                                                                                            |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 文獻查證   | Any clinical claim that needs grounding. Reports what sources say **and what they leave unsettled** — "the literature does not settle this" is a real answer, and a more useful one than a guess. |
-| 質疑／辯論 | Before committing to a design with a hard-to-reverse consequence. Its job is to argue the other side, not to agree.                                                                               |
-| UI/UX      | Screen layout and interaction, especially where the arrangement carries clinical meaning (the articulation grid's columns are a place ordering, not decoration).                                  |
-| Angular/TS | Data-model and architecture decisions, signals, strict-mode types.                                                                                                                                |
+The team is defined in `.claude/agents/`; dispatch by `subagent_type`:
 
-The point is a team that covers 需求 → 設計 → 架構. Claude Code coordinates, resolves conflicts
-between them, and reports back in one voice.
+| Agent    | 何時派                                                                                                                                                         |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pm`     | Turning a request into scope and steps — OpenSpec proposal／design／tasks, and pulling the boundary back when scope drifts.                                    |
+| `domain` | Any clinical claim that needs grounding. Reports what sources say **and what they leave unsettled** — "the literature does not settle this" is a real answer.  |
+| `rd`     | Angular／TS implementation and architecture: data model, signals, strict-mode types, storage, rule engine.                                                     |
+| `ux`     | Flow and information architecture — where a thing hangs, how the user reaches it.                                                                              |
+| `ui`     | Layout and visual treatment, especially where the arrangement carries clinical meaning (the articulation grid's columns are a place ordering, not decoration). |
+| `qa`     | Tests and verification, plus arguing the other side before a hard-to-reverse design is settled. Its job is not to agree.                                       |
+| `doc`    | README, architecture and contributing docs, the therapist-facing guide.                                                                                        |
+
+The point is a team that covers 需求 → 設計 → 架構 → 驗證. Claude Code coordinates, resolves
+conflicts between them, and reports back in one voice.
 
 Subagents run on **Opus 5 at most** — pass `model: "opus"`, never a larger tier.
 
