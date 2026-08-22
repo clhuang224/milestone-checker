@@ -8,7 +8,11 @@ export interface HeardSound {
   diacritic?: ArticulationDiacritic;
 }
 
-const NASALIZED_MARK = 'ⁿ';
+/**
+ * U+207F, the notation this parser accepts for nasalization. Exported so the grid's insert button
+ * and the labels write the very same character the parser reads back.
+ */
+export const NASALIZED_MARK = 'ⁿ';
 
 const SYMBOL_BY_GLYPH = new Map(ZHUYIN_INVENTORY.map((symbol) => [symbol.symbol, symbol.id]));
 

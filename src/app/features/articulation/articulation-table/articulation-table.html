@@ -59,13 +59,35 @@
                             (change)="setWord(cell.symbol.id, $index, $any($event.target).value)"
                           />
                           <input
+                            #heardBox
                             type="text"
                             placeholder="錯音"
                             aria-label="錯音"
                             class="w-16 border border-slate-300 rounded px-1 py-0.5 text-sm"
                             [value]="item.heard"
+                            (focus)="offerMark(heardBox, cell.symbol.id, $index)"
+                            (blur)="dismissMark($event)"
                             (change)="setHeard(cell.symbol.id, $index, $any($event.target).value)"
                           />
+
+                          <!-- Floats beside the focused box (position: fixed), so it takes no
+                               room in the grid and cannot squeeze the six initial columns. -->
+                          @if (markSlot() === slotKey(cell.symbol.id, $index)) {
+                            <button
+                              type="button"
+                              data-nasal-mark
+                              class="fixed z-50 h-6 w-6 rounded border border-sky-400 bg-white text-sm leading-none text-sky-700 shadow-sm hover:bg-sky-50 focus:outline-2 focus:outline-offset-1 focus:outline-sky-500"
+                              [style.left.px]="markPosition().left"
+                              [style.top.px]="markPosition().top"
+                              title="插入鼻音化上標 ⁿ（插在游標所在的位置）"
+                              aria-label="插入鼻音化上標"
+                              (mousedown)="$event.preventDefault()"
+                              (click)="insertNasalizedMark(heardBox, cell.symbol.id, $index)"
+                              (blur)="dismissMarkFromButton($event)"
+                            >
+                              {{ nasalizedMark }}
+                            </button>
+                          }
                         </div>
                       }
                     </div>

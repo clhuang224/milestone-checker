@@ -5,11 +5,11 @@ import {
   ProbeItem,
 } from '../../models/articulation-record.model';
 import { deriveProcessIds } from './derive-processes';
-import { HeardSound, parseHeard } from './parse-heard';
+import { HeardSound, NASALIZED_MARK, parseHeard } from './parse-heard';
 
 /** Superscript marks rather than <sup>, so labels stay copy-pasteable plain text. */
 const DIACRITIC_MARKS: Record<ArticulationDiacritic, string> = {
-  nasalized: 'ⁿ',
+  nasalized: NASALIZED_MARK,
 };
 
 /** One recorded item that came out wrong, with what it demonstrates. */
