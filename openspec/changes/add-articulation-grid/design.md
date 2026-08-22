@@ -43,9 +43,15 @@ export function parseHeard(text: string): { symbolId?: string; diacritic?: Artic
 
 `deriveProcessIds(targetPhonemeId, heard)` 依 `references/phonological-processes.md` 的判準比對辨異徵性，回傳所有命中的歷程 id。
 
-**一筆錯誤可以中多條**:ㄙ→ㄉ 同時改了部位與方式，後置化與塞音化都算。
+**一筆錯誤可以中多條**:ㄙ→ㄉ 同時改了部位與方式。
 
-前置化／後置化靠 `PLACE_ORDER` 的索引比大小。其餘靠方式、送氣、韻尾、附加符號直接比對。
+> **這一段已被推翻，保留原文以留下紀錄。** 原本寫的是「前置化／後置化靠 `PLACE_ORDER` 的索引比大小」，而上一行舉的例子原本是「ㄙ→ㄉ ⋯⋯ 後置化與塞音化都算」。
+>
+> 文獻查證的結果是:每一份來源都把前置化／後置化列成「目標音集合 → 錯誤音集合」的查找表，沒有一份先定義部位座標再算差值;前置化的目標音只有六個、後置化十一個，兩者不對稱，本來就不是同一條軸的正負兩向。鄭靜宜（2011）也明確警告放寬範圍會膨脹發生率。
+>
+> 所以**程式碼裡沒有 `PLACE_ORDER` 這個常數**，前置化／後置化不自動推導，維持手動貼標籤。部位排序只用在格子表的欄位排列。判準見 `references/taiwan-mandarin-consonants.md` 與 `references/open-questions.md`。
+
+其餘靠方式、送氣、韻尾、附加符號直接比對。
 
 介音省略推導不出來（音節層次現象），不列入。
 

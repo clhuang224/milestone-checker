@@ -28,4 +28,3 @@
 - [ ] `itemList` 表:表單本體，以及評估表一覽裡編輯項目與條件的介面。
 - [ ] `add-demo-case-seeds` 的 3.4:瀏覽器確認第一次開啟就看得到個案、警示與報告草稿。
 - [ ] `openspec/specs/` 還是空的，第一輪 change 都還沒 archive。
-- [ ] `add-articulation-grid/design.md` 仍寫著前置化／後置化用 `PLACE_ORDER` 索引推導，那個做法後來被 `references/taiwan-mandarin-consonants.md` 推翻，design 沒有回頭改。
