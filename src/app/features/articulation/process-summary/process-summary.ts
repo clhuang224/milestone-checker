@@ -27,10 +27,10 @@ interface ManualOption {
 export class ProcessSummary {
   private readonly storage = inject(Storage);
 
-  readonly assessmentId = input.required<string>();
+  readonly recordId = input.required<string>();
   readonly probes = input.required<ArticulationProbe[]>();
 
-  private readonly summary = computed(() => this.storage.summaryFor(this.assessmentId()));
+  private readonly summary = computed(() => this.storage.summaryFor(this.recordId()));
 
   readonly useDerived = computed(() => this.summary()?.useDerived ?? true);
 
@@ -65,7 +65,7 @@ export class ProcessSummary {
     // Switching to manual starts blank rather than seeded from the derived result: an override
     // the therapist did not write is worse than an empty box they can see is empty.
     this.storage.saveSummary({
-      assessmentId: this.assessmentId(),
+      recordId: this.recordId(),
       useDerived,
       manual: useDerived ? (this.summary()?.manual ?? []) : [],
     });
@@ -88,7 +88,7 @@ export class ProcessSummary {
     }
 
     this.storage.saveSummary({
-      assessmentId: this.assessmentId(),
+      recordId: this.recordId(),
       useDerived: false,
       manual: next,
     });

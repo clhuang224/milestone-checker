@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { ArticulationProbe, ManualProcessGroup } from '../../models/articulation-record.model';
-import { Assessment } from '../../models/assessment.model';
-import { AssessmentProfile, Case } from '../../models/case.model';
+import { SessionRecord } from '../../models/session-record.model';
+import { RecordProfile, Case } from '../../models/case.model';
 import { buildFacts } from './facts';
 
 const TODAY = '2026-08-17';
@@ -11,19 +11,19 @@ function caseRecord(overrides: Partial<Case> = {}): Case {
   return { id: 'case-1', label: '小切', createdOnISODate: '2026-08-01', ...overrides };
 }
 
-function profile(values: AssessmentProfile['values'] = {}): AssessmentProfile {
-  return { assessmentId: 'assessment-1', values, updatedOnISODate: TODAY };
+function profile(values: RecordProfile['values'] = {}): RecordProfile {
+  return { recordId: 'assessment-1', values, updatedOnISODate: TODAY };
 }
 
-function assessmentOn(dateISO = TODAY): Assessment {
-  return { id: 'assessment-1', caseId: 'case-1', assessedOnISODate: dateISO };
+function assessmentOn(dateISO = TODAY): SessionRecord {
+  return { id: 'assessment-1', caseId: 'case-1', onISODate: dateISO, formIds: ['articulation'] };
 }
 
 function probe(targetPhonemeId: string, heard: string): ArticulationProbe {
   return {
     id: `probe-${targetPhonemeId}`,
     caseId: 'case-1',
-    assessmentId: 'assessment-1',
+    recordId: 'assessment-1',
     targetPhonemeId,
     items: [{ word: '詞', heard }],
     updatedOnISODate: TODAY,
@@ -35,7 +35,7 @@ function facts(
   probes: ArticulationProbe[] = [],
   groups: ManualProcessGroup[] = [],
   dateISO = TODAY,
-  values: AssessmentProfile['values'] = {},
+  values: RecordProfile['values'] = {},
 ) {
   return buildFacts(
     caseRecord(caseOverrides),

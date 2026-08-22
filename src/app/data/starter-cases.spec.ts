@@ -14,7 +14,7 @@ const seed = starterCaseSeed(TODAY);
 function factsFor(current = seed) {
   return buildFacts(
     current.caseRecord,
-    current.assessment,
+    current.record,
     current.profile,
     current.probes,
     derivedProcessGroups(current.probes),
@@ -37,7 +37,7 @@ describe('starter case seed', () => {
 
     for (const probe of seed.probes) {
       expect(probe.caseId).toBe(seed.caseRecord.id);
-      expect(probe.assessmentId).toBe(seed.assessment.id);
+      expect(probe.recordId).toBe(seed.record.id);
     }
   });
 

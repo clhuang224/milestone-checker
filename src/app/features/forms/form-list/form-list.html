@@ -1,0 +1,41 @@
+<div class="space-y-4">
+  <div>
+    <h2 class="text-lg font-semibold text-slate-800">評估表一覽</h2>
+    <p class="text-xs text-slate-500 mt-0.5">設定每張表要填什麼、以及什麼情況要示警。</p>
+  </div>
+
+  <section class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100">
+    <!-- Rules that read case age or span several forms belong to no single form, so they get
+         their own row rather than being filed under one arbitrarily. -->
+    <a routerLink="/rules" class="flex items-center justify-between gap-3 p-4 hover:bg-slate-50">
+      <span>
+        <span class="font-medium text-slate-800">跨表規則</span>
+        <span class="block text-xs text-slate-500 mt-0.5"> 用到年齡、或同時讀好幾張表的規則 </span>
+      </span>
+      <span class="text-sm text-slate-500">{{ ruleCount() }} 條 →</span>
+    </a>
+
+    @for (row of rows(); track row.id) {
+      <div class="flex items-center justify-between gap-3 p-4">
+        <span>
+          <span class="font-medium text-slate-800">{{ row.name }}</span>
+          @if (!row.editable) {
+            <span class="block text-xs text-slate-500 mt-0.5">
+              專用表格，輸入方式由程式提供;可設定它使用的分類目錄
+            </span>
+          }
+        </span>
+        <span class="flex items-center gap-3 text-sm text-slate-500">
+          <span>{{ row.usedBy }} 筆使用中</span>
+          @if (row.id === 'articulation') {
+            <a routerLink="/articulation-processes" class="text-sky-700 hover:underline">
+              音韻歷程 →
+            </a>
+          }
+        </span>
+      </div>
+    } @empty {
+      <p class="p-4 text-sm text-slate-500">還沒有任何評估表。</p>
+    }
+  </section>
+</div>

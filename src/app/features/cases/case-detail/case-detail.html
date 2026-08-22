@@ -1,115 +1,139 @@
 @if (caseRecord(); as c) {
   <div class="space-y-5">
     <div>
-      <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案清單</a>
-      <div class="flex items-baseline justify-between gap-3 mt-1">
-        <h2 class="text-lg font-semibold text-slate-800">{{ c.label }}</h2>
-        @if (selectedAssessment(); as a) {
-          <a
-            [routerLink]="['/cases', c.id, 'assessments', a.id, 'articulation']"
-            class="text-sm text-sky-700 hover:underline"
-          >
-            構音記錄 →
-          </a>
-        }
-      </div>
+      <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案一覽</a>
+      <h2 class="text-lg font-semibold text-slate-800 mt-1">{{ c.label }}</h2>
 
-      <div class="flex items-center gap-2 mt-2 flex-wrap text-sm">
-        <label class="text-slate-600" for="case-birth-date">生日</label>
-        <input
-          id="case-birth-date"
-          type="date"
-          class="border border-slate-300 rounded px-2 py-1"
-          [value]="c.birthDateISO ?? ''"
-          (change)="onBirthDateChange($any($event.target).value)"
-        />
+      <button
+        type="button"
+        class="text-xs text-sky-700 hover:underline mt-1"
+        (click)="detailsOpen.set(!detailsOpen())"
+      >
+        {{ detailsOpen() ? '▾' : '▸' }} 基本資料
+      </button>
 
-        <label class="text-slate-600 ml-2" for="case-gestational-weeks">出生週數</label>
-        <input
-          id="case-gestational-weeks"
-          type="number"
-          min="20"
-          max="44"
-          placeholder="足月免填"
-          class="w-24 border border-slate-300 rounded px-2 py-1"
-          [value]="c.gestationalWeeks ?? ''"
-          (change)="onGestationalWeeksChange($any($event.target).value)"
-        />
+      @if (detailsOpen()) {
+        <div class="flex items-center gap-2 mt-2 flex-wrap text-sm">
+          <label class="text-slate-600" for="case-birth-date">生日</label>
+          <input
+            id="case-birth-date"
+            type="date"
+            class="border border-slate-300 rounded px-2 py-1"
+            [value]="c.birthDateISO ?? ''"
+            (change)="onBirthDateChange($any($event.target).value)"
+          />
 
-        @if (ageLabel(); as age) {
-          <span class="text-slate-500">評估當日 {{ age }}</span>
-          @if (showsCorrectedAge()) {
-            <span class="text-slate-500">（矯正 {{ correctedAgeLabel() }}）</span>
+          <label class="text-slate-600 ml-2" for="case-gestational-weeks">出生週數</label>
+          <input
+            id="case-gestational-weeks"
+            type="number"
+            min="20"
+            max="44"
+            placeholder="足月免填"
+            class="w-24 border border-slate-300 rounded px-2 py-1"
+            [value]="c.gestationalWeeks ?? ''"
+            (change)="onGestationalWeeksChange($any($event.target).value)"
+          />
+
+          @if (!c.birthDateISO) {
+            <span class="text-xs text-slate-400">沒填生日的話，用到年齡的規則不會判斷</span>
           }
-        } @else {
-          <span class="text-xs text-slate-400">沒填生日的話，用到年齡的規則不會判斷</span>
-        }
-      </div>
+        </div>
+      }
     </div>
 
     <section class="bg-white rounded-lg border border-slate-200 p-4">
-      <div class="flex items-center justify-between gap-3 mb-2">
-        <h3 class="font-medium text-slate-800">評估場次</h3>
-        <button
-          type="button"
-          class="text-sm text-sky-700 hover:underline"
-          (click)="addAssessment()"
-        >
-          + 新增評估
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <h3 class="font-medium text-slate-800">課節紀錄</h3>
+        <button type="button" class="text-sm text-sky-700 hover:underline" (click)="startCompose()">
+          ＋ 新增課節紀錄
         </button>
       </div>
 
-      @if (selectedAssessment(); as a) {
-        <div class="flex items-center gap-2 flex-wrap text-sm">
-          <select
-            class="border border-slate-300 rounded px-2 py-1"
-            (change)="selectAssessment($any($event.target).value)"
-          >
-            @for (option of assessments(); track option.id) {
-              <option [value]="option.id" [selected]="option.id === a.id">
-                {{ option.assessedOnISODate }}
-              </option>
+      @if (composing()) {
+        <div class="border border-sky-200 bg-sky-50/40 rounded p-3 mb-3 space-y-2">
+          <p class="text-sm text-slate-700">這次要用哪些表？至少選一張。</p>
+          <div class="flex flex-wrap gap-1">
+            @for (form of forms(); track form.id) {
+              <button
+                type="button"
+                class="border rounded px-2 py-0.5 text-sm"
+                [class]="
+                  draftFormIds().includes(form.id)
+                    ? 'border-sky-600 bg-sky-600 text-white'
+                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                "
+                [attr.aria-pressed]="draftFormIds().includes(form.id)"
+                (click)="toggleDraftForm(form.id)"
+              >
+                {{ form.name }}
+              </button>
             }
-          </select>
-
-          <label class="text-slate-600" for="assessment-date">評估日期</label>
-          <input
-            id="assessment-date"
-            type="date"
-            class="border border-slate-300 rounded px-2 py-1"
-            [value]="a.assessedOnISODate"
-            (change)="setAssessmentDate($any($event.target).value)"
-          />
-
-          <button
-            type="button"
-            class="text-red-600 hover:underline ml-auto"
-            (click)="removeAssessment()"
-          >
-            刪除這次評估
-          </button>
+          </div>
+          <div class="flex gap-2 text-sm">
+            <button
+              type="button"
+              class="bg-sky-600 text-white font-medium rounded px-3 py-1 hover:bg-sky-700 disabled:opacity-40"
+              [disabled]="!canCreate()"
+              (click)="createRecord()"
+            >
+              建立
+            </button>
+            <button
+              type="button"
+              class="border border-slate-300 rounded px-3 py-1 hover:bg-slate-50"
+              (click)="composing.set(false)"
+            >
+              取消
+            </button>
+          </div>
         </div>
-        <p class="text-xs text-slate-500 mt-2">
-          年齡與報告都以評估日期為準，不是今天——寫報告的時間跟評估的時間常常不同天。
-        </p>
+      }
+
+      @if (rows().length > 0) {
+        <table class="w-full text-sm">
+          <thead class="text-xs text-slate-500 text-left">
+            <tr class="border-b border-slate-200">
+              <th class="py-1 font-normal">日期</th>
+              <th class="py-1 font-normal">內容</th>
+              <th class="py-1 font-normal">當時年齡</th>
+              <th class="py-1 font-normal">重點</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.record.id) {
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="py-2">
+                  <a
+                    class="text-sky-700 hover:underline"
+                    [routerLink]="[
+                      '/cases',
+                      c.id,
+                      'records',
+                      row.record.id,
+                      'forms',
+                      firstFormOf(row.record),
+                    ]"
+                    >{{ row.record.onISODate }}</a
+                  >
+                </td>
+                <td class="py-2 text-slate-700">{{ row.formNames }}</td>
+                <td class="py-2 text-slate-500">{{ row.ageLabel }}</td>
+                <td class="py-2 text-slate-500">
+                  @if (row.warningCount > 0) {
+                    <span class="text-amber-700">⚠ {{ row.warningCount }}</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       } @else {
-        <p class="text-sm text-slate-500">還沒有任何評估場次，點右上角「新增評估」開始記錄。</p>
+        <p class="text-sm text-slate-500">還沒有任何課節紀錄，點右上角新增一筆。</p>
       }
     </section>
-
-    @if (selectedAssessment()) {
-      <app-findings-form
-        [findings]="findings()"
-        [values]="values()"
-        (valuesChange)="onValuesChange($event)"
-      />
-
-      <app-warnings-list [triggeredRules]="triggeredRules()" />
-
-      <app-report-draft [generatedText]="reportText()" />
-    }
   </div>
 } @else {
   <p class="text-sm text-slate-500">找不到這個個案。</p>
-  <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案清單</a>
+  <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案一覽</a>
 }

@@ -1,5 +1,4 @@
 import { Component, computed, inject, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { Storage } from '../../../core/storage/storage';
 import {
@@ -36,22 +35,22 @@ interface GridSection {
 
 @Component({
   selector: 'app-articulation-table',
-  imports: [RouterLink, ProcessSummary],
+  imports: [ProcessSummary],
   templateUrl: './articulation-table.html',
 })
 export class ArticulationTable {
   private readonly storage = inject(Storage);
 
-  readonly id = input.required<string>();
-  readonly assessmentId = input.required<string>();
+  readonly caseId = input.required<string>();
+  readonly recordId = input.required<string>();
 
-  readonly caseRecord = computed(() => this.storage.cases().find((c) => c.id === this.id()));
+  readonly caseRecord = computed(() => this.storage.cases().find((c) => c.id === this.caseId()));
   readonly assessment = computed(() =>
-    this.storage.assessments().find((a) => a.id === this.assessmentId()),
+    this.storage.sessionRecords().find((a) => a.id === this.recordId()),
   );
 
   readonly probes = computed(() =>
-    this.storage.articulationRecords().filter((r) => r.assessmentId === this.assessmentId()),
+    this.storage.articulationRecords().filter((r) => r.recordId === this.recordId()),
   );
 
   readonly sections = computed<GridSection[]>(() => {
@@ -115,8 +114,8 @@ export class ArticulationTable {
 
     const probe: ArticulationProbe = {
       id: existing?.id ?? crypto.randomUUID(),
-      caseId: this.id(),
-      assessmentId: this.assessmentId(),
+      caseId: this.caseId(),
+      recordId: this.recordId(),
       targetPhonemeId: symbolId,
       items,
       updatedOnISODate: new Date().toISOString().slice(0, 10),

@@ -176,13 +176,11 @@ describe('applicability (set) rows', () => {
 describe('defaultRow / defaultGroup', () => {
   const booleanField: FindingDefinition = {
     id: 'drooling',
-    categoryId: 'swallowing',
     label: '流口水',
     kind: 'boolean',
   };
   const numberField: FindingDefinition = {
     id: 'oralMotorScore',
-    categoryId: 'swallowing',
     label: '口腔動作評估分數',
     kind: 'number',
   };

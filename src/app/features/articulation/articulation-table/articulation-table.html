@@ -1,17 +1,8 @@
 @if (caseRecord(); as c) {
   <div class="space-y-5">
-    <div>
-      <a [routerLink]="['/cases', c.id]" class="text-sm text-sky-700 hover:underline">
-        ← 回個案頁面
-      </a>
-      <h2 class="text-lg font-semibold text-slate-800 mt-1">{{ c.label }}——構音記錄</h2>
-      @if (assessment(); as a) {
-        <p class="text-xs text-slate-500 mt-0.5">記錄於 {{ a.assessedOnISODate }} 這次評估</p>
-      }
-      <p class="text-xs text-slate-500 mt-0.5">
-        每個音三組「目標詞 ＋ 錯音」。錯音照聽到的寫（例如「ㄆㄠ」），構音正確就留白。
-      </p>
-    </div>
+    <p class="text-xs text-slate-500">
+      每個音三組「目標詞 ＋ 錯音」。錯音照聽到的寫（例如「ㄆㄠ」），構音正確就留白。
+    </p>
 
     @for (section of sections(); track section.label) {
       <section class="bg-white rounded-lg border border-slate-200 p-4">
@@ -87,9 +78,8 @@
       </section>
     }
 
-    <app-process-summary [assessmentId]="assessmentId()" [probes]="probes()" />
+    <app-process-summary [recordId]="recordId()" [probes]="probes()" />
   </div>
 } @else {
   <p class="text-sm text-slate-500">找不到這個個案。</p>
-  <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案清單</a>
 }

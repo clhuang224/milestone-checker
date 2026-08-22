@@ -5,8 +5,8 @@ import {
 } from '../../models/articulation-record.model';
 import { probeErrors } from '../articulation/probe-errors';
 import { processIdsForTarget } from '../articulation/summary';
-import { Assessment } from '../../models/assessment.model';
-import { AssessmentProfile, Case } from '../../models/case.model';
+import { SessionRecord } from '../../models/session-record.model';
+import { RecordProfile, Case } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { ZhuyinCategory } from '../../models/zhuyin.model';
 import { findZhuyin } from '../../data/zhuyin-inventory';
@@ -85,14 +85,14 @@ function errorFacts(
  */
 export function buildFacts(
   caseRecord: Case,
-  assessment: Assessment,
-  profile: AssessmentProfile,
+  assessment: SessionRecord,
+  profile: RecordProfile,
   probes: ArticulationProbe[],
   processGroups: ManualProcessGroup[],
 ): RuleFacts {
   // The assessment date, never today: a report written a fortnight later must not age the case
   // past a threshold it was under when the data was actually collected.
-  const onDateISO = assessment.assessedOnISODate;
+  const onDateISO = assessment.onISODate;
   const birthDateISO = caseRecord.birthDateISO;
 
   return {

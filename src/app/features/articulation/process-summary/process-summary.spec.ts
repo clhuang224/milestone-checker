@@ -9,7 +9,7 @@ function probe(targetPhonemeId: string, heard: string): ArticulationProbe {
   return {
     id: `probe-${targetPhonemeId}`,
     caseId: 'case-1',
-    assessmentId: 'assessment-1',
+    recordId: 'assessment-1',
     targetPhonemeId,
     items: [{ word: '詞', heard }],
     updatedOnISODate: '2026-08-19',
@@ -18,7 +18,7 @@ function probe(targetPhonemeId: string, heard: string): ArticulationProbe {
 
 function setup(probes: ArticulationProbe[]) {
   const fixture = TestBed.createComponent(ProcessSummary);
-  fixture.componentRef.setInput('assessmentId', 'assessment-1');
+  fixture.componentRef.setInput('recordId', 'assessment-1');
   fixture.componentRef.setInput('probes', probes);
   return fixture;
 }

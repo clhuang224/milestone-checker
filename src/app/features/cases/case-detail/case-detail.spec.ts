@@ -31,102 +31,81 @@ describe('CaseDetail', () => {
       createdOnISODate: '2026-01-01',
       birthDateISO: '2022-09-05',
     });
-    storage.upsertFinding({
-      id: 'drooling',
-      categoryId: 'swallowing',
-      label: '流口水',
-      kind: 'boolean',
+    storage.upsertAssessmentForm({
+      id: 'articulation',
+      name: '構音評估表',
+      body: { kind: 'articulationGrid' },
+      builtin: true,
     });
   });
 
-  function addAssessment(id: string, assessedOnISODate: string) {
-    storage.upsertAssessment({ id, caseId: 'case-1', assessedOnISODate });
+  function addRecord(id: string, onISODate: string, formIds = ['articulation']) {
+    storage.upsertSessionRecord({ id, caseId: 'case-1', onISODate, formIds });
   }
 
-  it('prompts for an assessment before showing the findings form', async () => {
+  it('says so when there are no records yet', async () => {
     const fixture = setup();
     await fixture.whenStable();
 
-    expect(textOf(fixture)).toContain('還沒有任何評估場次');
-    expect((fixture.nativeElement as HTMLElement).querySelector('app-findings-form')).toBeNull();
+    expect(textOf(fixture)).toContain('還沒有任何課節紀錄');
   });
 
-  it('defaults to the newest assessment', async () => {
-    addAssessment('older', '2025-06-01');
-    addAssessment('newer', '2026-06-01');
+  it('lists records newest first', async () => {
+    addRecord('older', '2025-06-01');
+    addRecord('newer', '2026-06-01');
 
     const fixture = setup();
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.selectedAssessment()?.id).toBe('newer');
+    expect(fixture.componentInstance.rows().map((r) => r.record.id)).toEqual(['newer', 'older']);
   });
 
-  it('swaps the recorded findings when the assessment changes', async () => {
-    addAssessment('first', '2025-06-01');
-    addAssessment('second', '2026-06-01');
-    storage.saveProfile({
-      assessmentId: 'first',
-      values: { drooling: true },
-      updatedOnISODate: '2025-06-01',
-    });
-    storage.saveProfile({
-      assessmentId: 'second',
-      values: { drooling: false },
-      updatedOnISODate: '2026-06-01',
-    });
+  it('names the forms attached, which is how a session is recognised', async () => {
+    addRecord('first', '2026-06-01');
 
     const fixture = setup();
     await fixture.whenStable();
-    expect(fixture.componentInstance.values()).toEqual({ drooling: false });
 
-    fixture.componentInstance.selectAssessment('first');
-    await fixture.whenStable();
-    expect(fixture.componentInstance.values()).toEqual({ drooling: true });
+    expect(fixture.componentInstance.rows()[0].formNames).toBe('構音評估表');
   });
 
-  it('reports the age at the assessment date rather than today', async () => {
+  it('shows the age on the day of the session, not today', async () => {
     // Born 2022-09-05, so this session lands the day before the fourth birthday.
-    addAssessment('first', '2026-09-04');
+    addRecord('first', '2026-09-04');
 
     const fixture = setup();
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.ageLabel()).toBe('3 歲 11 個月');
+    expect(fixture.componentInstance.rows()[0].ageLabel).toBe('3 歲 11 個月');
   });
 
-  it('shows the corrected age only when prematurity makes it differ', async () => {
-    addAssessment('first', '2026-09-04');
-
+  it('keeps basic details collapsed, so the table is what you land on', async () => {
     const fixture = setup();
     await fixture.whenStable();
-    expect(fixture.componentInstance.showsCorrectedAge()).toBe(false);
 
-    fixture.componentInstance.onGestationalWeeksChange('32');
-    await fixture.whenStable();
-    expect(fixture.componentInstance.showsCorrectedAge()).toBe(false); // past the catch-up window
+    expect(fixture.componentInstance.detailsOpen()).toBe(false);
+    expect((fixture.nativeElement as HTMLElement).querySelector('#case-birth-date')).toBeNull();
   });
 
-  it('saves findings against the selected assessment', async () => {
-    addAssessment('first', '2026-06-01');
-
+  it('refuses to create a record with no form attached', async () => {
     const fixture = setup();
     await fixture.whenStable();
 
-    fixture.componentInstance.onValuesChange({ drooling: true });
-
-    expect(storage.profileFor('first')?.values).toEqual({ drooling: true });
+    fixture.componentInstance.startCompose();
+    expect(fixture.componentInstance.canCreate()).toBe(false);
+    expect(fixture.componentInstance.createRecord()).toBeUndefined();
+    expect(storage.recordsFor('case-1')).toEqual([]);
   });
 
-  it('records a new assessment and switches to it', async () => {
-    addAssessment('older', '2025-06-01');
-
+  it('creates a record with the forms picked', async () => {
     const fixture = setup();
     await fixture.whenStable();
 
-    fixture.componentInstance.addAssessment();
-    await fixture.whenStable();
+    fixture.componentInstance.startCompose();
+    fixture.componentInstance.toggleDraftForm('articulation');
+    fixture.componentInstance.createRecord();
 
-    expect(storage.assessmentsFor('case-1')).toHaveLength(2);
-    expect(fixture.componentInstance.selectedAssessment()?.id).not.toBe('older');
+    const [record] = storage.recordsFor('case-1');
+    expect(record.formIds).toEqual(['articulation']);
   });
 });

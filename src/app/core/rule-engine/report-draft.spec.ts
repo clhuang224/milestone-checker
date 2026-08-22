@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { Assessment } from '../../models/assessment.model';
+import { SessionRecord } from '../../models/session-record.model';
 import { Case } from '../../models/case.model';
 import { Rule } from '../../models/rule.model';
 import { buildReportDraft } from './report-draft';
 
 const caseRecord: Case = { id: 'case-1', label: '個案 A', createdOnISODate: '2026-01-01' };
 
-const assessment: Assessment = {
+const assessment: SessionRecord = {
   id: 'assessment-1',
   caseId: 'case-1',
-  assessedOnISODate: '2026-03-02',
+  onISODate: '2026-03-02',
+  formIds: ['articulation'],
 };
 
 function ruleWith(reportTemplate: string | undefined): Rule {

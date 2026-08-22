@@ -5,6 +5,7 @@ import { todayISO } from './core/age';
 import { Storage } from './core/storage/storage';
 import { STARTER_ARTICULATION_PROCESSES } from './data/starter-articulation-processes';
 import { starterCaseSeed } from './data/starter-cases';
+import { STARTER_FORMS } from './data/starter-forms';
 import { STARTER_FINDINGS } from './data/starter-findings';
 import { STARTER_RULES } from './data/starter-rules';
 import { DisclaimerBanner } from './shared/disclaimer-banner/disclaimer-banner';
@@ -29,11 +30,14 @@ export class App {
         this.storage.upsertArticulationProcess(process),
       );
     }
+    if (this.storage.assessmentForms().length === 0) {
+      STARTER_FORMS.forEach((form) => this.storage.upsertAssessmentForm(form));
+    }
     // Seeded last: the demo case's pairs reference the process ids seeded just above.
     if (this.storage.cases().length === 0) {
       const seed = starterCaseSeed(todayISO());
       this.storage.upsertCase(seed.caseRecord);
-      this.storage.upsertAssessment(seed.assessment);
+      this.storage.upsertSessionRecord(seed.record);
       this.storage.saveProfile(seed.profile);
       seed.probes.forEach((probe) => this.storage.upsertProbe(probe));
     }

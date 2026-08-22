@@ -40,11 +40,11 @@ export interface SwallowTrial {
   id: string;
   /**
    * Denormalised from the assessment on purpose — filtering by case is by far the most common
-   * read. MUST match the `caseId` of `assessmentId`'s assessment; go through Storage rather
+   * read. MUST match the `caseId` of `recordId`'s assessment; go through Storage rather
    * than assembling this by hand so the two cannot drift apart.
    */
   caseId: string;
-  assessmentId: string;
+  recordId: string;
   /** A ConsistencyDefinition id — 質地. */
   consistencyId: string;
   /**

@@ -17,11 +17,11 @@ export interface ArticulationProbe {
   id: string;
   /**
    * Denormalised from the assessment on purpose — filtering by case is by far the most common
-   * read. MUST match the `caseId` of `assessmentId`'s assessment; go through Storage rather
+   * read. MUST match the `caseId` of `recordId`'s assessment; go through Storage rather
    * than assembling this by hand so the two cannot drift apart.
    */
   caseId: string;
-  assessmentId: string;
+  recordId: string;
   /** A ZhuyinSymbol id — the row of the grid this belongs to. */
   targetPhonemeId: string;
   /** Fixed length; unused slots are left blank rather than removed. */
@@ -44,7 +44,7 @@ export function emptyProbeItems(): ProbeItem[] {
  * and storing them would only let the two drift apart.
  */
 export interface PhonologicalSummary {
-  assessmentId: string;
+  recordId: string;
   useDerived: boolean;
   /** Only meaningful when `useDerived` is false. */
   manual: ManualProcessGroup[];

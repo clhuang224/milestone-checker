@@ -8,7 +8,7 @@ function probe(targetPhonemeId: string, ...heard: string[]): ArticulationProbe {
   return {
     id: `probe-${targetPhonemeId}`,
     caseId: 'case-1',
-    assessmentId: 'assessment-1',
+    recordId: 'assessment-1',
     targetPhonemeId,
     items: heard.map((h) => ({ word: '詞', heard: h })),
     updatedOnISODate: '2026-08-19',
@@ -65,7 +65,7 @@ describe('effectiveProcessGroups', () => {
 
   it('derives when the summary says to', () => {
     const summary: PhonologicalSummary = {
-      assessmentId: 'assessment-1',
+      recordId: 'assessment-1',
       useDerived: true,
       manual: [{ processId: 'ignored', targetPhonemeIds: ['s'] }],
     };
@@ -75,7 +75,7 @@ describe('effectiveProcessGroups', () => {
 
   it('uses the manual grouping when the therapist took over', () => {
     const summary: PhonologicalSummary = {
-      assessmentId: 'assessment-1',
+      recordId: 'assessment-1',
       useDerived: false,
       manual: [{ processId: 'fronting', targetPhonemeIds: ['s'] }],
     };
@@ -85,7 +85,7 @@ describe('effectiveProcessGroups', () => {
 
   it('respects an empty manual grouping rather than falling back to derived', () => {
     const summary: PhonologicalSummary = {
-      assessmentId: 'assessment-1',
+      recordId: 'assessment-1',
       useDerived: false,
       manual: [],
     };

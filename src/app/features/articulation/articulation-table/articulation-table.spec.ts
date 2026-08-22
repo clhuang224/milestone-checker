@@ -7,8 +7,8 @@ import { ArticulationTable } from './articulation-table';
 
 function setup() {
   const fixture = TestBed.createComponent(ArticulationTable);
-  fixture.componentRef.setInput('id', 'case-1');
-  fixture.componentRef.setInput('assessmentId', 'assessment-1');
+  fixture.componentRef.setInput('caseId', 'case-1');
+  fixture.componentRef.setInput('recordId', 'assessment-1');
   return fixture;
 }
 
@@ -27,10 +27,11 @@ describe('ArticulationTable', () => {
     });
     storage = TestBed.inject(Storage);
     storage.upsertCase({ id: 'case-1', label: '個案 A', createdOnISODate: '2026-01-01' });
-    storage.upsertAssessment({
+    storage.upsertSessionRecord({
       id: 'assessment-1',
       caseId: 'case-1',
-      assessedOnISODate: '2026-01-02',
+      onISODate: '2026-01-02',
+      formIds: ['articulation'],
     });
   });
 
@@ -81,7 +82,7 @@ describe('ArticulationTable', () => {
     fixture.componentInstance.setWord('p', 0, '拋');
     fixture.componentInstance.setHeard('p', 0, 'ㄅㄠ');
 
-    const [probe] = storage.probesForAssessment('assessment-1');
+    const [probe] = storage.probesForSessionRecord('assessment-1');
     expect(probe.targetPhonemeId).toBe('p');
     expect(probe.items[0]).toEqual({ word: '拋', heard: 'ㄅㄠ' });
   });
@@ -92,7 +93,7 @@ describe('ArticulationTable', () => {
 
     fixture.componentInstance.setHeard('p', 2, 'ㄅ');
 
-    const [probe] = storage.probesForAssessment('assessment-1');
+    const [probe] = storage.probesForSessionRecord('assessment-1');
     expect(probe.items).toHaveLength(3);
     expect(probe.items[0]).toEqual({ word: '', heard: '' });
     expect(probe.items[2].heard).toBe('ㄅ');
@@ -103,22 +104,23 @@ describe('ArticulationTable', () => {
     await fixture.whenStable();
 
     fixture.componentInstance.setHeard('p', 0, 'ㄅ');
-    expect(storage.probesForAssessment('assessment-1')).toHaveLength(1);
+    expect(storage.probesForSessionRecord('assessment-1')).toHaveLength(1);
 
     fixture.componentInstance.setHeard('p', 0, '');
-    expect(storage.probesForAssessment('assessment-1')).toEqual([]);
+    expect(storage.probesForSessionRecord('assessment-1')).toEqual([]);
   });
 
   it('only shows probes belonging to this assessment', async () => {
-    storage.upsertAssessment({
+    storage.upsertSessionRecord({
       id: 'assessment-other',
       caseId: 'case-1',
-      assessedOnISODate: '2025-01-02',
+      onISODate: '2025-01-02',
+      formIds: ['articulation'],
     });
     storage.upsertProbe({
       id: 'other',
       caseId: 'case-1',
-      assessmentId: 'assessment-other',
+      recordId: 'assessment-other',
       targetPhonemeId: 'p',
       items: [{ word: '拋', heard: 'ㄅㄠ' }],
       updatedOnISODate: '2025-01-02',
@@ -130,10 +132,18 @@ describe('ArticulationTable', () => {
     expect(fixture.componentInstance.probes()).toEqual([]);
   });
 
+  it('does not repeat the header the record page already shows', async () => {
+    const fixture = setup();
+    await fixture.whenStable();
+
+    // The case name, date and back link belong to the record page around this form.
+    expect(textOf(fixture)).not.toContain('回個案');
+  });
+
   it('shows a message when the case does not exist', async () => {
     const fixture = TestBed.createComponent(ArticulationTable);
-    fixture.componentRef.setInput('id', 'missing');
-    fixture.componentRef.setInput('assessmentId', 'assessment-1');
+    fixture.componentRef.setInput('caseId', 'missing');
+    fixture.componentRef.setInput('recordId', 'assessment-1');
     await fixture.whenStable();
 
     expect(textOf(fixture)).toContain('找不到這個個案');

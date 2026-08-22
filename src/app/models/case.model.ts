@@ -15,8 +15,8 @@ export interface Case {
   note?: string;
 }
 
-export interface AssessmentProfile {
-  assessmentId: string;
+export interface RecordProfile {
+  recordId: string;
   /** Key is a FindingDefinition id. */
   values: Record<string, boolean | number>;
   updatedOnISODate: string;

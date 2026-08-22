@@ -1,22 +1,15 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { CategoryId, FindingDefinition } from '../../models/finding.model';
+import { FindingDefinition } from '../../models/finding.model';
 
-const CATEGORY_LABELS: Record<CategoryId, string> = {
-  language: '語言',
-  speech: '言語',
-  swallowing: '吞嚥',
-};
-
-const CATEGORY_ORDER: CategoryId[] = ['language', 'speech', 'swallowing'];
-
-interface CategoryGroup {
-  categoryId: CategoryId;
-  label: string;
-  findings: FindingDefinition[];
-}
-
+/**
+ * The items of one itemList form.
+ *
+ * Previously this grouped items under 語言／言語／吞嚥 headings. That split covered only these
+ * items — articulation and swallowing never followed it — so the grouping is now the form
+ * itself, and this component renders one form's items as a flat list.
+ */
 @Component({
   selector: 'app-findings-form',
   imports: [FormsModule],
@@ -26,14 +19,6 @@ export class FindingsForm {
   readonly findings = input.required<FindingDefinition[]>();
   readonly values = input.required<Record<string, boolean | number>>();
   readonly valuesChange = output<Record<string, boolean | number>>();
-
-  readonly groups = computed<CategoryGroup[]>(() =>
-    CATEGORY_ORDER.map((categoryId) => ({
-      categoryId,
-      label: CATEGORY_LABELS[categoryId],
-      findings: this.findings().filter((f) => f.categoryId === categoryId),
-    })).filter((group) => group.findings.length > 0),
-  );
 
   numberValueFor(findingId: string): number | undefined {
     const value = this.values()[findingId];

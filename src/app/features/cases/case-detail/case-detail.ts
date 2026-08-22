@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
@@ -10,117 +10,77 @@ import {
 import { effectiveProcessGroups } from '../../../core/articulation/summary';
 import { buildFacts } from '../../../core/rule-engine/facts';
 import { evaluateRules } from '../../../core/rule-engine/json-logic';
-import { buildReportDraft } from '../../../core/rule-engine/report-draft';
 import { Storage } from '../../../core/storage/storage';
-import { Assessment } from '../../../models/assessment.model';
-import { FindingsForm } from '../../findings/findings-form';
-import { ReportDraft } from '../../report-draft/report-draft';
-import { WarningsList } from '../../warnings/warnings-list';
+import { SessionRecord } from '../../../models/session-record.model';
+
+interface RecordRow {
+  record: SessionRecord;
+  /** 'ㄅ 構音評估表 · SOAP' — what was actually done, the column people scan for. */
+  formNames: string;
+  ageLabel: string;
+  warningCount: number;
+}
 
 @Component({
   selector: 'app-case-detail',
-  imports: [RouterLink, FindingsForm, WarningsList, ReportDraft],
+  imports: [RouterLink],
   templateUrl: './case-detail.html',
 })
 export class CaseDetail {
   private readonly storage = inject(Storage);
 
   readonly id = input.required<string>();
-  readonly values = signal<Record<string, boolean | number>>({});
-  readonly selectedAssessmentId = signal<string | undefined>(undefined);
 
   readonly caseRecord = computed(() => this.storage.cases().find((c) => c.id === this.id()));
-  readonly findings = this.storage.findings;
+  readonly forms = this.storage.assessmentForms;
 
-  /** Newest first — the session being written up is almost always the latest one. */
-  readonly assessments = computed(() =>
-    this.storage
-      .assessments()
-      .filter((a) => a.caseId === this.id())
-      .sort((a, b) => b.assessedOnISODate.localeCompare(a.assessedOnISODate)),
+  /** Basic details are filled once at intake; they should not own the top of every visit. */
+  readonly detailsOpen = signal(false);
+
+  readonly draftFormIds = signal<string[]>([]);
+  readonly composing = signal(false);
+  readonly canCreate = computed(() => this.draftFormIds().length > 0);
+
+  readonly rows = computed<RecordRow[]>(() =>
+    this.storage.recordsFor(this.id()).map((record) => ({
+      record,
+      formNames: record.formIds
+        .map((formId) => this.forms().find((f) => f.id === formId)?.name ?? formId)
+        .join(' · '),
+      ageLabel: this.ageAt(record),
+      warningCount: this.warningsFor(record).length,
+    })),
   );
 
-  readonly selectedAssessment = computed(() => {
-    const assessments = this.assessments();
-    return assessments.find((a) => a.id === this.selectedAssessmentId()) ?? assessments[0];
-  });
-
-  /** Age at the assessment date, not today — that difference is the point of this screen. */
-  readonly ageLabel = computed(() => this.ageLabelOf('chronological'));
-  readonly correctedAgeLabel = computed(() => this.ageLabelOf('corrected'));
-
-  readonly showsCorrectedAge = computed(() => {
-    const gestationalWeeks = this.caseRecord()?.gestationalWeeks;
-    return gestationalWeeks !== undefined && this.correctedAgeLabel() !== this.ageLabel();
-  });
-
-  readonly triggeredRules = computed(() => {
-    const caseRecord = this.caseRecord();
-    const assessment = this.selectedAssessment();
-    if (!caseRecord || !assessment) {
-      return [];
-    }
-
-    return evaluateRules(
-      this.storage.rules(),
-      buildFacts(
-        caseRecord,
-        assessment,
-        { assessmentId: assessment.id, values: this.values(), updatedOnISODate: todayISO() },
-        this.storage.probesForAssessment(assessment.id),
-        effectiveProcessGroups(
-          this.storage.probesForAssessment(assessment.id),
-          this.storage.summaryFor(assessment.id),
-        ),
-      ),
-    );
-  });
-
-  readonly reportText = computed(() => {
-    const caseRecord = this.caseRecord();
-    const assessment = this.selectedAssessment();
-    return caseRecord && assessment
-      ? buildReportDraft(this.triggeredRules(), caseRecord, assessment, this.values())
-      : '';
-  });
-
-  constructor() {
-    effect(() => {
-      const assessment = this.selectedAssessment();
-      this.values.set(assessment ? (this.storage.profileFor(assessment.id)?.values ?? {}) : {});
-    });
+  startCompose(): void {
+    this.draftFormIds.set([]);
+    this.composing.set(true);
   }
 
-  addAssessment(): void {
-    const assessment: Assessment = {
+  toggleDraftForm(formId: string): void {
+    this.draftFormIds.update((current) =>
+      current.includes(formId) ? current.filter((id) => id !== formId) : [...current, formId],
+    );
+  }
+
+  createRecord(): string | undefined {
+    // At least one form, per the developer: a visit with no form recorded nothing.
+    if (!this.canCreate()) {
+      return undefined;
+    }
+    const record: SessionRecord = {
       id: crypto.randomUUID(),
       caseId: this.id(),
-      assessedOnISODate: todayISO(),
+      onISODate: todayISO(),
+      formIds: this.draftFormIds(),
     };
-    this.storage.upsertAssessment(assessment);
-    this.selectedAssessmentId.set(assessment.id);
+    this.storage.upsertSessionRecord(record);
+    this.composing.set(false);
+    return record.id;
   }
 
-  selectAssessment(assessmentId: string): void {
-    this.selectedAssessmentId.set(assessmentId);
-  }
-
-  setAssessmentDate(assessedOnISODate: string): void {
-    const assessment = this.selectedAssessment();
-    if (assessment && assessedOnISODate) {
-      this.storage.upsertAssessment({ ...assessment, assessedOnISODate });
-    }
-  }
-
-  removeAssessment(): void {
-    const assessment = this.selectedAssessment();
-    if (!assessment) {
-      return;
-    }
-    if (confirm(`確定要刪除 ${assessment.assessedOnISODate} 這次評估嗎?底下的紀錄會一併刪除。`)) {
-      this.storage.removeAssessment(assessment.id);
-      this.selectedAssessmentId.set(undefined);
-    }
+  firstFormOf(record: SessionRecord): string {
+    return record.formIds[0] ?? '';
   }
 
   onBirthDateChange(birthDateISO: string): void {
@@ -142,30 +102,46 @@ export class CaseDetail {
     });
   }
 
-  onValuesChange(next: Record<string, boolean | number>): void {
-    const assessment = this.selectedAssessment();
-    if (!assessment) {
-      return;
-    }
-    this.values.set(next);
-    this.storage.saveProfile({
-      assessmentId: assessment.id,
-      values: next,
-      updatedOnISODate: todayISO(),
-    });
-  }
-
-  private ageLabelOf(basis: 'chronological' | 'corrected'): string {
-    const birthDateISO = this.caseRecord()?.birthDateISO;
-    const onDateISO = this.selectedAssessment()?.assessedOnISODate;
-    if (!birthDateISO || !onDateISO) {
+  /** Age on the day of the visit, not today — and a mistyped year shows up here immediately. */
+  private ageAt(record: SessionRecord): string {
+    const caseRecord = this.caseRecord();
+    if (!caseRecord?.birthDateISO) {
       return '';
     }
+    const months = ageInMonthsOn(caseRecord.birthDateISO, record.onISODate);
+    if (months === undefined) {
+      return '';
+    }
+    const corrected = correctedAgeInMonthsOn(
+      caseRecord.birthDateISO,
+      caseRecord.gestationalWeeks,
+      record.onISODate,
+    );
+    const label = formatAgeInMonths(months);
+    return corrected !== undefined && corrected !== months
+      ? `${label}（矯正 ${formatAgeInMonths(corrected)}）`
+      : label;
+  }
 
-    const months =
-      basis === 'corrected'
-        ? correctedAgeInMonthsOn(birthDateISO, this.caseRecord()?.gestationalWeeks, onDateISO)
-        : ageInMonthsOn(birthDateISO, onDateISO);
-    return months === undefined ? '' : formatAgeInMonths(months);
+  private warningsFor(record: SessionRecord) {
+    const caseRecord = this.caseRecord();
+    if (!caseRecord) {
+      return [];
+    }
+    const probes = this.storage.probesForSessionRecord(record.id);
+    return evaluateRules(
+      this.storage.rules(),
+      buildFacts(
+        caseRecord,
+        record,
+        this.storage.profileFor(record.id) ?? {
+          recordId: record.id,
+          values: {},
+          updatedOnISODate: record.onISODate,
+        },
+        probes,
+        effectiveProcessGroups(probes, this.storage.summaryFor(record.id)),
+      ),
+    );
   }
 }

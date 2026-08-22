@@ -1,8 +1,8 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 import { ArticulationProbe, PhonologicalSummary } from '../../models/articulation-record.model';
-import { Assessment } from '../../models/assessment.model';
-import { AssessmentProfile, Case } from '../../models/case.model';
+import { AssessmentFormDefinition, SessionRecord } from '../../models/session-record.model';
+import { Case, RecordProfile } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { PhonologicalProcessDefinition } from '../../models/phonological-process.model';
 import { Rule } from '../../models/rule.model';
@@ -12,17 +12,18 @@ import { Rule } from '../../models/rule.model';
  * tradeoff. Seeds only run against an empty collection, so without a bump a change to the
  * starter content would be invisible to anyone who has already opened the app.
  */
-const FINDINGS_KEY = 'therapist-rule-engine:findings:v4';
-const CASES_KEY = 'therapist-rule-engine:cases:v4';
-const RULES_KEY = 'therapist-rule-engine:rules:v4';
-const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v4';
-const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v4';
-const PHONOLOGICAL_SUMMARIES_KEY = 'therapist-rule-engine:phonological-summaries:v4';
-const ASSESSMENTS_KEY = 'therapist-rule-engine:assessments:v4';
+const FINDINGS_KEY = 'therapist-rule-engine:findings:v5';
+const CASES_KEY = 'therapist-rule-engine:cases:v5';
+const RULES_KEY = 'therapist-rule-engine:rules:v5';
+const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v5';
+const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v5';
+const PHONOLOGICAL_SUMMARIES_KEY = 'therapist-rule-engine:phonological-summaries:v5';
+const SESSION_RECORDS_KEY = 'therapist-rule-engine:session-records:v5';
+const FORMS_KEY = 'therapist-rule-engine:assessment-forms:v5';
 
 interface CasesData {
   cases: Case[];
-  profiles: AssessmentProfile[];
+  profiles: RecordProfile[];
 }
 
 function emptyCasesData(): CasesData {
@@ -69,7 +70,12 @@ export class Storage {
   private readonly articulationRecordsData = signal<ArticulationProbe[]>(
     loadArray<ArticulationProbe>(ARTICULATION_RECORDS_KEY),
   );
-  private readonly assessmentsData = signal<Assessment[]>(loadArray<Assessment>(ASSESSMENTS_KEY));
+  private readonly sessionRecordsData = signal<SessionRecord[]>(
+    loadArray<SessionRecord>(SESSION_RECORDS_KEY),
+  );
+  private readonly formsData = signal<AssessmentFormDefinition[]>(
+    loadArray<AssessmentFormDefinition>(FORMS_KEY),
+  );
   private readonly summariesData = signal<PhonologicalSummary[]>(
     loadArray<PhonologicalSummary>(PHONOLOGICAL_SUMMARIES_KEY),
   );
@@ -80,8 +86,9 @@ export class Storage {
   readonly rules = computed(() => this.rulesData());
   readonly articulationProcesses = computed(() => this.articulationProcessesData());
   readonly articulationRecords = computed(() => this.articulationRecordsData());
-  readonly assessments = computed(() => this.assessmentsData());
+  readonly sessionRecords = computed<SessionRecord[]>(() => this.sessionRecordsData());
   readonly phonologicalSummaries = computed(() => this.summariesData());
+  readonly assessmentForms = computed(() => this.formsData());
 
   upsertFinding(finding: FindingDefinition): void {
     this.findingsData.update((current) => [...current.filter((f) => f.id !== finding.id), finding]);
@@ -102,75 +109,70 @@ export class Storage {
   }
 
   removeCase(id: string): void {
-    const assessmentIds = new Set(
-      this.assessmentsData()
+    const recordIds = new Set(
+      this.sessionRecordsData()
         .filter((a) => a.caseId === id)
         .map((a) => a.id),
     );
 
     this.casesData.update((current) => ({
       cases: current.cases.filter((c) => c.id !== id),
-      profiles: current.profiles.filter((p) => !assessmentIds.has(p.assessmentId)),
+      profiles: current.profiles.filter((p) => !recordIds.has(p.recordId)),
     }));
     this.persistCases();
 
-    this.assessmentsData.update((current) => current.filter((a) => a.caseId !== id));
-    this.persistAssessments();
+    this.sessionRecordsData.update((current) => current.filter((a) => a.caseId !== id));
+    this.persistSessionRecords();
 
     this.articulationRecordsData.update((current) => current.filter((r) => r.caseId !== id));
     this.persistArticulationRecords();
 
-    this.summariesData.update((current) =>
-      current.filter((s) => !assessmentIds.has(s.assessmentId)),
-    );
+    this.summariesData.update((current) => current.filter((s) => !recordIds.has(s.recordId)));
     this.persistSummaries();
   }
 
-  assessmentsFor(caseId: string): Assessment[] {
-    return this.assessmentsData()
+  recordsFor(caseId: string): SessionRecord[] {
+    return this.sessionRecordsData()
       .filter((a) => a.caseId === caseId)
-      .sort((a, b) => b.assessedOnISODate.localeCompare(a.assessedOnISODate));
+      .sort((a: SessionRecord, b: SessionRecord) => b.onISODate.localeCompare(a.onISODate));
   }
 
-  upsertAssessment(assessment: Assessment): void {
-    this.assessmentsData.update((current) => [
-      ...current.filter((a) => a.id !== assessment.id),
-      assessment,
+  upsertSessionRecord(record: SessionRecord): void {
+    this.sessionRecordsData.update((current) => [
+      ...current.filter((a) => a.id !== record.id),
+      record,
     ]);
-    this.persistAssessments();
+    this.persistSessionRecords();
   }
 
   /** Removes a session along with everything recorded under it, leaving no orphans behind. */
-  removeAssessment(id: string): void {
-    this.assessmentsData.update((current) => current.filter((a) => a.id !== id));
-    this.persistAssessments();
+  removeRecord(id: string): void {
+    this.sessionRecordsData.update((current) => current.filter((a) => a.id !== id));
+    this.persistSessionRecords();
 
     this.casesData.update((current) => ({
       ...current,
-      profiles: current.profiles.filter((p) => p.assessmentId !== id),
+      profiles: current.profiles.filter((p) => p.recordId !== id),
     }));
     this.persistCases();
 
-    this.articulationRecordsData.update((current) => current.filter((r) => r.assessmentId !== id));
+    this.articulationRecordsData.update((current) => current.filter((r) => r.recordId !== id));
     this.persistArticulationRecords();
 
-    this.summariesData.update((current) => current.filter((s) => s.assessmentId !== id));
+    this.summariesData.update((current) => current.filter((s) => s.recordId !== id));
     this.persistSummaries();
   }
 
-  saveProfile(profile: AssessmentProfile): void {
+  saveProfile(profile: RecordProfile): void {
     this.casesData.update((current) => ({
       ...current,
-      profiles: [
-        ...current.profiles.filter((p) => p.assessmentId !== profile.assessmentId),
-        profile,
-      ],
+      profiles: [...current.profiles.filter((p) => p.recordId !== profile.recordId), profile],
     }));
     this.persistCases();
   }
 
-  profileFor(assessmentId: string): AssessmentProfile | undefined {
-    return this.casesData().profiles.find((p) => p.assessmentId === assessmentId);
+  profileFor(recordId: string): RecordProfile | undefined {
+    return this.casesData().profiles.find((p) => p.recordId === recordId);
   }
 
   upsertRule(rule: Rule): void {
@@ -217,14 +219,14 @@ export class Storage {
     return this.articulationRecordsData().filter((r) => r.caseId === caseId);
   }
 
-  probesForAssessment(assessmentId: string): ArticulationProbe[] {
-    return this.articulationRecordsData().filter((r) => r.assessmentId === assessmentId);
+  probesForSessionRecord(recordId: string): ArticulationProbe[] {
+    return this.articulationRecordsData().filter((r) => r.recordId === recordId);
   }
 
   /** Fills in `caseId` from the assessment, so the denormalised copy cannot drift. */
   upsertProbe(probe: ArticulationProbe): void {
     const caseId =
-      this.assessmentsData().find((a) => a.id === probe.assessmentId)?.caseId ?? probe.caseId;
+      this.sessionRecordsData().find((a) => a.id === probe.recordId)?.caseId ?? probe.caseId;
 
     this.articulationRecordsData.update((current) => [
       ...current.filter((r) => r.id !== probe.id),
@@ -257,13 +259,18 @@ export class Storage {
     );
   }
 
-  summaryFor(assessmentId: string): PhonologicalSummary | undefined {
-    return this.summariesData().find((s) => s.assessmentId === assessmentId);
+  upsertAssessmentForm(form: AssessmentFormDefinition): void {
+    this.formsData.update((current) => [...current.filter((f) => f.id !== form.id), form]);
+    localStorage.setItem(FORMS_KEY, JSON.stringify(this.formsData()));
+  }
+
+  summaryFor(recordId: string): PhonologicalSummary | undefined {
+    return this.summariesData().find((s) => s.recordId === recordId);
   }
 
   saveSummary(summary: PhonologicalSummary): void {
     this.summariesData.update((current) => [
-      ...current.filter((s) => s.assessmentId !== summary.assessmentId),
+      ...current.filter((s) => s.recordId !== summary.recordId),
       summary,
     ]);
     this.persistSummaries();
@@ -273,8 +280,8 @@ export class Storage {
     localStorage.setItem(PHONOLOGICAL_SUMMARIES_KEY, JSON.stringify(this.summariesData()));
   }
 
-  private persistAssessments(): void {
-    localStorage.setItem(ASSESSMENTS_KEY, JSON.stringify(this.assessmentsData()));
+  private persistSessionRecords(): void {
+    localStorage.setItem(SESSION_RECORDS_KEY, JSON.stringify(this.sessionRecordsData()));
   }
 
   private persistArticulationRecords(): void {

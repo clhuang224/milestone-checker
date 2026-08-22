@@ -1,5 +1,5 @@
-import { Assessment } from '../../models/assessment.model';
-import { AssessmentProfile, Case } from '../../models/case.model';
+import { SessionRecord } from '../../models/session-record.model';
+import { RecordProfile, Case } from '../../models/case.model';
 import { Rule } from '../../models/rule.model';
 
 const VALUE_PLACEHOLDER = /\{\{value:([\w-]+)\}\}/g;
@@ -21,8 +21,8 @@ function formatValue(value: boolean | number | undefined): string {
 export function buildReportDraft(
   triggeredRules: Rule[],
   caseRecord: Case,
-  assessment: Assessment,
-  values: AssessmentProfile['values'] = {},
+  assessment: SessionRecord,
+  values: RecordProfile['values'] = {},
 ): string {
   return triggeredRules
     .map((rule) => rule.action.reportTemplate)
@@ -30,7 +30,7 @@ export function buildReportDraft(
     .map((template) =>
       template
         .replaceAll('{{case.label}}', caseRecord.label)
-        .replaceAll('{{assessment.date}}', assessment.assessedOnISODate)
+        .replaceAll('{{assessment.date}}', assessment.onISODate)
         .replace(VALUE_PLACEHOLDER, (_match, fieldId: string) => formatValue(values[fieldId])),
     )
     .join('\n\n');

@@ -1,16 +1,17 @@
 import { ArticulationProbe, ProbeItem } from '../models/articulation-record.model';
-import { Assessment } from '../models/assessment.model';
-import { AssessmentProfile, Case } from '../models/case.model';
+import { SessionRecord } from '../models/session-record.model';
+import { ARTICULATION_FORM_ID } from './starter-forms';
+import { RecordProfile, Case } from '../models/case.model';
 
 export interface StarterCaseSeed {
   caseRecord: Case;
-  assessment: Assessment;
-  profile: AssessmentProfile;
+  record: SessionRecord;
+  profile: RecordProfile;
   probes: ArticulationProbe[];
 }
 
 const CASE_ID = 'demo-case-xiaoqie';
-const ASSESSMENT_ID = 'demo-assessment-xiaoqie';
+const RECORD_ID = 'demo-assessment-xiaoqie';
 
 /** Subtracts whole years from an ISO date, keeping the month and day. */
 function yearsBefore(onDateISO: string, years: number): string {
@@ -40,7 +41,7 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
   const probe = (targetPhonemeId: string, probeItems: ProbeItem[]): ArticulationProbe => ({
     id: `${CASE_ID}-${targetPhonemeId}`,
     caseId: CASE_ID,
-    assessmentId: ASSESSMENT_ID,
+    recordId: RECORD_ID,
     targetPhonemeId,
     items: probeItems,
     updatedOnISODate: onDateISO,
@@ -54,8 +55,13 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
       birthDateISO: yearsBefore(onDateISO, 8),
       note: '示範個案——改寫、簡化過的示意資料，可以直接修改或刪除。',
     },
-    assessment: { id: ASSESSMENT_ID, caseId: CASE_ID, assessedOnISODate: onDateISO },
-    profile: { assessmentId: ASSESSMENT_ID, values: {}, updatedOnISODate: onDateISO },
+    record: {
+      id: RECORD_ID,
+      caseId: CASE_ID,
+      onISODate: onDateISO,
+      formIds: [ARTICULATION_FORM_ID],
+    },
+    profile: { recordId: RECORD_ID, values: {}, updatedOnISODate: onDateISO },
     probes: [
       probe('zh', items(['蜘蛛', 'ㄉㄭⁿ'])),
       probe('ch', items(['吃飯', 'ㄎㄭⁿ'], ['吃菜', 'ㄎㄭ'])),
