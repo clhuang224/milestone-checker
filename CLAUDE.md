@@ -16,6 +16,26 @@ Because there's no human review gate, compensate by:
 
 As of the `add-therapist-rule-engine` change， this app's target audience is **speech-language therapists （語言治療師）**， not parents/caregivers. The earlier parent-facing milestone-checklist concept (`add-lang-speech-swallowing-checklist`) is shelved — don't resurrect its data model (`Milestone`/`AchievementRecord`/`ObservationEntry`) without an explicit new OpenSpec change. The core mechanic is now: therapists author condition→action rules (stored as JsonLogic JSON) that fire warnings/summaries against a case's recorded findings， and help draft report text.
 
+## Working as a team
+
+The user's role is the developer and the clinical authority. Claude Code's role is their
+assistant and the one who talks to them — everything below reports through Claude Code, not
+directly to the user.
+
+Use subagents for the work they fit, rather than doing everything inline:
+
+| 角色       | 何時派                                                                                                                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 文獻查證   | Any clinical claim that needs grounding. Reports what sources say **and what they leave unsettled** — "the literature does not settle this" is a real answer, and a more useful one than a guess. |
+| 質疑／辯論 | Before committing to a design with a hard-to-reverse consequence. Its job is to argue the other side, not to agree.                                                                               |
+| UI/UX      | Screen layout and interaction, especially where the arrangement carries clinical meaning (the articulation grid's columns are a place ordering, not decoration).                                  |
+| Angular/TS | Data-model and architecture decisions, signals, strict-mode types.                                                                                                                                |
+
+The point is a team that covers 需求 → 設計 → 架構. Claude Code coordinates, resolves conflicts
+between them, and reports back in one voice.
+
+Do not let a subagent invent clinical content either — the rule below binds them too.
+
 ## Scope discipline
 
 This is an experiment project for trying Claude Code + Angular. The first OpenSpec change is scoped to **language / speech / swallowing** domains only. Don't silently expand scope to other clinical domains (motor, cognition, etc.) — that belongs in a later OpenSpec change.
