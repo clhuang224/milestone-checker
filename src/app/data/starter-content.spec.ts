@@ -11,7 +11,7 @@ function fieldIdsIn(node: ConditionNode): string[] {
     return [node.fieldId];
   }
   // Applicability rows reference phoneme/process ids, not findings.
-  return node.type === 'set' ? [] : node.children.flatMap(fieldIdsIn);
+  return node.type === 'set' || node.type === 'trial' ? [] : node.children.flatMap(fieldIdsIn);
 }
 
 describe('starter content', () => {

@@ -30,13 +30,36 @@ export interface ConditionSetRow {
   values: string[];
 }
 
+/**
+ * 適用條件 over swallow trials: 「清水 3cc 以下會嗆咳」.
+ *
+ * Its own row type rather than a ConditionSetRow variant, because every clause narrows the SAME
+ * matched trial — a conjunction over one item, where a set row is a membership test over a
+ * collection. Sharing the type would also drag along `mode: 'excludes'`, whose existential
+ * meaning exists for articulation errors and means nothing here.
+ */
+export interface ConditionTrialRow {
+  type: 'trial';
+  /**
+   * ConsistencyDefinition ids. Empty means 不限質地 and the clause is omitted — note this is the
+   * OPPOSITE default from a set row, where empty deliberately matches nothing. The UI says so.
+   */
+  consistencyIds: string[];
+  /** 量. Absent means volume is not part of this test. */
+  volume?: { operator: ConditionOperator; cc: number };
+  /** 不嗆咳的比例, 0–100. 「會嗆咳」 is `{ operator: '<', percent: 100 }`. */
+  successPercent?: { operator: ConditionOperator; percent: number };
+}
+
 export interface ConditionGroup {
   type: 'group';
   combinator: 'and' | 'or';
   children: ConditionNode[];
 }
 
-export type ConditionNode = ConditionRow | ConditionSetRow | ConditionGroup;
+export type ConditionNode = ConditionRow | ConditionSetRow | ConditionTrialRow | ConditionGroup;
+
+const TRIALS_VAR = 'swallowing.trials';
 
 const ERRORS_VAR = 'articulation.errors';
 
@@ -60,10 +83,44 @@ function subjectPredicate(subject: ConditionSubject, values: string[]): JsonLogi
   return { in: [{ var: SUBJECT_FIELD[subject] }, values] };
 }
 
+/**
+ * The clauses that narrow one trial, ANDed together.
+ *
+ * The `!= null` guard on volume is load-bearing, not defensive noise. json-logic-js resolves a
+ * missing `var` to `null`, and `null <= 3` is `true` in JS — so without it, the spoon-of-puree
+ * trial, the one with no measurable volume and therefore the *discharge* case, would satisfy
+ * 「3cc 以下」 and fire a still-in-treatment warning on exactly the case that no longer needs
+ * one. The unrecorded-field gate in json-logic.ts cannot cover this: it only walks comparison
+ * rows, not the insides of a `some`.
+ */
+function trialClauses(row: ConditionTrialRow): JsonLogicRule[] {
+  const clauses: JsonLogicRule[] = [];
+
+  if (row.consistencyIds.length > 0) {
+    clauses.push({ in: [{ var: 'consistencyId' }, row.consistencyIds] });
+  }
+  if (row.volume) {
+    clauses.push({ '!=': [{ var: 'volumeCc' }, null] });
+    clauses.push({ [row.volume.operator]: [{ var: 'volumeCc' }, row.volume.cc] });
+  }
+  if (row.successPercent) {
+    clauses.push({
+      [row.successPercent.operator]: [{ var: 'successPercent' }, row.successPercent.percent],
+    });
+  }
+
+  // `and: []` is truthy in JsonLogic, which would match every trial. An empty row must match
+  // nothing instead, the same way an empty set row does.
+  return clauses.length > 0 ? clauses : [{ '==': [1, 0] }];
+}
+
 /** Serializes the rule-editor's internal condition model to JsonLogic. */
 export function toJsonLogic(node: ConditionNode): JsonLogicRule {
   if (node.type === 'row') {
     return { [node.operator]: [{ var: node.fieldId }, node.value] };
+  }
+  if (node.type === 'trial') {
+    return { some: [{ var: TRIALS_VAR }, { and: trialClauses(node) }] };
   }
   if (node.type === 'set') {
     const predicate = subjectPredicate(node.subject, node.values);
@@ -86,6 +143,10 @@ export function fromJsonLogic(rule: JsonLogicRule): ConditionNode {
   const args = rule[operator];
 
   if (operator === 'some') {
+    // Both row kinds compile to `some`; the collection says which one this is.
+    if (Array.isArray(args) && varNameOf(args[0]) === TRIALS_VAR) {
+      return trialRowFrom(args);
+    }
     return setRowFrom(args);
   }
 
@@ -174,6 +235,45 @@ function subjectOf(
   return undefined;
 }
 
+/** Reads one narrowing clause back out, or undefined if it is not one we emit. */
+function readClause(
+  clause: unknown,
+): { field: string; operator: string; value: unknown } | undefined {
+  const entry = singleKey(clause);
+  if (!entry || !Array.isArray(entry[1]) || entry[1].length !== 2) {
+    return undefined;
+  }
+  const [left, right] = entry[1] as [unknown, unknown];
+  const field = varNameOf(left);
+  return field === undefined ? undefined : { field, operator: entry[0], value: right };
+}
+
+function trialRowFrom(args: unknown[]): ConditionTrialRow {
+  const predicate = singleKey(args[1]);
+  if (!predicate || predicate[0] !== 'and' || !Array.isArray(predicate[1])) {
+    throw new Error('Unsupported JsonLogic "some" predicate over swallow trials');
+  }
+
+  const row: ConditionTrialRow = { type: 'trial', consistencyIds: [] };
+
+  for (const clause of predicate[1]) {
+    const read = readClause(clause);
+    if (!read) {
+      continue;
+    }
+    if (read.operator === 'in' && read.field === 'consistencyId' && Array.isArray(read.value)) {
+      row.consistencyIds = read.value as string[];
+    } else if (read.field === 'volumeCc' && isComparisonOperator(read.operator)) {
+      // The `!= null` guard is emitted alongside the real comparison; it carries no user intent.
+      row.volume = { operator: read.operator, cc: Number(read.value) };
+    } else if (read.field === 'successPercent' && isComparisonOperator(read.operator)) {
+      row.successPercent = { operator: read.operator, percent: Number(read.value) };
+    }
+  }
+
+  return row;
+}
+
 function setRowFrom(args: unknown): ConditionSetRow {
   if (!Array.isArray(args) || args.length !== 2) {
     throw new Error('Invalid JsonLogic "some" rule: expected [{ var }, predicate]');
@@ -212,6 +312,11 @@ export function defaultRow(fields: RuleField[]): ConditionRow {
 /** A starter applicability row — empty, so it matches nothing until sounds are picked. */
 export function defaultSetRow(): ConditionSetRow {
   return { type: 'set', subject: 'articulationTarget', mode: 'excludes', values: [] };
+}
+
+/** A starter trial row, seeded with 「會嗆咳」 so it is never an empty match-nothing row. */
+export function defaultTrialRow(): ConditionTrialRow {
+  return { type: 'trial', consistencyIds: [], successPercent: { operator: '<', percent: 100 } };
 }
 
 /** A starter condition group for the given fields, used when creating a new rule. */

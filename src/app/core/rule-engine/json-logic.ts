@@ -7,14 +7,16 @@ import { RuleFacts } from './facts';
 /**
  * Field ids referenced by comparison rows only.
  *
- * Applicability (`set`) rows are deliberately skipped: they run over a list, and an empty list
- * is a legitimate "no errors recorded" answer rather than a missing value.
+ * Applicability rows — both `set` and `trial` — are deliberately skipped: they run over a list,
+ * and an empty list is a legitimate "nothing recorded" answer rather than a missing value. A
+ * trial row guards its own missing values inside the compiled predicate, since this gate cannot
+ * see into a `some`.
  */
 function comparisonFieldIdsIn(node: ConditionNode): string[] {
   if (node.type === 'row') {
     return [node.fieldId];
   }
-  if (node.type === 'set') {
+  if (node.type === 'set' || node.type === 'trial') {
     return [];
   }
   return node.children.flatMap(comparisonFieldIdsIn);

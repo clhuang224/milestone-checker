@@ -34,6 +34,8 @@ Use subagents for the work they fit, rather than doing everything inline:
 The point is a team that covers 需求 → 設計 → 架構. Claude Code coordinates, resolves conflicts
 between them, and reports back in one voice.
 
+Subagents run on **Opus 5 at most** — pass `model: "opus"`, never a larger tier.
+
 Do not let a subagent invent clinical content either — the rule below binds them too.
 
 ## Scope discipline
