@@ -17,8 +17,9 @@
 | 檔案                            | 內容                              | 狀態           |
 | ------------------------------- | --------------------------------- | -------------- |
 | `taiwan-mandarin-consonants.md` | 21 個聲母的部位／方式／送氣／清濁 | 已由開發者確認 |
-| `taiwan-mandarin-vowels.md`     | 韻母與介音的辨異徵性              | 尚未提供       |
+| `taiwan-mandarin-vowels.md`     | 韻母與介音的辨異徵性              | 已由開發者確認 |
 | `phonological-processes.md`     | 音韻歷程定義                      | 已由開發者確認 |
+| `swallowing-consistencies.md`   | 吞嚥質地分級與質性標記            | 已由開發者確認 |
 | `open-questions.md`             | 擱置的臨床問題                    | 持續更新       |
 
 ## 不引用標準化測驗
@@ -34,6 +35,7 @@
 - `taiwan-mandarin-consonants.md` ↔ `src/app/data/zhuyin-inventory.ts`
 - `taiwan-mandarin-vowels.md` ↔ `src/app/data/zhuyin-inventory.ts`
 - `phonological-processes.md` ↔ `src/app/data/starter-articulation-processes.ts`
+- `swallowing-consistencies.md` ↔ `src/app/data/starter-swallow-catalogue.ts`
 
 表格用英文 id 那一欄對應程式碼裡的值，中文欄位是畫面顯示用的。
 

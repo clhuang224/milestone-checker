@@ -52,6 +52,13 @@ export interface SwallowTrial {
    * 嗆咳」 is a real trial with no volume. Rules comparing volume must guard against absence.
    */
   volumeCc?: number;
+  /**
+   * 質性標記 — ConsistencyFlagDefinition ids. Independent of the level, because a gelatin jelly
+   * has no fixed level at all: it changes texture on contact with saliva or body heat.
+   */
+  flagIds: string[];
+  /** 實際測試的食物品名, e.g. 「布丁」「優格」. Those are examples of a level, not levels. */
+  testFood?: string;
   outcome: SwallowOutcome;
   /** 情境與前置處置, e.g. 「冰檸檬棒刺激後」. */
   note?: string;

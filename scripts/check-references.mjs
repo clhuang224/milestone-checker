@@ -186,7 +186,49 @@ function checkProcesses() {
   return { name: 'phonological-processes', count: rows.length, problems };
 }
 
-const results = [checkInitials(), checkFinals(), checkProcesses()];
+/** Consistencies, their qualitative flags, and the counting units, all id + label pairs. */
+function checkSwallowing() {
+  const markdown = readFileSync('references/swallowing-consistencies.md', 'utf8');
+  const source = readFileSync('src/app/data/starter-swallow-catalogue.ts', 'utf8');
+
+  const rows = [
+    ...markdownTable(markdown, '## 兩個交疊的量表，不是一條線')
+      .filter((cells) => cells[0] !== 'id')
+      .map(([id, , name]) => ({ id, name })),
+    ...markdownTable(markdown, '## 質性標記')
+      .filter((cells) => cells[0] !== 'id')
+      .map(([id, name]) => ({ id, name })),
+    ...markdownTable(markdown, '## 計次單位')
+      .filter((cells) => cells[0] !== 'id')
+      .map(([id, name]) => ({ id, name })),
+  ];
+
+  const code = [...source.matchAll(/id: '([^']+)',[\s\S]{0,80}?name: '([^']+)'/g)].map(
+    ([, id, name]) => ({ id, name }),
+  );
+
+  const problems = [];
+  const byId = new Map(code.map((entry) => [entry.id, entry]));
+  for (const row of rows) {
+    const entry = byId.get(row.id);
+    if (!entry) {
+      problems.push(`程式碼裡找不到 ${row.name} (${row.id})`);
+    } else if (entry.name !== row.name) {
+      problems.push(`${row.id} 的名稱:references 是 ${row.name}，程式碼是 ${entry.name}`);
+    }
+  }
+
+  const referencedIds = new Set(rows.map((row) => row.id));
+  for (const entry of code) {
+    if (!referencedIds.has(entry.id)) {
+      problems.push(`references 裡找不到 ${entry.name} (${entry.id})`);
+    }
+  }
+
+  return { name: 'swallowing-consistencies', count: rows.length, problems };
+}
+
+const results = [checkInitials(), checkFinals(), checkProcesses(), checkSwallowing()];
 const failed = results.filter((result) => result.problems.length > 0);
 
 for (const result of results) {
