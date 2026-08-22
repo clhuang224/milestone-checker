@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: [lint, typecheck, test]
+        command: [lint, typecheck, test, "check:references"]
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-pnpm

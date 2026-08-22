@@ -16,7 +16,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: [lint, typecheck, test]
+        # check:references also runs in .husky/pre-commit, but --no-verify bypasses that,
+        # and clinical data drifting out of step with references/ is the one thing no
+        # reviewer is watching for here.
+        command: [lint, typecheck, test, "check:references"]
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-pnpm
