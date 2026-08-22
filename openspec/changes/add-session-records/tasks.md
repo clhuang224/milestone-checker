@@ -52,5 +52,5 @@
 
 - [x] 8.1 `CLAUDE.md` 的「範圍限定在語言/言語/吞嚥」改寫成「只做目前有的表」
 - [x] 8.2 `pnpm lint` / `pnpm test` / `pnpm build` / `pnpm check:references` 全過
-- [x] 8.3 e2e 更新到新動線
+- [x] 8.3 e2e 更新到新動線（原本勾了但沒做，補上並實際跑綠）
 - [x] 8.4 瀏覽器確認構音格子表在紀錄頁裡仍是六欄不 wrap

@@ -6,13 +6,10 @@
 
 ## 缺陷
 
-- [ ] **吞嚥的 trial 條件永遠不會成立。** 型別、成功率計算、預設目錄、規則編輯器的 trial 條件列都在，但 `Storage` 沒有 `SwallowTrial` 的集合，`buildFacts()` 也不產生 `swallowing.trials` 命名空間。寫得出條件，但它不會觸發。
-- [ ] **報告草稿沒有被連動刪除。** `removeCase()` 與 `removeRecord()` 清了 profile、音對、歷程覆寫，但沒清 `REPORTS_KEY`，刪掉個案之後草稿會留在 `localStorage` 裡。
 - [ ] **`record-detail.html` 不依 `body.kind` 分派。** 任何不是警示／報告的頁籤一律渲染 `<app-articulation-table>`。今天無害（只有一張表），但接上 SOAP 或吞嚥表之後會靜默顯示錯的表。
 - [ ] **課節建立後不能改掛哪些表。** `session-record.model.ts` 的註解寫 `formIds` 之後可以修改，但畫面上沒有這個入口。要嘛做出來，要嘛改掉註解。
-- [ ] **`e2e/articulation-smoke.mjs` 對不上現在的畫面。** 它點「＋ 新增評估」（已改名「＋ 新增課節紀錄」）、找「構音記錄」連結（已改名「構音評估表」）、在個案頁上讀警示與報告（已移進課節紀錄頁的頁籤）。`add-session-records` 的 8.3 勾了但實際沒改。
-- [ ] **沒有插入 `ⁿ` 的方式。** 鼻音化的上標是 `parse-heard.ts` 要求的記法，但畫面上沒有按鈕也沒有選單，使用說明只好叫人自己複製字元。
 - [ ] **`Case.note` 與 `SessionRecord.note` 沒有畫面。** 示範個案「小切」帶著一句備註，任何地方都看不到。
+- [ ] **吞嚥的資料路徑通了，但沒有寫入口。** `Storage` 有了 `SwallowTrial` 集合、`buildFacts()` 也產出 `swallowing.trials`，規則條件可以正常觸發——但除了測試以外沒有東西會建立一筆嘗試。要等吞嚥評估表的畫面（見下）。
 
 ## 要開發者決定
 
