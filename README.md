@@ -1,51 +1,109 @@
 # milestone-checker
 
-一個給語言治療師用的臨床規則輔助工具實驗專案。
+給**台灣語言治療師**用的臨床規則輔助工具，同時是一個開發流程的實驗專案。
 
-> **這個專案有兩個實驗目的**:一是實驗 [Claude Code](https://claude.com/product/claude-code) 的開發流程與能力（OpenSpec 規格驅動、subagents 等），二是實驗 Angular(standalone + Signals、zoneless)本身。應用本身的完成度/正確性不是重點，不是正式產品。
->
-> 這個 repo 走**「vibe coding」**:程式碼不會被認真逐行 review，主要靠 Claude Code 自主開發、跑測試自我把關。相對地，commit 會刻意切得**小顆粒**（一個邏輯改動一個 commit），方便事後追查是哪一步出的問題，而不是靠 review 擋在前面。
+> ⚠️ **僅供臨床參考，不取代治療師的專業判斷。** 規則與警示是治療師自己編寫的臨床經驗歸納，不是通過審核的診斷標準。
 
-## 這是什麼
+> ⚠️ **請不要輸入真實個案資料。** 個案名稱請使用化名或代號。詳見下方「資料放在哪裡」。
 
-給**語言治療師**用的規則輔助工具:治療師依照自己的臨床經驗，把「哪些觀察項目/評估數值組合在一起代表什麼」寫成規則（條件 → 警示/歸納文字），系統依照個案身上實際勾選的觀察項目跟評估數值，自動比對規則、跳出警示，並協助組出報告用的文字草稿。**第一版先做「語言 / 言語 / 吞嚥」**這三個領域。
+## 這個工具在做什麼
 
-> 這個方向取代了專案最早的構想(給家長/照顧者用的兒童發展打勾清單，概念參考自 [AgendaLu/piaget-based-child-checklist](https://github.com/AgendaLu/piaget-based-child-checklist));那個構想目前擱置，細節見下方「開發方式」。
+治療師把「哪些觀察組合起來代表什麼」寫成規則——條件成立時跳出警示，並給出一段可以放進報告的文字。系統依照個案身上實際記錄的內容自動比對。
 
-> ⚠️ **僅供臨床參考使用，不取代治療師的專業判斷。** 規則與警示是治療師自己編輯的臨床經驗歸納，不是通過審核的診斷標準。
+目前手上有的是**構音評估**：記錄目標音與實際聽到的音，系統比對兩者的辨異徵性（distinctive feature）差異，推導出可能的音韻歷程。吞嚥的核心邏輯（IDDSI 質地、成功率）已經有了，畫面還沒接上。其他評估表（SOAP 治療紀錄、成人／兒童語言、語暢等）是設計上預留的擴充位置，還沒實作。
 
-## 技術棧
+使用方式見 [`docs/使用說明.md`](docs/使用說明.md)。
 
-- **Angular**（最新版，standalone components + Signals，不用 NgModule）
-- **Vitest** 做測試
-- 純前端，資料存在瀏覽器 `localStorage`，沒有後端、沒有帳號系統
-- 規則儲存/評估用 [JsonLogic](https://jsonlogic.com/)(`json-logic-js`)，規則編輯器 UI 是自己刻的簡單版本，不依賴第三方 query builder 套件
+## 目標使用者
 
-## 開發方式:OpenSpec
+台灣的語言治療師。因此：
 
-用 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 的規格慣例:先寫 proposal/design/spec，再依 `tasks.md` 逐項實作。
+- 介面文字一律**繁體中文（台灣用語）**。
+- 語音資料以**台灣華語**為準，用注音符號標記。像「不捲舌」這種在台灣屬於方言性變異、不算構音異常的現象，資料裡就不會被列成錯誤。
+
+## 資料放在哪裡
+
+**全部留在你自己的瀏覽器裡。** 這是一個純前端應用，沒有後端、沒有帳號、沒有任何對外連線。所有內容存在瀏覽器的 `localStorage`。
+
+這代表：
+
+- 資料**不會**傳給開發者、不會傳給 Anthropic、不會傳給任何第三方。
+- 資料也**不會**跟著你換裝置或換瀏覽器，清除瀏覽器資料就沒了，而且沒有備份機制。
+- 這個專案還在 PoC 階段，資料格式改版時是**直接丟棄舊資料重來**，不做遷移。
+
+換句話說，隱私上它是安全的，可靠性上它完全不是——所以**不要輸入真實個資**。要試就用化名或代號。
+
+## 臨床內容的來源
+
+臨床知識（辨異徵性、音韻歷程、吞嚥質地等）**一律由治療師本人提供，不是模型生成的**。專案早期吃過這個虧，詳見 [`docs/開發方式紀錄.md`](docs/開發方式紀錄.md)。
+
+這些內容放在 [`references/`](references/) 的 markdown 表格裡，跟程式碼分開，方便查閱、也方便交給另一位治療師校對。程式碼讀的是同一組值，`scripts/check-references.mjs` 會在 commit 前檢查兩邊有沒有走鐘。
+
+沒有收錄任何標準化測驗的內容——那些有版權。IDDSI 的部分只使用等級數字與短標籤，完整描述詞連結回原始出處（IDDSI 採 CC BY-SA 4.0，且明文禁止翻譯以外的改作）。細節見 [`references/README.md`](references/README.md)。
+
+## 實驗性質
+
+這個 repo 有兩個實驗目的，應用本身的完成度不是重點：
+
+1. **[Claude Code](https://claude.com/product/claude-code) 的開發方式**——OpenSpec 規格驅動，以及用 subagents 分工（文獻查證、質疑辯論、UI/UX、Angular/TS），由主 agent 統一跟開發者對話。開發者不做逐行 code review，改由小顆粒 commit + 測試把關。這部分的實際狀況、踩到的坑、以及模型出過的錯，都記在 [`docs/開發方式紀錄.md`](docs/開發方式紀錄.md)。
+2. **Angular 本身**——standalone components + Signals、zoneless。
+
+## 授權
+
+**目前沒有訂授權條款。** 依照著作權法的預設，這代表著作權全部保留：你可以閱讀這份公開原始碼，但沒有被授權重製、修改或散布。想使用請先來詢問。
+
+`references/` 底下引用的外部素材各自有自己的授權（例如 IDDSI 為 CC BY-SA 4.0），不受這一段影響。
+
+## 資料夾結構
 
 ```
 milestone-checker/
-├── README.md                本檔
-├── CLAUDE.md                給 Claude Code 看的專案規則（Angular 細節，通用習慣在全域 CLAUDE.md）
-├── openspec/
-│   ├── specs/                已定案規格（第一輪 change 被 archive 後才會有內容）
-│   └── changes/
-│       └── add-therapist-rule-engine/
-│           ├── proposal.md
-│           ├── design.md
-│           ├── tasks.md
-│           └── specs/rule-engine/spec.md
-└── （Angular 專案本體，scaffold 完成後會出現在這裡）
+├── README.md                   本檔
+├── CLAUDE.md                   給 Claude Code 看的專案規則
+├── docs/
+│   ├── 使用說明.md              給治療師的操作說明
+│   ├── 開發方式紀錄.md           subagent 分工、踩過的坑
+│   ├── ARCHITECTURE.md         架構與資料流
+│   └── CONTRIBUTING.md         環境設定與開發慣例
+├── references/                 臨床參考資料（markdown 表格，程式碼的真實來源）
+├── openspec/changes/           規格：proposal / design / tasks / specs
+├── scripts/check-references.mjs  比對 references/ 與 src/app/data/
+├── e2e/                        Playwright smoke test
+└── src/app/
+    ├── models/                 型別定義
+    ├── data/                   內建資料：注音表、音韻歷程、示範個案、內建評估表
+    ├── core/                   無 UI 的邏輯
+    │   ├── articulation/       辨異徵性比對、音韻歷程推導
+    │   ├── rule-engine/        JsonLogic 條件轉換、事實組裝、報告草稿
+    │   ├── swallowing/         吞嚥試驗計算
+    │   └── storage/            localStorage 的唯一入口
+    ├── features/               各畫面
+    └── shared/                 共用元件（免責聲明橫幅等）
 ```
 
-## 目前狀態
+## 開發
 
-`add-therapist-rule-engine` 這個 change 的 `tasks.md` 第 1–6 節都做完了:資料模型、規則引擎（JsonLogic 儲存/評估 + 條件列/群組編輯器）、一小批示意用的觀察項目跟規則、還有完整的畫面（個案管理、觀察表單、規則清單/編輯器/匯出匯入、警示清單、報告草稿），`pnpm lint`/`pnpm test`/`pnpm build` 都過，也在瀏覽器裡手動測過一輪完整流程。
+需要 Node 24 與 pnpm 11（`volta` 已釘好版本）。
 
-範例規則內容(`src/app/data/starter-*.ts`)**還沒經過治療師審核**，只是示意用的佔位資料，正式使用前要由治療師本人確認或整批替換（對應 `tasks.md` 4.3，故意留著沒打勾）。第 7 節（收尾/archive）也還沒做。
+```sh
+pnpm install
+pnpm start          # http://localhost:4200
+```
 
-`add-articulation-process-tracker`（構音記錄/音韻歷程）進行中:資料模型、注音參考表、儲存、三個畫面（構音記錄表格 `cases/:id/articulation`、音韻歷程目錄 `/articulation-processes`、音韻歷程總覽）跟 smoke test 都做完了，`pnpm lint`/`pnpm test`（82 個測試）/`pnpm build` 都過。還沒做的是瀏覽器手動實測、治療師審核注音構音特徵跟預設音韻歷程清單、以及 archive。
+品質關卡是這四個全過：
 
-注音表上的構音特徵（部位/方式/送氣）跟預設的音韻歷程清單同樣是**未經審核的佔位內容**，系統不會拿它們自動判斷音韻歷程——歸類完全靠治療師手動貼標籤。
+```sh
+pnpm lint
+pnpm test
+pnpm build
+pnpm check:references
+```
+
+架構說明見 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)，開發慣例見 [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)。
+
+## 技術棧
+
+- **Angular 21**——standalone components + Signals，zoneless，不用 NgModule
+- **Tailwind CSS 4**
+- **Vitest**
+- **[JsonLogic](https://jsonlogic.com/)**（`json-logic-js`）儲存與評估規則條件；規則編輯器 UI 是手刻的（條件列 + AND/OR 群組），沒有依賴第三方 query builder 套件
