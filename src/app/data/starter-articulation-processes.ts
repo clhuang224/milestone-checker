@@ -37,7 +37,7 @@ export const STARTER_ARTICULATION_PROCESSES: PhonologicalProcessDefinition[] = [
   {
     id: 'fricativization',
     name: '擦音化',
-    description: '塞音或塞擦音被擦音替代',
+    description: '塞音或塞擦音被擦音替代，如 ㄐ→ㄒ、ㄑ→ㄒ',
     builtin: true,
   },
   {

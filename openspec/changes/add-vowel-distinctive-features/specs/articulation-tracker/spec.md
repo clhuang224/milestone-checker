@@ -27,7 +27,7 @@
 
 #### Scenario: 拆解不代表等同分開發音
 
-- WHEN 閱讀 `references/zhuyin-finals.md`
+- WHEN 閱讀 `references/taiwan-mandarin-vowels.md`
 - THEN 文件明確記載拆解是建模上的方便，ㄞ 的聲學組成與「ㄚ 接著 ㄧ 分開念」並不相同
 
 ### Requirement: 臨床參考資料與程式碼一致

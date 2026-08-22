@@ -15,7 +15,7 @@ import {
 type ZhuyinSeed = Omit<ZhuyinSymbol, 'order'>;
 
 /**
- * Reviewed against `references/zhuyin-initials.md` — edit that file first, then mirror it
+ * Reviewed against `references/taiwan-mandarin-consonants.md` — edit that file first, then mirror it
  * here; a test asserts the two agree.
  */
 const INITIALS: ZhuyinSeed[] = [
@@ -303,6 +303,22 @@ export const ZHUYIN_CATEGORY_LABELS: Record<ZhuyinCategory, string> = {
 
 /** Display order of the category groups, matching ZHUYIN_INVENTORY. */
 export const ZHUYIN_CATEGORY_ORDER: ZhuyinCategory[] = ['initial', 'medial', 'final', 'tone'];
+
+/**
+ * Places of articulation from front of the mouth to back.
+ *
+ * This ordering is what makes 前置化 and 後置化 decidable: a substitution moves earlier in this
+ * list or later in it. Reviewed by the user; see references/taiwan-mandarin-consonants.md.
+ */
+export const PLACE_ORDER: Place[] = [
+  'bilabial',
+  'labiodental',
+  'dentalAlveolar',
+  'alveolar',
+  'retroflex',
+  'alveolopalatal',
+  'velar',
+];
 
 export const PLACE_LABELS: Record<Place, string> = {
   bilabial: '雙唇',

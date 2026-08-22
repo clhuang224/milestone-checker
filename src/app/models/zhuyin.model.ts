@@ -23,7 +23,7 @@ export type Voicing = 'voiced' | 'voiceless';
 /**
  * 辨異徵性 — the distinctive features separating one sound from another.
  *
- * Values are English ids; see `references/zhuyin-initials.md` for the reviewed source table.
+ * Values are English ids; see `references/taiwan-mandarin-consonants.md` for the reviewed source table.
  */
 export interface DistinctiveFeatures {
   place: Place;
@@ -32,7 +32,7 @@ export interface DistinctiveFeatures {
   voicing: Voicing;
 }
 
-/** 舌位高低 — four levels, so there is no "mid"; see references/zhuyin-finals.md. */
+/** 舌位高低 — four levels, so there is no "mid"; see references/taiwan-mandarin-vowels.md. */
 export type VowelHeight = 'close' | 'closeMid' | 'openMid' | 'open';
 
 /** 舌位前後 */

@@ -2,7 +2,7 @@
 
 ## 1. 參考資料
 
-- [x] 1.1 新增 `references/zhuyin-finals.md`——結構說明、徵性值對照、單元音表、複合韻母拆解表、註記
+- [x] 1.1 新增 `references/taiwan-mandarin-vowels.md`——結構說明、徵性值對照、單元音表、複合韻母拆解表、註記
 - [x] 1.2 `scripts/check-references.mjs` 擴充到韻母表（比對 id 與符號）
 
 ## 2. 型別

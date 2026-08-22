@@ -16,9 +16,16 @@ const RESET = '[0m';
 const RED = '[31m';
 const GREEN = '[32m';
 
-/** Pulls the rows out of the last markdown table under the given heading. */
+/**
+ * Pulls the rows out of the table(s) under one heading, stopping at the next `## ` heading —
+ * without that bound this swallowed the tables of every following section too.
+ */
 function markdownTable(markdown, heading) {
-  const section = markdown.slice(markdown.indexOf(heading));
+  const start = markdown.indexOf(heading) + heading.length;
+  const rest = markdown.slice(start);
+  const nextHeading = rest.indexOf('\n## ');
+  const section = nextHeading === -1 ? rest : rest.slice(0, nextHeading);
+
   return section
     .split('\n')
     .filter((line) => line.startsWith('|'))
@@ -32,7 +39,7 @@ function markdownTable(markdown, heading) {
 }
 
 function checkInitials() {
-  const markdown = readFileSync('references/zhuyin-initials.md', 'utf8');
+  const markdown = readFileSync('references/taiwan-mandarin-consonants.md', 'utf8');
   const source = readFileSync('src/app/data/zhuyin-inventory.ts', 'utf8');
 
   const rows = markdownTable(markdown, '## 聲母表')
@@ -94,7 +101,7 @@ function checkInitials() {
     }
   }
 
-  return { name: 'zhuyin-initials', count: rows.length, problems };
+  return { name: 'taiwan-mandarin-consonants', count: rows.length, problems };
 }
 
 /**
@@ -103,7 +110,7 @@ function checkInitials() {
  * This catches the mistake that actually happens — adding or renaming a symbol in one place.
  */
 function checkFinals() {
-  const markdown = readFileSync('references/zhuyin-finals.md', 'utf8');
+  const markdown = readFileSync('references/taiwan-mandarin-vowels.md', 'utf8');
   const source = readFileSync('src/app/data/zhuyin-inventory.ts', 'utf8');
 
   const rows = [
@@ -135,7 +142,7 @@ function checkFinals() {
     }
   }
 
-  return { name: 'zhuyin-finals', count: rows.length, problems };
+  return { name: 'taiwan-mandarin-vowels', count: rows.length, problems };
 }
 
 function checkProcesses() {

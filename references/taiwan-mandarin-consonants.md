@@ -26,6 +26,20 @@
 | 清濁 | `voiced`         | 濁音   |
 | 清濁 | `voiceless`      | 清音   |
 
+## 部位由前到後的排序
+
+前置化與後置化靠這個排序判斷:替代音在這條線上往前移就是前置化，往後移就是後置化。
+
+1. 雙唇 `bilabial`
+2. 唇齒 `labiodental`
+3. 舌尖前 `dentalAlveolar`
+4. 齒槽 `alveolar`
+5. 舌尖後 `retroflex`
+6. 舌面 `alveolopalatal`
+7. 舌根 `velar`
+
+程式碼裡是 `PLACE_ORDER`。
+
 ## 聲母表
 
 | 注音 | id   | 部位             | 方式        | 送氣            | 清濁        |
