@@ -30,6 +30,7 @@ describe('RecordDetail', () => {
     storage.upsertCase({
       id: 'case-1',
       label: '個案 A',
+      sex: 'female',
       createdOnISODate: '2026-01-01',
       birthDateISO: '2022-09-05',
     });

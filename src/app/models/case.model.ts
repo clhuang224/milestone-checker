@@ -1,7 +1,7 @@
 /**
- * Recorded because it changes what counts as typical: voice norms differ by sex, and so does
- * child language development. Optional — a case can be worked on without it, and no rule reads
- * it yet.
+ * Biological sex, required. It changes what counts as typical — voice norms differ by sex, and so
+ * does child language development — so a case recorded without it cannot be compared against
+ * anything. No rule reads it yet; it is collected because the forms that will need it are coming.
  */
 export type Sex = 'female' | 'male';
 
@@ -14,7 +14,7 @@ export interface Case {
   id: string;
   label: string;
   createdOnISODate: string;
-  sex?: Sex;
+  sex: Sex;
   /**
    * YYYY-MM-DD. Stores the birth date rather than an age, so the derived age can never go
    * stale — rules like 「四歲以上」 read `case.ageInMonths`, computed at evaluation time.

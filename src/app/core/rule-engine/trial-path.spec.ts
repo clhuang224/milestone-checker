@@ -21,7 +21,12 @@ import { evaluateRules } from './json-logic';
 
 const ON_DATE = '2026-08-20';
 
-const caseRecord: Case = { id: 'case-1', label: '個案 A', createdOnISODate: '2026-08-01' };
+const caseRecord: Case = {
+  id: 'case-1',
+  label: '個案 A',
+  sex: 'female',
+  createdOnISODate: '2026-08-01',
+};
 
 const record: SessionRecord = {
   id: 'record-1',

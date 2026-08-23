@@ -44,7 +44,7 @@
           </div>
 
           <div>
-            <label class="field-label mb-1" for="case-sex">性別</label>
+            <label class="field-label mb-1" for="case-sex">生理性別</label>
             <!-- `selected` per option rather than [value] on the select: Angular sets the select's
                  value property before @for has rendered the options, so the assignment is dropped
                  and the box comes back blank. -->
@@ -53,7 +53,6 @@
               class="select w-24"
               (change)="onSexChange($any($event.target).value)"
             >
-              <option value="" [selected]="!c.sex">未填</option>
               @for (option of sexOptions; track option.value) {
                 <option [value]="option.value" [selected]="c.sex === option.value">
                   {{ option.label }}

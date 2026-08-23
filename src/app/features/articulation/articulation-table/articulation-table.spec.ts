@@ -26,7 +26,12 @@ describe('ArticulationTable', () => {
       providers: [provideRouter([])],
     });
     storage = TestBed.inject(Storage);
-    storage.upsertCase({ id: 'case-1', label: '個案 A', createdOnISODate: '2026-01-01' });
+    storage.upsertCase({
+      id: 'case-1',
+      label: '個案 A',
+      sex: 'female',
+      createdOnISODate: '2026-01-01',
+    });
     storage.upsertSessionRecord({
       id: 'assessment-1',
       caseId: 'case-1',

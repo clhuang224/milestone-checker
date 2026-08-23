@@ -100,7 +100,7 @@ export class CaseDetail {
     if (!caseRecord) {
       return;
     }
-    this.storage.upsertCase({ ...caseRecord, sex: raw === '' ? undefined : (raw as Sex) });
+    this.storage.upsertCase({ ...caseRecord, sex: raw as Sex });
   }
 
   onGestationalWeeksChange(raw: string): void {

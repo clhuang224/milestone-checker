@@ -17,16 +17,16 @@ import { SwallowTrial } from '../../models/swallow-trial.model';
  * tradeoff. Seeds only run against an empty collection, so without a bump a change to the
  * starter content would be invisible to anyone who has already opened the app.
  */
-const FINDINGS_KEY = 'therapist-rule-engine:findings:v6';
-const CASES_KEY = 'therapist-rule-engine:cases:v6';
-const RULES_KEY = 'therapist-rule-engine:rules:v6';
-const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v6';
-const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v6';
-const PHONOLOGICAL_SUMMARIES_KEY = 'therapist-rule-engine:phonological-summaries:v6';
-const SWALLOW_TRIALS_KEY = 'therapist-rule-engine:swallow-trials:v6';
-const SESSION_RECORDS_KEY = 'therapist-rule-engine:session-records:v6';
-const FORMS_KEY = 'therapist-rule-engine:assessment-forms:v6';
-const REPORTS_KEY = 'therapist-rule-engine:reports:v6';
+const FINDINGS_KEY = 'therapist-rule-engine:findings:v7';
+const CASES_KEY = 'therapist-rule-engine:cases:v7';
+const RULES_KEY = 'therapist-rule-engine:rules:v7';
+const ARTICULATION_PROCESSES_KEY = 'therapist-rule-engine:articulation-processes:v7';
+const ARTICULATION_RECORDS_KEY = 'therapist-rule-engine:articulation-records:v7';
+const PHONOLOGICAL_SUMMARIES_KEY = 'therapist-rule-engine:phonological-summaries:v7';
+const SWALLOW_TRIALS_KEY = 'therapist-rule-engine:swallow-trials:v7';
+const SESSION_RECORDS_KEY = 'therapist-rule-engine:session-records:v7';
+const FORMS_KEY = 'therapist-rule-engine:assessment-forms:v7';
+const REPORTS_KEY = 'therapist-rule-engine:reports:v7';
 
 interface CasesData {
   cases: Case[];

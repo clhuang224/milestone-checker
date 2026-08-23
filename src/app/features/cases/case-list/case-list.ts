@@ -18,7 +18,7 @@ export class CaseList {
   readonly cases = this.storage.cases;
   readonly newCaseLabel = signal('');
   readonly newCaseBirthDate = signal('');
-  readonly newCaseSex = signal<Sex | ''>('');
+  readonly newCaseSex = signal<Sex>('female');
   readonly sexOptions: { value: Sex; label: string }[] = (['female', 'male'] as Sex[]).map(
     (value) => ({ value, label: SEX_LABELS[value] }),
   );
@@ -46,11 +46,11 @@ export class CaseList {
       label,
       createdOnISODate: todayISO(),
       birthDateISO: this.newCaseBirthDate() || undefined,
-      sex: this.newCaseSex() || undefined,
+      sex: this.newCaseSex(),
     });
     this.newCaseLabel.set('');
     this.newCaseBirthDate.set('');
-    this.newCaseSex.set('');
+    this.newCaseSex.set('female');
     this.router.navigate(['/cases', id]);
   }
 

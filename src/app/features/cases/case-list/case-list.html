@@ -34,9 +34,8 @@
         />
       </div>
       <div>
-        <label class="field-label mb-1" for="new-case-sex">性別（選填）</label>
+        <label class="field-label mb-1" for="new-case-sex">生理性別</label>
         <select id="new-case-sex" [(ngModel)]="newCaseSex" name="newCaseSex" class="select w-24">
-          <option value="">未填</option>
           @for (option of sexOptions; track option.value) {
             <option [value]="option.value">{{ option.label }}</option>
           }

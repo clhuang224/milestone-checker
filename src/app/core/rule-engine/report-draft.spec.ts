@@ -5,7 +5,12 @@ import { Case } from '../../models/case.model';
 import { Rule } from '../../models/rule.model';
 import { buildReportDraft } from './report-draft';
 
-const caseRecord: Case = { id: 'case-1', label: '個案 A', createdOnISODate: '2026-01-01' };
+const caseRecord: Case = {
+  id: 'case-1',
+  label: '個案 A',
+  sex: 'female',
+  createdOnISODate: '2026-01-01',
+};
 
 const assessment: SessionRecord = {
   id: 'assessment-1',
