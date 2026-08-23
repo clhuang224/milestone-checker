@@ -200,6 +200,10 @@ key 帶命名空間與版號，目前一律 `:v5`。分開存而不是一包大 
 
 寫下來免得被誤讀成「壞掉了」：
 
-- **吞嚥**——型別（`swallow-trial.model.ts`、`swallow-catalogue.model.ts`）、成功率計算（`core/swallowing/`）、預設目錄（`starter-swallow-catalogue.ts`）與規則編輯器的 trial 條件列都在，但 `Storage` 沒有存 `SwallowTrial` 的集合，`buildFacts()` 也還沒放進 `swallowing.trials`。**所以現在寫得出 trial 條件列，但它永遠不會成立。**
-- **`soapNote` 與 `itemList`**——`FormBody` 認得它們，`STARTER_FORMS` 沒有，畫面也還沒做。`record-detail` 目前對任何非警示／非報告的頁籤一律渲染構音格子表，還沒有依 `body.kind` 分派。
+- **吞嚥還缺四塊，不是一塊。** 型別、成功率計算、`Storage` 的 `SwallowTrial` 集合與 `buildFacts()` 的 `swallowing.trials` 都接上了——條件成立時規則會觸發。但:
+  1. `starter-swallow-catalogue.ts` 的三個常數（質地、標記、單位）**在 `src/` 裡沒有任何地方 import**，`Storage` 沒有它們的集合，`app.ts` 也沒有 seed。
+  2. **規則編輯器做不出 trial 條件列。** `condition-editor.ts` 只處理 `row`／`set`／`group`，`'trial'` 在 `features/` 底下一次都沒出現。`ConditionTrialRow` 在 `condition-mapper.ts` 裡進得去出得來，但沒有東西產生得出它。
+  3. 沒有填寫嘗試的畫面。
+  4. 因此除了測試以外，沒有任何路徑會產生一筆 `SwallowTrial`。
+- **`soapNote` 與 `itemList`**——`FormBody` 認得它們，`STARTER_FORMS` 沒有，畫面也還沒做。`record-detail` 已經依 `body.kind` 分派，沒有畫面的 kind 會明說還沒做。
 - **`openspec/specs/`**——還是空的，第一輪 change 都還沒 archive。
