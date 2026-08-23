@@ -35,8 +35,17 @@
       }
     </div>
 
-    @if (activeForm(); as formKey) {
-      <app-articulation-table [caseId]="caseId()" [recordId]="r.id" />
+    @if (activeForm(); as form) {
+      @switch (form.body.kind) {
+        @case ('articulationGrid') {
+          <app-articulation-table [caseId]="caseId()" [recordId]="r.id" />
+        }
+        @default {
+          <p class="text-sm text-slate-500">
+            「{{ form.name }}」的畫面還沒做，這張表目前只能掛上，不能填。
+          </p>
+        }
+      }
     } @else if (formId() === warningsTab) {
       <app-warnings-list [triggeredRules]="triggeredRules()" />
     } @else if (formId() === reportTab) {

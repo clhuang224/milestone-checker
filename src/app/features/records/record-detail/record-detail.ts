@@ -68,9 +68,19 @@ export class RecordDetail {
   readonly warningsTab = WARNINGS_TAB;
   readonly reportTab = REPORT_TAB;
 
+  /**
+   * The form definition behind the active tab, or undefined on the warnings/report tabs.
+   *
+   * The template dispatches on `body.kind` rather than assuming the articulation grid. Only one
+   * kind has a screen today, so the fallback exists to say so out loud: rendering the grid for a
+   * SOAP or swallowing form would look like it worked.
+   */
   readonly activeForm = computed(() => {
     const id = this.formId();
-    return id === WARNINGS_TAB || id === REPORT_TAB ? undefined : id;
+    if (id === WARNINGS_TAB || id === REPORT_TAB) {
+      return undefined;
+    }
+    return this.storage.assessmentForms().find((form) => form.id === id);
   });
 
   private readonly facts = computed(() => {

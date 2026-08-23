@@ -102,6 +102,30 @@ describe('RecordDetail', () => {
     expect(storage.reportFor('record-1')?.text).toBe('治療師改過的內容');
   });
 
+  it('does not render the articulation grid for a form of another kind', async () => {
+    // Rendering the grid for a SOAP or swallowing tab would look like it worked.
+    storage.upsertAssessmentForm({
+      id: 'swallowing',
+      name: '吞嚥評估表',
+      body: { kind: 'swallowTrials' },
+      builtin: true,
+    });
+    storage.upsertSessionRecord({
+      id: 'record-1',
+      caseId: 'case-1',
+      onISODate: '2026-09-04',
+      formIds: ['articulation', 'swallowing'],
+    });
+
+    const fixture = setup('swallowing');
+    await fixture.whenStable();
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('app-articulation-table'),
+    ).toBeNull();
+    expect(textOf(fixture)).toContain('的畫面還沒做');
+  });
+
   it('says the record is missing rather than rendering an empty shell', async () => {
     const fixture = TestBed.createComponent(RecordDetail);
     fixture.componentRef.setInput('caseId', 'case-1');
