@@ -305,20 +305,27 @@ export const ZHUYIN_CATEGORY_LABELS: Record<ZhuyinCategory, string> = {
 export const ZHUYIN_CATEGORY_ORDER: ZhuyinCategory[] = ['initial', 'medial', 'final', 'tone'];
 
 /**
- * The initials laid out as the standard bopomofo chart: each inner array is one column.
+ * The initials as grid columns, ordered by place of articulation from the front of the mouth to
+ * the back: 雙唇/唇齒 → 舌尖前 → 齒槽 → 舌尖後 → 舌面 → 舌根.
  *
- * The arrangement is clinically meaningful, not decorative — a column shares a place of
- * articulation, and reading left to right walks the place from the front of the mouth to the
- * back. This is the standard bopomofo chart, used here for legibility only; it is deliberately
- * NOT used to decide 前置化/後置化. See references/taiwan-mandarin-consonants.md.
+ * This is NOT the standard bopomofo chart order, which puts 舌根 third and then runs forward
+ * again. The layout is clinically meaningful rather than decorative, so it follows the place
+ * ordering the therapist gave rather than the familiar recitation order.
+ *
+ * ㄈ shares the first column with ㄅㄆㄇ even though it is 唇齒 rather than 雙唇 — splitting it out
+ * would need a seventh column, and six is what fits the shell without horizontal scrolling.
+ *
+ * This ordering is for reading the grid only. It is deliberately NOT used to decide
+ * 前置化/後置化 — there is no PLACE_ORDER constant, and there must not be. See
+ * references/taiwan-mandarin-consonants.md.
  */
 export const INITIAL_COLUMNS: string[][] = [
   ['b', 'p', 'm', 'f'],
-  ['d', 't', 'n', 'l'],
-  ['g', 'k', 'h'],
-  ['j', 'q', 'x'],
-  ['zh', 'ch', 'sh', 'r'],
   ['z', 'c', 's'],
+  ['d', 't', 'n', 'l'],
+  ['zh', 'ch', 'sh', 'r'],
+  ['j', 'q', 'x'],
+  ['g', 'k', 'h'],
 ];
 
 export const PLACE_LABELS: Record<Place, string> = {

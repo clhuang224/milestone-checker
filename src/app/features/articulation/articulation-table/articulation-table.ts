@@ -40,8 +40,11 @@ interface GridSection {
   label: string;
   /** Columns for the initials; a single wrapping column for everything else. */
   columns: GridCell[][];
-  /** Initials carry a meaningful left-to-right ordering worth explaining. */
-  explainsColumns: boolean;
+  /**
+   * The initials are ordered by place of articulation, so their columns must never wrap. The
+   * other sections have no such ordering and may.
+   */
+  placeOrdered: boolean;
 }
 
 @Component({
@@ -58,7 +61,7 @@ export class ArticulationTable {
    * The ⁿ button floats (`position: fixed`) beside whichever 錯音 box has focus rather than
    * sitting in the grid: the initials section is six columns of place of articulation inside a
    * `max-w-6xl` shell, and a per-cell button would spend horizontal budget the columns need.
-   * Floating costs no layout at all, so nothing can push ㄍ under ㄅ.
+   * Floating costs no layout at all, so nothing can push the last column onto a second row.
    */
   readonly markSlot = signal<string | null>(null);
   readonly markPosition = signal<MarkPosition>({ left: 0, top: 0 });
@@ -80,7 +83,7 @@ export class ArticulationTable {
     const initials: GridSection = {
       label: ZHUYIN_CATEGORY_LABELS.initial,
       columns: INITIAL_COLUMNS.map((column) => column.map((id) => this.cellFor(findZhuyin(id)!))),
-      explainsColumns: true,
+      placeOrdered: true,
     };
 
     const rest = (['medial', 'final', 'tone'] as const).map((category) => ({
@@ -90,7 +93,7 @@ export class ArticulationTable {
           this.cellFor(symbol),
         ),
       ],
-      explainsColumns: false,
+      placeOrdered: false,
     }));
 
     return [initials, ...rest];

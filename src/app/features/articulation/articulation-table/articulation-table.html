@@ -6,27 +6,22 @@
 
     @for (section of sections(); track section.label) {
       <section class="bg-white rounded-lg border border-slate-200 p-4">
-        <h3 class="font-medium text-slate-800">{{ section.label }}</h3>
-        @if (section.explainsColumns) {
-          <p class="text-xs text-slate-500 mt-0.5 mb-3">
-            同一欄是同一個構音部位，由左至右部位由前到後。
-          </p>
-        } @else {
-          <div class="mb-3"></div>
-        }
+        <h3 class="font-medium text-slate-800 mb-3">{{ section.label }}</h3>
 
-        <!-- The columns must stay side by side: reading left to right is what carries the
-             place ordering, so wrapping ㄍ under ㄅ would destroy the meaning. If the viewport
-             really is too narrow, this box scrolls rather than the columns rearranging. -->
+        <!-- The initials columns must stay side by side: their left-to-right order is place of
+             articulation, front of the mouth to back, so wrapping ㄍ under ㄅ would destroy the
+             meaning. If the viewport really is too narrow, this box scrolls rather than the
+             columns rearranging. The ordering is not captioned on screen — a therapist reads it
+             off the chart. -->
         <div class="overflow-x-auto">
-          <div class="flex gap-x-4 gap-y-4" [class.flex-wrap]="!section.explainsColumns">
+          <div class="flex gap-x-4 gap-y-4" [class.flex-wrap]="!section.placeOrdered">
             @for (column of section.columns; track $index) {
-              <div class="flex flex-col gap-2" [class.flex-wrap]="!section.explainsColumns">
+              <div class="flex flex-col gap-2" [class.flex-wrap]="!section.placeOrdered">
                 @for (cell of column; track cell.symbol.id) {
                   <div class="flex items-start gap-1.5">
                     <div
                       class="shrink-0 pt-0.5"
-                      [class]="section.explainsColumns ? 'w-10 text-center' : 'w-28'"
+                      [class]="section.placeOrdered ? 'w-10 text-center' : 'w-28'"
                     >
                       <!-- In the initials grid the features live in the tooltip: spelling them
                            out under every symbol makes the cell too wide for six columns to fit.
@@ -35,14 +30,14 @@
                       <span
                         class="text-lg text-slate-800"
                         [class]="
-                          section.explainsColumns && (cell.symbol.features || cell.symbol.label)
+                          section.placeOrdered && (cell.symbol.features || cell.symbol.label)
                             ? 'underline decoration-dotted cursor-help'
                             : ''
                         "
                         [title]="cell.symbol.label || featureLabel(cell.symbol)"
                         >{{ cell.symbol.symbol }}</span
                       >
-                      @if (!section.explainsColumns && cell.symbol.label) {
+                      @if (!section.placeOrdered && cell.symbol.label) {
                         <span class="ml-1 text-xs text-slate-500">{{ cell.symbol.label }}</span>
                       }
                     </div>

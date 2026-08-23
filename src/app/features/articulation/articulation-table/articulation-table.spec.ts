@@ -57,11 +57,17 @@ describe('ArticulationTable', () => {
     expect(titles).toContain('輕聲');
   });
 
-  it('explains that the columns carry a place ordering', async () => {
+  it('orders the initials columns by place, front of the mouth to back', async () => {
+    // Not the bopomofo recitation order, which puts 舌根 third and then runs forward again.
+    // See references/taiwan-mandarin-consonants.md for the ordering the therapist gave.
     const fixture = setup();
     await fixture.whenStable();
 
-    expect(textOf(fixture)).toContain('由左至右部位由前到後');
+    const firstOfEachColumn = fixture.componentInstance
+      .sections()[0]
+      .columns.map((column) => column[0].symbol.symbol);
+
+    expect(firstOfEachColumn).toEqual(['ㄅ', 'ㄗ', 'ㄉ', 'ㄓ', 'ㄐ', 'ㄍ']);
   });
 
   it('puts the distinctive features in the tooltip, to keep the cells narrow', async () => {
