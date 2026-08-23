@@ -165,6 +165,45 @@ export class Storage {
     this.persistSessionRecords();
   }
 
+  /**
+   * Changes which forms a session has attached, discarding what was recorded under any form that
+   * is being detached.
+   *
+   * Discarding is the deliberate choice: this is a PoC, the same stance the storage version bumps
+   * take. Keeping the data would mean an invisible record whose tab is gone, which is worse than
+   * losing it visibly — the UI warns before calling this.
+   *
+   * A record must keep at least one form, so an empty list is ignored.
+   */
+  setRecordForms(id: string, formIds: string[]): void {
+    const record = this.sessionRecordsData().find((r) => r.id === id);
+    if (!record || formIds.length === 0) {
+      return;
+    }
+
+    const detached = record.formIds.filter((formId) => !formIds.includes(formId));
+    const kinds = new Set(
+      detached.map((formId) => this.formsData().find((f) => f.id === formId)?.body.kind),
+    );
+    this.upsertSessionRecord({ ...record, formIds });
+
+    if (kinds.has('articulationGrid')) {
+      this.articulationRecordsData.update((current) => current.filter((r) => r.recordId !== id));
+      this.persistArticulationRecords();
+
+      this.summariesData.update((current) => current.filter((s) => s.recordId !== id));
+      this.persistSummaries();
+    }
+    if (kinds.has('swallowTrials')) {
+      this.swallowTrialsData.update((current) => current.filter((t) => t.recordId !== id));
+      this.persistSwallowTrials();
+    }
+    // itemList and soapNote are not handled: itemList values live in one flat RecordProfile per
+    // record with no form attribution, so detaching one of two itemList forms would take the
+    // other's answers with it. Neither kind has a screen yet, so there is nothing to discard —
+    // work this out when the form that needs it is built, not before.
+  }
+
   /** Removes a session along with everything recorded under it, leaving no orphans behind. */
   removeRecord(id: string): void {
     this.sessionRecordsData.update((current) => current.filter((a) => a.id !== id));

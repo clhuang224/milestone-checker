@@ -1,5 +1,5 @@
-import { Component, computed, inject, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 import { ageInMonthsOn, correctedAgeInMonthsOn, formatAgeInMonths } from '../../../core/age';
 import { effectiveProcessGroups } from '../../../core/articulation/summary';
@@ -38,6 +38,7 @@ interface FormTab {
 })
 export class RecordDetail {
   private readonly storage = inject(Storage);
+  private readonly router = inject(Router);
 
   readonly caseId = input.required<string>();
   readonly recordId = input.required<string>();
@@ -147,6 +148,51 @@ export class RecordDetail {
     const record = this.record();
     if (record && onISODate) {
       this.storage.upsertSessionRecord({ ...record, onISODate });
+    }
+  }
+
+  readonly editingForms = signal(false);
+  readonly allForms = computed(() => this.storage.assessmentForms());
+
+  isAttached(formId: string): boolean {
+    return (this.record()?.formIds ?? []).includes(formId);
+  }
+
+  /** True once detaching would leave the record with no form at all. */
+  isLastForm(formId: string): boolean {
+    const formIds = this.record()?.formIds ?? [];
+    return formIds.length === 1 && formIds[0] === formId;
+  }
+
+  /**
+   * Attaching is free; detaching discards whatever was recorded under that form, so it asks first.
+   * The wording names the form rather than saying "the data", because a therapist detaching the
+   * wrong one should be able to tell from the prompt alone.
+   */
+  toggleForm(formId: string): void {
+    const record = this.record();
+    if (!record || this.isLastForm(formId)) {
+      return;
+    }
+
+    const attached = record.formIds.includes(formId);
+    if (attached) {
+      const name = this.allForms().find((form) => form.id === formId)?.name ?? formId;
+      if (
+        !confirm(`拿掉「${name}」會一併刪掉這次課節在這張表上記錄的內容，且無法復原。要拿掉嗎？`)
+      ) {
+        return;
+      }
+    }
+
+    this.storage.setRecordForms(
+      record.id,
+      attached ? record.formIds.filter((id) => id !== formId) : [...record.formIds, formId],
+    );
+
+    // Leaving the tab of a form that is no longer attached would render nothing.
+    if (attached && this.formId() === formId) {
+      this.router.navigate(['/cases', this.caseId(), 'records', record.id, 'forms', WARNINGS_TAB]);
     }
   }
 }

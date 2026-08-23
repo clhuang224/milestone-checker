@@ -249,6 +249,67 @@ describe('Storage', () => {
     expect(service.reportFor('assessment-2')).toBeDefined();
   });
 
+  describe('setRecordForms', () => {
+    beforeEach(() => {
+      service.upsertCase(caseRecord);
+      service.upsertAssessmentForm({
+        id: 'articulation',
+        name: '構音評估表',
+        body: { kind: 'articulationGrid' },
+        builtin: true,
+      });
+      service.upsertAssessmentForm({
+        id: 'swallowing',
+        name: '吞嚥評估表',
+        body: { kind: 'swallowTrials' },
+        builtin: true,
+      });
+      service.upsertSessionRecord({ ...assessment, formIds: ['articulation', 'swallowing'] });
+      service.upsertProbe(probe);
+      service.saveSummary({ recordId: 'assessment-1', useDerived: false, manual: [] });
+      service.upsertTrial(trial);
+    });
+
+    it('attaching a form keeps everything already recorded', () => {
+      service.upsertSessionRecord({ ...assessment, formIds: ['articulation'] });
+
+      service.setRecordForms('assessment-1', ['articulation', 'swallowing']);
+
+      expect(service.probesForSessionRecord('assessment-1')).toHaveLength(1);
+      expect(service.summaryFor('assessment-1')).toBeDefined();
+    });
+
+    it('detaching a form discards what was recorded under it, and only that', () => {
+      service.setRecordForms('assessment-1', ['swallowing']);
+
+      expect(service.probesForSessionRecord('assessment-1')).toEqual([]);
+      expect(service.summaryFor('assessment-1')).toBeUndefined();
+      // The swallowing form stayed attached, so its trials must survive.
+      expect(service.trialsForSessionRecord('assessment-1')).toHaveLength(1);
+    });
+
+    it("leaves another session's data alone", () => {
+      service.upsertSessionRecord({
+        ...assessment,
+        id: 'assessment-2',
+        onISODate: '2026-02-01',
+        formIds: ['articulation'],
+      });
+      service.upsertProbe({ ...probe, id: 'probe-2', recordId: 'assessment-2' });
+
+      service.setRecordForms('assessment-1', ['swallowing']);
+
+      expect(service.probesForSessionRecord('assessment-2')).toHaveLength(1);
+    });
+
+    it('refuses to leave a record with no form at all', () => {
+      service.setRecordForms('assessment-1', []);
+
+      expect(service.recordsFor('case-1')[0].formIds).toEqual(['articulation', 'swallowing']);
+      expect(service.probesForSessionRecord('assessment-1')).toHaveLength(1);
+    });
+  });
+
   it('upserts, filters by case, and removes swallow trials', () => {
     const otherCase: SwallowTrial = { ...trial, id: 'trial-2', caseId: 'case-2' };
     service.upsertTrial(trial);

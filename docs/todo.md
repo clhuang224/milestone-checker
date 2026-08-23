@@ -6,9 +6,8 @@
 
 ## 缺陷
 
-- [ ] **`record-detail.html` 不依 `body.kind` 分派。** 任何不是警示／報告的頁籤一律渲染 `<app-articulation-table>`。今天無害（只有一張表），但接上 SOAP 或吞嚥表之後會靜默顯示錯的表。
-- [ ] **課節建立後不能改掛哪些表。** `session-record.model.ts` 的註解寫 `formIds` 之後可以修改，但畫面上沒有這個入口。要嘛做出來，要嘛改掉註解。
 - [ ] **`Case.note` 與 `SessionRecord.note` 沒有畫面。** 示範個案「小切」帶著一句備註，任何地方都看不到。
+- [ ] **`itemList` 與 `soapNote` 被拿掉時不會清資料。** `setRecordForms()` 只處理構音與吞嚥。`itemList` 的填答值放在一份不分表的 `RecordProfile` 裡，拿掉其中一張會把另一張的答案一起帶走——等那張表真的做出來再決定怎麼切。
 - [ ] **吞嚥的資料路徑通了，但沒有寫入口。** `Storage` 有了 `SwallowTrial` 集合、`buildFacts()` 也產出 `swallowing.trials`，規則條件可以正常觸發——但除了測試以外沒有東西會建立一筆嘗試。要等吞嚥評估表的畫面（見下）。
 
 ## 要開發者決定

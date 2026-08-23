@@ -12,7 +12,10 @@ export interface SessionRecord {
   caseId: string;
   /** YYYY-MM-DD — the day of the session, not the day this record was created. */
   onISODate: string;
-  /** Attached forms, at least one. Chosen when the record is created; editable afterwards. */
+  /**
+   * Attached forms, at least one. Chosen when the record is created and editable afterwards via
+   * `Storage.setRecordForms()`, which discards whatever was recorded under a form being detached.
+   */
   formIds: string[];
   note?: string;
 }
