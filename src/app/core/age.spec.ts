@@ -37,11 +37,21 @@ describe('ageInMonthsOn', () => {
   });
 });
 
+/**
+ * Thresholds are the developer's: term is 37 weeks, correction stops after 36 months.
+ * See references/preterm-correction.md — these numbers are asserted, not derived, so a change
+ * to either constant has to come here and be re-decided rather than quietly re-baselining.
+ */
 describe('correctedAgeInMonthsOn', () => {
-  it('subtracts how early the birth was', () => {
-    // 32 weeks is 8 weeks early, i.e. about 2 months
-    expect(correctedAgeInMonthsOn('2025-02-17', 32, '2026-08-17')).toBe(16);
+  it('subtracts how early the birth was, against a 37-week term', () => {
+    // 32 weeks is 5 weeks early, i.e. about 1 month
+    expect(correctedAgeInMonthsOn('2025-02-17', 32, '2026-08-17')).toBe(17);
     expect(ageInMonthsOn('2025-02-17', '2026-08-17')).toBe(18);
+  });
+
+  it('treats 37 weeks as term, and corrects at 36', () => {
+    expect(correctedAgeInMonthsOn('2025-02-17', 37, '2026-08-17')).toBe(18);
+    expect(correctedAgeInMonthsOn('2025-02-17', 36, '2026-08-17')).toBe(18 - 0);
   });
 
   it('returns the chronological age for a full-term birth', () => {
@@ -55,12 +65,15 @@ describe('correctedAgeInMonthsOn', () => {
   });
 
   it('stops correcting once the catch-up window has passed', () => {
-    // 28 weeks is 3 months early, but at 5 years old that adjustment is no longer meaningful
+    // 28 weeks is 2 months early, but at 5 years old that adjustment is no longer meaningful
     expect(correctedAgeInMonthsOn('2021-08-17', 28, '2026-08-17')).toBe(60);
   });
 
-  it('still corrects right up to the cutoff', () => {
-    expect(correctedAgeInMonthsOn('2024-08-17', 28, '2026-08-17')).toBe(21);
+  it('still corrects just inside the 36-month cutoff, and stops just outside it', () => {
+    // 28 weeks → 2 months of correction. Chronological 38 corrects to 36, which is still inside.
+    expect(correctedAgeInMonthsOn('2023-06-17', 28, '2026-08-17')).toBe(36);
+    // Chronological 39 would correct to 37, past the cutoff, so it falls back to chronological.
+    expect(correctedAgeInMonthsOn('2023-05-17', 28, '2026-08-17')).toBe(39);
   });
 
   it('returns undefined for a birth date that is not real', () => {

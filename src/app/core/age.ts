@@ -39,16 +39,16 @@ export function ageInMonthsOn(birthDateISO: string, onDateISO: string): number |
 
 /**
  * Gestational weeks counted as full term — anything at or above this gets no correction.
- * Not confirmed by the developer; see references/open-questions.md.
+ * Set by the developer; see references/preterm-correction.md.
  */
-const FULL_TERM_WEEKS = 40;
+const FULL_TERM_WEEKS = 37;
 
 /**
  * Corrected age stops being applied past this point, because the catch-up window has closed and
  * subtracting further would understate the child's age.
- * Not confirmed by the developer; see references/open-questions.md.
+ * Set by the developer; see references/preterm-correction.md.
  */
-const CORRECTION_APPLIES_UNTIL_MONTHS = 24;
+const CORRECTION_APPLIES_UNTIL_MONTHS = 36;
 
 /**
  * Age adjusted for prematurity: chronological age minus however early the birth was.

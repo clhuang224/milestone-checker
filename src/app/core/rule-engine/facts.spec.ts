@@ -67,7 +67,8 @@ describe('buildFacts', () => {
     const result = facts({ birthDateISO: '2025-02-17', gestationalWeeks: 32 });
 
     expect(result.case.ageInMonths).toBe(18);
-    expect(result.case.correctedAgeInMonths).toBe(16);
+    // 32 weeks against a 37-week term is 5 weeks early, about 1 month.
+    expect(result.case.correctedAgeInMonths).toBe(17);
   });
 
   it('reports corrected age equal to chronological for a term case', () => {
