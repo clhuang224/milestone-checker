@@ -129,3 +129,19 @@ describe('applicableProcessIds', () => {
     expect(applicableProcessIds('b')).toContain('vowelNasalization');
   });
 });
+
+describe('tone targets', () => {
+  // Tone is its own category, not a process. Without the guard, vowelNasalization matches on the
+  // diacritic alone and never looks at the target.
+  it('derives nothing from a nasal mark recorded against a tone', () => {
+    expect(deriveProcessIds('tone3', { diacritic: 'nasalized' })).toEqual([]);
+  });
+
+  it('offers no manual process for a tone target', () => {
+    expect(applicableProcessIds('tone3')).toEqual([]);
+  });
+
+  it('still derives normally for a vowel target', () => {
+    expect(deriveProcessIds('i', { diacritic: 'nasalized' })).toContain('vowelNasalization');
+  });
+});

@@ -57,6 +57,14 @@ export function deriveProcessIds(targetPhonemeId: string, heard: HeardSound): st
     return [];
   }
 
+  // Tone is its own category, not a phonological process — the therapist's ruling, and the
+  // reason 「聲調混淆」 was removed from the process list in the first place. Without this guard
+  // `vowelNasalization` matches on the diacritic alone, never looking at the target, so a ⁿ typed
+  // in a tone row derives 母音鼻音化 and the manual picker then offers it for ㄇ.
+  if (target.category === 'tone') {
+    return [];
+  }
+
   // A diacritic on its own is an error even when the sound itself is unchanged (ㄧ→ㄧⁿ).
   const error = heard.symbolId ? findZhuyin(heard.symbolId) : undefined;
   if (!error && !heard.diacritic) {
