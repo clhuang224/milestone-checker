@@ -21,6 +21,20 @@
           class="border border-slate-300 rounded px-3 py-2 text-sm"
         />
       </div>
+      <div>
+        <label class="block text-xs text-slate-500 mb-1" for="new-case-sex">性別（選填）</label>
+        <select
+          id="new-case-sex"
+          [(ngModel)]="newCaseSex"
+          name="newCaseSex"
+          class="border border-slate-300 rounded px-3 py-2 text-sm"
+        >
+          <option value="">未填</option>
+          @for (option of sexOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
       @if (newCaseAge(); as age) {
         <span class="text-sm text-slate-500 pb-2">{{ age }}</span>
       }

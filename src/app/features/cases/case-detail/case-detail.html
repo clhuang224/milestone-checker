@@ -35,6 +35,23 @@
             (change)="onGestationalWeeksChange($any($event.target).value)"
           />
 
+          <label class="text-slate-600 ml-2" for="case-sex">性別</label>
+          <!-- `selected` per option rather than [value] on the select: Angular sets the select's
+               value property before @for has rendered the options, so the assignment is dropped
+               and the box comes back blank. -->
+          <select
+            id="case-sex"
+            class="border border-slate-300 rounded px-2 py-1"
+            (change)="onSexChange($any($event.target).value)"
+          >
+            <option value="" [selected]="!c.sex">未填</option>
+            @for (option of sexOptions; track option.value) {
+              <option [value]="option.value" [selected]="c.sex === option.value">
+                {{ option.label }}
+              </option>
+            }
+          </select>
+
           @if (!c.birthDateISO) {
             <span class="text-xs text-slate-400">沒填生日的話，用到年齡的規則不會判斷</span>
           }

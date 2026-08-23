@@ -8,7 +8,7 @@ import { buildFacts } from './facts';
 const TODAY = '2026-08-17';
 
 function caseRecord(overrides: Partial<Case> = {}): Case {
-  return { id: 'case-1', label: '小切', createdOnISODate: '2026-08-01', ...overrides };
+  return { id: 'case-1', label: '小美', createdOnISODate: '2026-08-01', ...overrides };
 }
 
 function profile(values: RecordProfile['values'] = {}): RecordProfile {

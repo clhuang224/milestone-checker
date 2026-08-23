@@ -23,6 +23,10 @@ function factsFor(current = seed) {
 }
 
 describe('starter case seed', () => {
+  it('carries the sex the demo case is described with', () => {
+    expect(seed.caseRecord.sex).toBe('female');
+  });
+
   it('derives a birth date that reads as 8 years old on the seed date', () => {
     expect(seed.caseRecord.birthDateISO).toBe('2018-08-19');
     expect(factsFor().case.ageInMonths).toBe(96);

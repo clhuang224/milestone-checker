@@ -14,7 +14,7 @@
  * asserted right after an interaction waits on the text it expects rather than on a timer where
  * that is possible — the remaining short waits are the harness, not a bug.
  *
- * The articulation values are the seeded demo case 小切's, reused verbatim: clinical content
+ * The articulation values are the seeded demo case 小美's, reused verbatim: clinical content
  * comes from the developer or from `references/`, never from this file.
  */
 import { chromium } from 'playwright';
@@ -75,7 +75,7 @@ const born = new Date();
 born.setFullYear(born.getFullYear() - 8);
 const birthDate = localISO(born);
 
-await page.getByPlaceholder('個案暱稱/代號').fill('小切（e2e）');
+await page.getByPlaceholder('個案暱稱/代號').fill('小美（e2e）');
 await page.locator('#new-case-birth-date').fill(birthDate);
 await page.getByRole('button', { name: '建立' }).click();
 await page.waitForURL(/\/cases\/[^/]+$/);

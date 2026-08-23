@@ -99,7 +99,7 @@ describe('Storage', () => {
     service.upsertFinding(finding);
     expect(service.findings()).toEqual([finding]);
 
-    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:findings:v5')!);
+    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:findings:v6')!);
     expect(persisted).toEqual([finding]);
 
     service.removeFinding(finding.id);
@@ -139,7 +139,7 @@ describe('Storage', () => {
     service.upsertRule(rule);
     expect(service.rules()).toEqual([rule]);
 
-    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:rules:v5')!);
+    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:rules:v6')!);
     expect(persisted).toEqual([rule]);
 
     service.removeRule(rule.id);
@@ -154,7 +154,7 @@ describe('Storage', () => {
     expect(service.articulationProcesses()).toEqual([process]);
 
     const persisted = JSON.parse(
-      localStorage.getItem('therapist-rule-engine:articulation-processes:v5')!,
+      localStorage.getItem('therapist-rule-engine:articulation-processes:v6')!,
     );
     expect(persisted).toEqual([process]);
 
@@ -175,7 +175,7 @@ describe('Storage', () => {
     expect(service.probesFor('case-2')).toEqual([otherCase]);
 
     const persisted = JSON.parse(
-      localStorage.getItem('therapist-rule-engine:articulation-records:v5')!,
+      localStorage.getItem('therapist-rule-engine:articulation-records:v6')!,
     );
     expect(persisted).toEqual([probe, otherCase]);
 
@@ -318,7 +318,7 @@ describe('Storage', () => {
     expect(service.trialsFor('case-1')).toEqual([trial]);
     expect(service.trialsFor('case-2')).toEqual([otherCase]);
 
-    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:swallow-trials:v5')!);
+    const persisted = JSON.parse(localStorage.getItem('therapist-rule-engine:swallow-trials:v6')!);
     expect(persisted).toEqual([trial, otherCase]);
 
     service.removeTrial(trial.id);
@@ -435,12 +435,12 @@ describe('Storage', () => {
   });
 
   it('falls back to empty data when localStorage holds corrupt JSON', () => {
-    localStorage.setItem('therapist-rule-engine:findings:v5', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:cases:v5', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:rules:v5', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:articulation-processes:v5', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:articulation-records:v5', '{not valid json');
-    localStorage.setItem('therapist-rule-engine:swallow-trials:v5', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:findings:v6', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:cases:v6', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:rules:v6', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:articulation-processes:v6', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:articulation-records:v6', '{not valid json');
+    localStorage.setItem('therapist-rule-engine:swallow-trials:v6', '{not valid json');
 
     const corrupted = TestBed.inject(Storage);
     expect(corrupted.findings()).toEqual([]);

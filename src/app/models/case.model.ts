@@ -1,7 +1,20 @@
+/**
+ * Recorded because it changes what counts as typical: voice norms differ by sex, and so does
+ * child language development. Optional — a case can be worked on without it, and no rule reads
+ * it yet.
+ */
+export type Sex = 'female' | 'male';
+
+export const SEX_LABELS: Record<Sex, string> = {
+  female: '女',
+  male: '男',
+};
+
 export interface Case {
   id: string;
   label: string;
   createdOnISODate: string;
+  sex?: Sex;
   /**
    * YYYY-MM-DD. Stores the birth date rather than an age, so the derived age can never go
    * stale — rules like 「四歲以上」 read `case.ageInMonths`, computed at evaluation time.

@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 
 import { ageInMonthsOn, formatAgeInMonths, todayISO } from '../../../core/age';
 import { Storage } from '../../../core/storage/storage';
+import { SEX_LABELS, Sex } from '../../../models/case.model';
 
 @Component({
   selector: 'app-case-list',
@@ -17,6 +18,10 @@ export class CaseList {
   readonly cases = this.storage.cases;
   readonly newCaseLabel = signal('');
   readonly newCaseBirthDate = signal('');
+  readonly newCaseSex = signal<Sex | ''>('');
+  readonly sexOptions: { value: Sex; label: string }[] = (['female', 'male'] as Sex[]).map(
+    (value) => ({ value, label: SEX_LABELS[value] }),
+  );
 
   /** Echoes back what the app derives from the date, so a mistyped year is obvious immediately. */
   readonly newCaseAge = computed(() => this.ageLabel(this.newCaseBirthDate()));
@@ -41,9 +46,11 @@ export class CaseList {
       label,
       createdOnISODate: todayISO(),
       birthDateISO: this.newCaseBirthDate() || undefined,
+      sex: this.newCaseSex() || undefined,
     });
     this.newCaseLabel.set('');
     this.newCaseBirthDate.set('');
+    this.newCaseSex.set('');
     this.router.navigate(['/cases', id]);
   }
 

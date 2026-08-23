@@ -10,8 +10,8 @@ export interface StarterCaseSeed {
   probes: ArticulationProbe[];
 }
 
-const CASE_ID = 'demo-case-xiaoqie';
-const RECORD_ID = 'demo-assessment-xiaoqie';
+const CASE_ID = 'demo-case-xiaomei';
+const RECORD_ID = 'demo-assessment-xiaomei';
 
 /** Subtracts whole years from an ISO date, keeping the month and day. */
 function yearsBefore(onDateISO: string, years: number): string {
@@ -50,8 +50,9 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
   return {
     caseRecord: {
       id: CASE_ID,
-      label: '小切',
+      label: '小美',
       createdOnISODate: onDateISO,
+      sex: 'female',
       birthDateISO: yearsBefore(onDateISO, 8),
       note: '示範個案——改寫、簡化過的示意資料，可以直接修改或刪除。',
     },

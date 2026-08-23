@@ -11,6 +11,7 @@ import { effectiveProcessGroups } from '../../../core/articulation/summary';
 import { buildFacts } from '../../../core/rule-engine/facts';
 import { evaluateRules } from '../../../core/rule-engine/json-logic';
 import { Storage } from '../../../core/storage/storage';
+import { SEX_LABELS, Sex } from '../../../models/case.model';
 import { SessionRecord } from '../../../models/session-record.model';
 
 interface RecordRow {
@@ -88,6 +89,18 @@ export class CaseDetail {
     if (caseRecord) {
       this.storage.upsertCase({ ...caseRecord, birthDateISO: birthDateISO || undefined });
     }
+  }
+
+  readonly sexOptions: { value: Sex; label: string }[] = (['female', 'male'] as Sex[]).map(
+    (value) => ({ value, label: SEX_LABELS[value] }),
+  );
+
+  onSexChange(raw: string): void {
+    const caseRecord = this.caseRecord();
+    if (!caseRecord) {
+      return;
+    }
+    this.storage.upsertCase({ ...caseRecord, sex: raw === '' ? undefined : (raw as Sex) });
   }
 
   onGestationalWeeksChange(raw: string): void {

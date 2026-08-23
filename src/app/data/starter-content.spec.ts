@@ -70,7 +70,7 @@ describe('starter content', () => {
     });
 
     it('fires for an 8-year-old whose errors go beyond the retroflex sounds', () => {
-      // 小切: ㄓ→ㄉ, ㄔ→ㄎ are retroflex targets, but ㄘ→ㄎ and the nasalized ㄧ/ㄨ are not.
+      // 小美: ㄓ→ㄉ, ㄔ→ㄎ are retroflex targets, but ㄘ→ㄎ and the nasalized ㄧ/ㄨ are not.
       expect(evaluateCondition(rule!.condition, facts(96, ['zh', 'ch', 'c', 'i', 'u']))).toBe(true);
     });
 
