@@ -1,10 +1,6 @@
 @if (row(); as r) {
   <div class="flex items-center gap-2 flex-wrap">
-    <select
-      [ngModel]="r.fieldId"
-      (ngModelChange)="setField($event)"
-      class="border border-slate-300 rounded px-2 py-1 text-sm"
-    >
+    <select [ngModel]="r.fieldId" (ngModelChange)="setField($event)" class="select w-auto">
       @for (f of fields(); track f.id) {
         <option [value]="f.id">{{ f.label }}</option>
       }
@@ -13,7 +9,7 @@
     <select
       [ngModel]="r.operator"
       (ngModelChange)="setOperator($event)"
-      class="border border-slate-300 rounded px-2 py-1 text-sm"
+      class="select w-auto font-mono text-center"
     >
       @for (op of availableOperators(); track op) {
         <option [value]="op">{{ op }}</option>
@@ -21,11 +17,7 @@
     </select>
 
     @if (selectedField()?.kind === 'boolean') {
-      <select
-        [ngModel]="r.value"
-        (ngModelChange)="setBooleanValue($event)"
-        class="border border-slate-300 rounded px-2 py-1 text-sm"
-      >
+      <select [ngModel]="r.value" (ngModelChange)="setBooleanValue($event)" class="select w-auto">
         <option [ngValue]="true">是</option>
         <option [ngValue]="false">否</option>
       </select>
@@ -34,76 +26,67 @@
         type="number"
         [ngModel]="r.value"
         (ngModelChange)="setNumberValue($event)"
-        class="w-24 border border-slate-300 rounded px-2 py-1 text-sm"
+        class="input w-24"
       />
     }
   </div>
 } @else if (setRow(); as s) {
-  <div class="border border-sky-200 bg-sky-50/40 rounded p-3 space-y-2">
-    <div class="flex items-center gap-2 flex-wrap text-sm">
-      <span class="text-slate-500">適用條件</span>
-      <select
-        [ngModel]="s.subject"
-        (ngModelChange)="setSubject($event)"
-        class="border border-slate-300 rounded px-2 py-1"
-      >
+  <div class="panel p-3 space-y-2.5">
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="field-label">適用條件</span>
+      <select [ngModel]="s.subject" (ngModelChange)="setSubject($event)" class="select w-auto">
         <option value="articulationTarget">構音錯誤的目標音</option>
         <option value="articulationProcess">音韻歷程</option>
       </select>
-      <select
-        [ngModel]="s.mode"
-        (ngModelChange)="setMode($event)"
-        class="border border-slate-300 rounded px-2 py-1"
-      >
+      <select [ngModel]="s.mode" (ngModelChange)="setMode($event)" class="select w-auto">
         <option value="includes">包含</option>
         <option value="excludes">排除</option>
       </select>
     </div>
 
-    <p class="text-xs text-slate-500">{{ modeHint() }}</p>
+    <p class="meta">{{ modeHint() }}</p>
 
-    @for (optionGroup of setOptions(); track optionGroup.label) {
-      <div class="flex items-start gap-2">
-        <span class="text-xs text-slate-400 w-12 shrink-0 pt-1">{{ optionGroup.label }}</span>
-        <div class="flex flex-wrap gap-1">
-          @for (option of optionGroup.options; track option.id) {
-            <button
-              type="button"
-              class="border rounded px-2 py-0.5 text-sm"
-              [class]="
-                s.values.includes(option.id)
-                  ? 'border-sky-600 bg-sky-600 text-white'
-                  : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-              "
-              [attr.aria-pressed]="s.values.includes(option.id)"
-              (click)="toggleSetValue(option.id)"
-            >
-              {{ option.label }}
-            </button>
-          }
+    <div class="space-y-1.5">
+      @for (optionGroup of setOptions(); track optionGroup.label) {
+        <div class="flex items-start gap-2">
+          <span class="field-label w-12 shrink-0 pt-1.5">{{ optionGroup.label }}</span>
+          <div class="flex flex-wrap gap-1">
+            @for (option of optionGroup.options; track option.id) {
+              <button
+                type="button"
+                class="chip min-w-8"
+                [class.chip-on]="s.values.includes(option.id)"
+                [attr.aria-pressed]="s.values.includes(option.id)"
+                (click)="toggleSetValue(option.id)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
         </div>
-      </div>
-    }
+      }
+    </div>
 
     @if (s.values.length === 0) {
-      <p class="text-xs text-amber-700">還沒選任何項目，這個條件不會成立。</p>
+      <p class="sev sev-warning text-xs">還沒選任何項目，這個條件不會成立。</p>
     }
   </div>
 } @else if (group(); as g) {
-  <div class="border border-slate-200 rounded p-3 space-y-2">
-    <div class="flex items-center gap-2 text-sm">
-      <span class="text-slate-500">符合</span>
+  <div class="border border-line rounded-md bg-surface p-3 space-y-2.5">
+    <div class="flex items-center gap-2">
+      <span class="field-label">符合</span>
       <select
         [ngModel]="g.combinator"
         (ngModelChange)="setCombinator($event)"
-        class="border border-slate-300 rounded px-2 py-1"
+        class="select w-auto"
       >
         <option value="and">全部(AND)</option>
         <option value="or">任一(OR)</option>
       </select>
     </div>
 
-    <div class="space-y-2 pl-4 border-l-2 border-slate-100">
+    <!-- The rail is what makes a nested group readable as one branch of the condition. -->
+    <div class="space-y-2 pl-4 border-l-2 border-line-strong">
       @for (child of g.children; track $index) {
         <div class="flex items-start gap-2">
           <app-condition-editor
@@ -111,11 +94,11 @@
             [fields]="fields()"
             [processes]="processes()"
             (nodeChange)="updateChild($index, $event)"
-            class="flex-1"
+            class="flex-1 min-w-0"
           />
           <button
             type="button"
-            class="text-red-600 text-sm hover:underline"
+            class="btn btn-sm btn-danger shrink-0"
             (click)="removeChild($index)"
           >
             移除
@@ -124,16 +107,12 @@
       }
     </div>
 
-    <div class="flex gap-3 text-sm">
-      <button type="button" class="text-sky-700 hover:underline" (click)="addRowChild()">
-        + 條件
+    <div class="flex gap-1">
+      <button type="button" class="btn btn-sm btn-quiet" (click)="addRowChild()">＋ 條件</button>
+      <button type="button" class="btn btn-sm btn-quiet" (click)="addSetRowChild()">
+        ＋ 適用條件
       </button>
-      <button type="button" class="text-sky-700 hover:underline" (click)="addSetRowChild()">
-        + 適用條件
-      </button>
-      <button type="button" class="text-sky-700 hover:underline" (click)="addGroupChild()">
-        + 群組
-      </button>
+      <button type="button" class="btn btn-sm btn-quiet" (click)="addGroupChild()">＋ 群組</button>
     </div>
   </div>
 }

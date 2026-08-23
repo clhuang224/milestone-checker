@@ -1,18 +1,26 @@
-<section class="bg-white rounded-lg border border-slate-200 p-4">
-  <h3 class="font-medium text-slate-800 mb-3">觸發的警示/歸納</h3>
+<section class="card">
+  <div class="card-head">
+    <h2 class="card-title">觸發的警示/歸納</h2>
+    @if (triggeredRules().length > 0) {
+      <span class="meta">{{ triggeredRules().length }} 條</span>
+    }
+  </div>
 
-  @if (triggeredRules().length === 0) {
-    <p class="text-sm text-slate-500">目前沒有規則被觸發。</p>
-  } @else {
-    <ul class="space-y-2">
-      @for (rule of triggeredRules(); track rule.id) {
-        <li class="border rounded px-3 py-2 text-sm" [class]="severityClass(rule.action.severity)">
-          <span class="font-medium"
-            >[{{ severityLabel(rule.action.severity) }}] {{ rule.name }}</span
-          >
-          <p class="mt-1">{{ rule.action.message }}</p>
-        </li>
-      }
-    </ul>
-  }
+  <div class="card-body">
+    @if (triggeredRules().length === 0) {
+      <p class="py-4 text-center text-sm text-muted">目前沒有規則被觸發。</p>
+    } @else {
+      <ul class="space-y-2">
+        @for (rule of triggeredRules(); track rule.id) {
+          <li class="sev" [class]="severityClass(rule.action.severity)">
+            <p class="text-sm">
+              <span class="sev-tag">[{{ severityLabel(rule.action.severity) }}]</span>
+              <span class="font-semibold text-ink">{{ rule.name }}</span>
+            </p>
+            <p class="mt-1 text-sm text-body leading-6">{{ rule.action.message }}</p>
+          </li>
+        }
+      </ul>
+    }
+  </div>
 </section>

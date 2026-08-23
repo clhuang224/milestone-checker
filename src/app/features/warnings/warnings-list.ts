@@ -2,10 +2,14 @@ import { Component, input } from '@angular/core';
 
 import { Rule, RuleSeverity } from '../../models/rule.model';
 
+/**
+ * The three severities are the one place colour carries meaning rather than decoration, so they
+ * keep their own tokens (see `styles.css`) instead of borrowing the app's accent.
+ */
 const SEVERITY_STYLES: Record<RuleSeverity, string> = {
-  critical: 'bg-red-100 text-red-800 border-red-300',
-  warning: 'bg-amber-100 text-amber-800 border-amber-300',
-  info: 'bg-sky-100 text-sky-800 border-sky-300',
+  critical: 'sev-critical',
+  warning: 'sev-warning',
+  info: 'sev-info',
 };
 
 const SEVERITY_LABELS: Record<RuleSeverity, string> = {

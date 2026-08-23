@@ -1,27 +1,33 @@
-<div class="min-h-screen flex flex-col bg-slate-50">
+<div class="min-h-screen flex flex-col bg-paper">
   <app-disclaimer-banner />
 
-  <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-6">
-    <span class="font-semibold text-slate-800">語言治療師規則輔助工具</span>
-    <nav class="flex gap-4 text-sm">
-      <a
-        routerLink="/cases"
-        routerLinkActive="text-sky-700 font-medium"
-        class="text-slate-600 hover:text-sky-700"
-        >個案一覽</a
-      >
-      <a
-        routerLink="/forms"
-        routerLinkActive="text-sky-700 font-medium"
-        class="text-slate-600 hover:text-sky-700"
-        >評估表一覽</a
-      >
-    </nav>
+  <header class="bg-surface border-b border-line">
+    <div class="max-w-6xl w-full mx-auto px-4 h-13 flex items-center gap-7">
+      <span class="flex items-center gap-2">
+        <span
+          aria-hidden="true"
+          class="grid place-items-center size-6 rounded bg-accent text-white text-xs font-semibold"
+          >語</span
+        >
+        <span class="text-[15px] font-semibold text-ink tracking-tight"
+          >語言治療師規則輔助工具</span
+        >
+      </span>
+      <nav class="flex items-center gap-1 self-stretch">
+        <a routerLink="/cases" routerLinkActive="tab-on" class="tab flex items-center self-stretch"
+          >個案一覽</a
+        >
+        <a routerLink="/forms" routerLinkActive="tab-on" class="tab flex items-center self-stretch"
+          >評估表一覽</a
+        >
+      </nav>
+    </div>
   </header>
 
   <!-- Wide enough for the articulation grid to show all six initial columns at once;
-       reading left to right is what carries the place ordering. -->
-  <main class="flex-1 p-4 max-w-6xl w-full mx-auto">
+       reading left to right is what carries the place ordering. The horizontal padding is
+       load-bearing too: widening it takes the width straight off the grid. -->
+  <main class="flex-1 px-4 pt-6 pb-16 max-w-6xl w-full mx-auto">
     <router-outlet />
   </main>
 </div>

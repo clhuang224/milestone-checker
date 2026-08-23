@@ -1,3 +1,488 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * Global styles: the design tokens and the handful of component classes the whole app shares.
+ *
+ * Art direction — "a clinical instrument, not a consumer app":
+ *   - Warm paper ground, white surfaces, hairline rules. Ink is warm near-black, never pure #000.
+ *   - Labels recede, data leads. Section titles are small and quiet; the therapist's own values
+ *     (a case name, a zhuyin symbol, a recorded error) are the largest, darkest thing on screen.
+ *   - One accent (teal) for everything interactive. Deliberately NOT blue, because blue is
+ *     already spoken for: 提示 severity is sky. Amber and red are likewise reserved for 警示 and
+ *     重要 and are never used for ordinary chrome.
+ *   - Destructive actions look different from ordinary ones (quiet until hovered, then red).
+ */
 
 @import 'tailwindcss';
+
+@theme {
+  /*
+   * System stack. No webfont is loaded on purpose — Google Fonts would be a network dependency.
+   * PingFang TC / Microsoft JhengHei are the platform Traditional Chinese faces; the Latin faces
+   * come first so digits and ASCII do not fall back into a CJK face.
+   */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang TC',
+    'Noto Sans TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Surfaces */
+  --color-paper: #f2f1ec;
+  --color-surface: #ffffff;
+  --color-sunk: #edece7;
+
+  /* Rules and lines */
+  --color-line: #e3e1d9;
+  --color-line-strong: #cbc8bd;
+
+  /* Ink */
+  --color-ink: #23211d;
+  --color-body: #4c4841;
+  --color-muted: #7c776d;
+  --color-faint: #a29c92;
+
+  /* The single interactive accent */
+  --color-accent: #0f6f68;
+  --color-accent-strong: #0a534e;
+  --color-accent-soft: #e4efed;
+
+  /* Destructive */
+  --color-danger: #a8231c;
+  --color-danger-soft: #fbeceb;
+
+  /* Severity — meaning-bearing, do not reuse for chrome */
+  --color-sev-info: #0369a1;
+  --color-sev-info-soft: #e8f4fc;
+  --color-sev-info-line: #7cc4ea;
+  --color-sev-warn: #8a5107;
+  --color-sev-warn-soft: #fdf3e0;
+  --color-sev-warn-line: #e2a33c;
+  --color-sev-crit: #991b1b;
+  --color-sev-crit-soft: #fdecec;
+  --color-sev-crit-line: #dc6a6a;
+
+  --shadow-card: 0 1px 2px rgb(35 33 29 / 0.05), 0 1px 1px rgb(35 33 29 / 0.03);
+  --shadow-pop: 0 4px 12px rgb(35 33 29 / 0.1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+  }
+
+  /* Dates, counts and ages line up column-wise instead of dancing. */
+  input[type='date'],
+  input[type='number'],
+  time,
+  td,
+  th {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ---- surfaces ---------------------------------------------------------- */
+
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  /*
+   * Card head: a quiet label strip over a hairline. Horizontal padding is 1rem to match
+   * `.card-body` — the articulation grid's six columns are measured against exactly that.
+   */
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .card-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-ink);
+  }
+
+  /* An inset panel: compose forms, condition groups, anything nested inside a card. */
+  .panel {
+    background-color: var(--color-sunk);
+    border: 1px solid var(--color-line);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0.375rem;
+  }
+
+  /* ---- type -------------------------------------------------------------- */
+
+  .page-title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  .subject-title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  .meta {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--color-muted);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--color-muted);
+  }
+
+  .link {
+    color: var(--color-accent);
+    text-decoration-line: none;
+    text-underline-offset: 3px;
+  }
+  .link:hover {
+    text-decoration-line: underline;
+  }
+
+  /* ---- controls ---------------------------------------------------------- */
+
+  .input,
+  .select,
+  .textarea {
+    width: 100%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.875rem;
+    line-height: 1.375rem;
+    color: var(--color-ink);
+    transition:
+      border-color 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .textarea {
+    line-height: 1.7;
+  }
+  .input::placeholder,
+  .textarea::placeholder {
+    color: var(--color-faint);
+  }
+  .input:hover,
+  .select:hover,
+  .textarea:hover {
+    border-color: var(--color-muted);
+  }
+  .input:focus,
+  .select:focus,
+  .textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 16%, transparent);
+  }
+  .select {
+    padding-right: 0.5rem;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--color-accent);
+  }
+
+  /* ---- buttons ----------------------------------------------------------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    /* 36px tall, so a button sitting next to an `.input` lines up with it. */
+    padding: 0.4375rem 0.875rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .btn-sm {
+    padding: 0.1875rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-accent-strong);
+  }
+
+  .btn-quiet {
+    background-color: var(--color-surface);
+    border-color: var(--color-line-strong);
+    color: var(--color-body);
+  }
+  .btn-quiet:hover:not(:disabled) {
+    border-color: var(--color-muted);
+    color: var(--color-ink);
+  }
+
+  /* Ordinary text-weight action: reads as a control, not as a link. */
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-body);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-sunk);
+    color: var(--color-ink);
+  }
+
+  /*
+   * Destructive. Quiet until it is pointed at, then unmistakably red — a 刪除 must not look
+   * like the 編輯 next to it, and must not shout at rest either.
+   */
+  .btn-danger {
+    background-color: transparent;
+    /* Already reads as red at rest, but desaturated enough not to shout across a list. */
+    color: color-mix(in srgb, var(--color-danger) 60%, var(--color-muted));
+  }
+  .btn-danger:hover:not(:disabled) {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger);
+  }
+
+  /* ---- toggle chips: a *value* being selected, not an action ------------- */
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.25rem;
+    background-color: var(--color-surface);
+    padding: 0.125rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.375rem;
+    color: var(--color-body);
+    cursor: pointer;
+    transition:
+      background-color 0.1s ease,
+      border-color 0.1s ease,
+      color 0.1s ease;
+  }
+  .chip:hover:not(:disabled) {
+    border-color: var(--color-muted);
+    background-color: var(--color-sunk);
+  }
+  .chip:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  .chip-on {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+  .chip-on:hover:not(:disabled) {
+    background-color: var(--color-accent-soft);
+    border-color: var(--color-accent);
+  }
+
+  /* ---- tabs -------------------------------------------------------------- */
+
+  .tab {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--color-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+  }
+  .tab:hover {
+    color: var(--color-ink);
+  }
+  .tab-on {
+    color: var(--color-accent-strong);
+    border-bottom-color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* ---- severity ---------------------------------------------------------- */
+
+  .sev {
+    border: 1px solid;
+    border-left-width: 4px;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .sev-tag {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .sev-info {
+    background-color: var(--color-sev-info-soft);
+    border-color: var(--color-sev-info-line);
+    color: var(--color-sev-info);
+  }
+  .sev-warning {
+    background-color: var(--color-sev-warn-soft);
+    border-color: var(--color-sev-warn-line);
+    color: var(--color-sev-warn);
+  }
+  .sev-critical {
+    background-color: var(--color-sev-crit-soft);
+    border-color: var(--color-sev-crit-line);
+    color: var(--color-sev-crit);
+  }
+
+  /* The 警示 count that rides along in a tab or a table cell. */
+  .sev-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    border-radius: 0.25rem;
+    background-color: var(--color-sev-warn-soft);
+    border: 1px solid var(--color-sev-warn-line);
+    padding: 0 0.3125rem;
+    font-size: 0.75rem;
+    line-height: 1.125rem;
+    font-weight: 600;
+    color: var(--color-sev-warn);
+  }
+
+  /* ---- tables ------------------------------------------------------------ */
+
+  .data-table {
+    width: 100%;
+    font-size: 0.875rem;
+    border-collapse: collapse;
+  }
+  .data-table thead th {
+    padding: 0.25rem 0.5rem 0.375rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-line-strong);
+  }
+  .data-table tbody td {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--color-line);
+    color: var(--color-body);
+  }
+  .data-table thead th:first-child,
+  .data-table tbody td:first-child {
+    padding-left: 0;
+  }
+  .data-table thead th:last-child,
+  .data-table tbody td:last-child {
+    padding-right: 0;
+  }
+  .data-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  .data-table tbody tr:hover td {
+    background-color: var(--color-sunk);
+  }
+
+  /* ---- the articulation grid --------------------------------------------- */
+
+  /*
+   * Probe boxes. The horizontal budget is fixed: six place-ordered columns use 1052px of the
+   * 1086px the shell offers, so widths, the gaps between the boxes and the gap between columns
+   * are all load-bearing — see docs/ARCHITECTURE.md §7. `box-sizing: border-box` means padding
+   * and border here cost nothing, which is why the styling lives in padding and colour only.
+   *
+   * An empty slot sinks into the page; a slot with something in it turns white with a darker
+   * rule, so a filled-in row can be picked out across six columns without reading any of it.
+   */
+  .probe-box {
+    background-color: var(--color-sunk);
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--color-ink);
+    transition:
+      background-color 0.1s ease,
+      border-color 0.1s ease;
+  }
+  .probe-box::placeholder {
+    color: var(--color-faint);
+  }
+  .probe-box:not(:placeholder-shown) {
+    background-color: var(--color-surface);
+    border-color: var(--color-line-strong);
+  }
+  .probe-box:hover {
+    border-color: var(--color-muted);
+  }
+  .probe-box:focus {
+    outline: none;
+    background-color: var(--color-surface);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+  /* What was actually heard is the finding; it carries the weight of the pair. */
+  .probe-heard:not(:placeholder-shown) {
+    font-weight: 600;
+  }
+
+  .zhuyin {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    color: var(--color-ink);
+  }
+  .zhuyin-hint {
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: var(--color-line-strong);
+    text-underline-offset: 3px;
+    cursor: help;
+  }
+}

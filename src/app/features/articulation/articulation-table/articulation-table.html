@@ -1,44 +1,59 @@
 @if (caseRecord(); as c) {
-  <div class="space-y-5">
-    <p class="text-xs text-slate-500">
+  <div class="space-y-4">
+    <p class="meta">
       每個音三組「目標詞 ＋ 錯音」。錯音照聽到的寫（例如「ㄆㄠ」），構音正確就留白。
     </p>
 
     @for (section of sections(); track section.label) {
-      <section class="bg-white rounded-lg border border-slate-200 p-4">
-        <h3 class="font-medium text-slate-800 mb-3">{{ section.label }}</h3>
+      <section class="card">
+        <div class="card-head">
+          <h3 class="card-title">{{ section.label }}</h3>
+        </div>
 
         <!-- The initials columns must stay side by side: their left-to-right order is place of
              articulation, front of the mouth to back, so wrapping ㄍ under ㄅ would destroy the
              meaning. If the viewport really is too narrow, this box scrolls rather than the
              columns rearranging. The ordering is not captioned on screen — a therapist reads it
-             off the chart. -->
-        <div class="overflow-x-auto">
-          <div class="flex gap-x-4 gap-y-4" [class.flex-wrap]="!section.placeOrdered">
+             off the chart.
+
+             The six columns spend 1052px of the 1086px this card offers, so the box widths and
+             the gaps below are load-bearing: nothing in here may gain horizontal padding. Box
+             styling is padding and colour only, which `box-sizing: border-box` makes free. -->
+        <div class="card-body overflow-x-auto">
+          <!-- The other sections carry no place ordering, so they wrap into as many columns as
+               fit instead of running down the page as one narrow strip, and they have the room
+               to spell the names out — a bare tone mark is unreadable without one. -->
+          <div
+            [class]="
+              section.placeOrdered
+                ? 'flex gap-x-4 gap-y-3'
+                : 'grid gap-x-6 gap-y-3 grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]'
+            "
+          >
             @for (column of section.columns; track $index) {
-              <div class="flex flex-col gap-2" [class.flex-wrap]="!section.placeOrdered">
+              <!-- `contents` in the wrapping sections: the cells themselves become the grid
+                   items, so they flow across the row instead of stacking in one column. -->
+              <div [class]="section.placeOrdered ? 'flex flex-col gap-3' : 'contents'">
                 @for (cell of column; track cell.symbol.id) {
                   <div class="flex items-start gap-1.5">
                     <div
                       class="shrink-0 pt-0.5"
-                      [class]="section.placeOrdered ? 'w-10 text-center' : 'w-28'"
+                      [class]="section.placeOrdered ? 'w-10 text-center' : 'w-24'"
                     >
                       <!-- In the initials grid the features live in the tooltip: spelling them
                            out under every symbol makes the cell too wide for six columns to fit.
                            The other sections have the room, and a bare tone mark is unreadable
                            without its name. -->
                       <span
-                        class="text-lg text-slate-800"
-                        [class]="
+                        class="zhuyin"
+                        [class.zhuyin-hint]="
                           section.placeOrdered && (cell.symbol.features || cell.symbol.label)
-                            ? 'underline decoration-dotted cursor-help'
-                            : ''
                         "
                         [title]="cell.symbol.label || featureLabel(cell.symbol)"
                         >{{ cell.symbol.symbol }}</span
                       >
                       @if (!section.placeOrdered && cell.symbol.label) {
-                        <span class="ml-1 text-xs text-slate-500">{{ cell.symbol.label }}</span>
+                        <span class="ml-1 meta">{{ cell.symbol.label }}</span>
                       }
                     </div>
 
@@ -49,7 +64,7 @@
                             type="text"
                             placeholder="詞"
                             aria-label="目標詞"
-                            class="w-12 border border-slate-300 rounded px-1 py-0.5 text-sm"
+                            class="probe-box w-12"
                             [value]="item.word"
                             (change)="setWord(cell.symbol.id, $index, $any($event.target).value)"
                           />
@@ -58,7 +73,7 @@
                             type="text"
                             placeholder="錯音"
                             aria-label="錯音"
-                            class="w-16 border border-slate-300 rounded px-1 py-0.5 text-sm"
+                            class="probe-box probe-heard w-16"
                             [value]="item.heard"
                             (focus)="offerMark(heardBox, cell.symbol.id, $index)"
                             (blur)="dismissMark($event)"
@@ -71,7 +86,7 @@
                             <button
                               type="button"
                               data-nasal-mark
-                              class="fixed z-50 h-6 w-6 rounded border border-sky-400 bg-white text-sm leading-none text-sky-700 shadow-sm hover:bg-sky-50 focus:outline-2 focus:outline-offset-1 focus:outline-sky-500"
+                              class="fixed z-50 h-6 w-6 rounded border border-accent bg-surface text-sm leading-none text-accent-strong shadow-pop hover:bg-accent-soft"
                               [style.left.px]="markPosition().left"
                               [style.top.px]="markPosition().top"
                               title="插入鼻音化上標 ⁿ（插在游標所在的位置）"
@@ -98,5 +113,5 @@
     <app-process-summary [recordId]="recordId()" [probes]="probes()" />
   </div>
 } @else {
-  <p class="text-sm text-slate-500">找不到這個個案。</p>
+  <p class="card card-body text-sm text-muted">找不到這個個案。</p>
 }

@@ -1,24 +1,27 @@
-<section class="bg-white rounded-lg border border-slate-200 p-4">
-  <div class="space-y-2">
-    @for (finding of findings(); track finding.id) {
-      <div class="flex items-center justify-between gap-3">
-        <label class="text-sm text-slate-700" [attr.for]="'finding-' + finding.id">
+<section class="card">
+  <div class="card-body">
+    @for (finding of findings(); track finding.id; let last = $last) {
+      <div
+        class="flex items-center justify-between gap-4 py-2"
+        [class]="last ? '' : 'border-b border-line'"
+      >
+        <label class="text-sm text-body" [attr.for]="'finding-' + finding.id">
           {{ finding.label }}
         </label>
         @if (finding.kind === 'boolean') {
           <input
             [id]="'finding-' + finding.id"
             type="checkbox"
-            class="h-4 w-4"
+            class="size-4 shrink-0"
             [checked]="values()[finding.id] === true"
             (change)="setBoolean(finding.id, $any($event.target).checked)"
           />
         } @else {
-          <span class="flex items-center gap-1 text-sm text-slate-600">
+          <span class="flex items-center gap-1.5 text-sm text-muted shrink-0">
             <input
               [id]="'finding-' + finding.id"
               type="number"
-              class="w-24 border border-slate-300 rounded px-2 py-1"
+              class="input w-24"
               [value]="numberValueFor(finding.id) ?? ''"
               (input)="setNumber(finding.id, $any($event.target).value)"
             />
@@ -29,7 +32,7 @@
         }
       </div>
     } @empty {
-      <p class="text-sm text-slate-500">這張表還沒有任何項目。</p>
+      <p class="py-4 text-center text-sm text-muted">這張表還沒有任何項目。</p>
     }
   </div>
 </section>

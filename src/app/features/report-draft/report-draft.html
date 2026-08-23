@@ -1,22 +1,25 @@
-<section class="bg-white rounded-lg border border-slate-200 p-4">
-  <div class="flex items-center justify-between mb-3">
-    <h3 class="font-medium text-slate-800">報告草稿</h3>
-    <div class="flex gap-2 text-sm">
-      <button type="button" class="text-slate-600 hover:underline" (click)="regenerate()">
-        重新產生
-      </button>
-      <button type="button" class="text-sky-700 hover:underline" (click)="copy()">複製</button>
+<section class="card">
+  <div class="card-head">
+    <h2 class="card-title">報告草稿</h2>
+    <div class="flex gap-1.5">
+      <button type="button" class="btn btn-sm btn-quiet" (click)="regenerate()">重新產生</button>
+      <button type="button" class="btn btn-sm btn-quiet" (click)="copy()">複製</button>
     </div>
   </div>
-  @if (hasEdits()) {
-    <p class="text-xs text-amber-700 mb-2">這份草稿已經手動改過，重新產生會蓋掉。</p>
-  }
-  <textarea
-    rows="8"
-    aria-label="報告草稿"
-    placeholder="目前沒有觸發任何附報告範本的規則。"
-    class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-    [value]="draftText()"
-    (input)="setText($any($event.target).value)"
-  ></textarea>
+
+  <div class="card-body space-y-2">
+    @if (hasEdits()) {
+      <p class="sev sev-warning text-xs">
+        <span aria-hidden="true" class="mr-1">⚠</span>這份草稿已經手動改過，重新產生會蓋掉。
+      </p>
+    }
+    <textarea
+      rows="10"
+      aria-label="報告草稿"
+      placeholder="目前沒有觸發任何附報告範本的規則。"
+      class="textarea"
+      [value]="draftText()"
+      (input)="setText($any($event.target).value)"
+    ></textarea>
+  </div>
 </section>

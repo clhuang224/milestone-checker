@@ -1,25 +1,29 @@
 @if (record(); as r) {
-  <div class="space-y-4">
-    <div>
-      <a [routerLink]="['/cases', caseId()]" class="text-sm text-sky-700 hover:underline"
-        >← 回{{ caseRecord()?.label }}</a
-      >
-      <div class="flex items-center gap-3 mt-1 flex-wrap">
-        <h2 class="text-lg font-semibold text-slate-800">課節紀錄</h2>
-        <input
-          id="record-date"
-          type="date"
-          aria-label="課節日期"
-          class="border border-slate-300 rounded px-2 py-1 text-sm"
-          [value]="r.onISODate"
-          (change)="setDate($any($event.target).value)"
-        />
+  <div class="space-y-5">
+    <!-- Header and tab bar may only take vertical room: a side rail here would cost the
+         articulation grid the width its six place-ordered columns need. -->
+    <header>
+      <a [routerLink]="['/cases', caseId()]" class="link text-xs">← 回{{ caseRecord()?.label }}</a>
+
+      <div class="mt-1.5 flex items-center gap-4 flex-wrap">
+        <h1 class="page-title">課節紀錄</h1>
+        <div class="flex items-center gap-2">
+          <label class="field-label" for="record-date">日期</label>
+          <input
+            id="record-date"
+            type="date"
+            aria-label="課節日期"
+            class="input w-40 py-1"
+            [value]="r.onISODate"
+            (change)="setDate($any($event.target).value)"
+          />
+        </div>
         @if (ageLabel(); as age) {
-          <span class="text-sm text-slate-500">當時 {{ age }}</span>
+          <span class="text-sm text-muted">當時 {{ age }}</span>
         }
         <button
           type="button"
-          class="text-sm text-sky-700 hover:underline"
+          class="btn btn-sm btn-ghost ml-auto"
           [attr.aria-expanded]="editingForms()"
           (click)="editingForms.set(!editingForms())"
         >
@@ -28,18 +32,14 @@
       </div>
 
       @if (editingForms()) {
-        <div class="border border-sky-200 bg-sky-50/40 rounded p-3 mt-2 space-y-2">
-          <p class="text-sm text-slate-700">這次要用哪些表？至少要留一張。</p>
-          <div class="flex flex-wrap gap-1">
+        <div class="panel p-3 mt-3 space-y-2.5">
+          <p class="text-sm text-body">這次要用哪些表？至少要留一張。</p>
+          <div class="flex flex-wrap gap-1.5">
             @for (form of allForms(); track form.id) {
               <button
                 type="button"
-                class="border rounded px-2 py-0.5 text-sm"
-                [class]="
-                  isAttached(form.id)
-                    ? 'border-sky-600 bg-sky-600 text-white'
-                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                "
+                class="chip"
+                [class.chip-on]="isAttached(form.id)"
                 [attr.aria-pressed]="isAttached(form.id)"
                 [disabled]="isLastForm(form.id)"
                 [title]="isLastForm(form.id) ? '至少要留一張表' : ''"
@@ -49,23 +49,17 @@
               </button>
             }
           </div>
-          <p class="text-xs text-slate-500">
-            拿掉一張表會一併刪掉這次課節在那張表上記錄的內容，無法復原。
-          </p>
+          <p class="meta">拿掉一張表會一併刪掉這次課節在那張表上記錄的內容，無法復原。</p>
         </div>
       }
-    </div>
+    </header>
 
-    <div class="flex gap-1 border-b border-slate-200">
+    <div class="flex gap-1 border-b border-line-strong overflow-x-auto">
       @for (tab of tabs(); track tab.id) {
         <a
           [routerLink]="['/cases', caseId(), 'records', r.id, 'forms', tab.id]"
-          class="px-3 py-1.5 text-sm rounded-t border-b-2 -mb-px"
-          [class]="
-            tab.id === formId()
-              ? 'border-sky-600 text-sky-700 font-medium'
-              : 'border-transparent text-slate-600 hover:text-slate-800'
-          "
+          class="tab"
+          [class.tab-on]="tab.id === formId()"
           >{{ tab.name }}</a
         >
       }
@@ -77,7 +71,7 @@
           <app-articulation-table [caseId]="caseId()" [recordId]="r.id" />
         }
         @default {
-          <p class="text-sm text-slate-500">
+          <p class="card card-body text-sm text-muted">
             「{{ form.name }}」的畫面還沒做，這張表目前只能掛上，不能填。
           </p>
         }
@@ -89,6 +83,8 @@
     }
   </div>
 } @else {
-  <p class="text-sm text-slate-500">找不到這筆課節紀錄。</p>
-  <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案一覽</a>
+  <div class="card card-body space-y-2">
+    <p class="text-sm text-body">找不到這筆課節紀錄。</p>
+    <a routerLink="/cases" class="link text-sm">← 回個案一覽</a>
+  </div>
 }

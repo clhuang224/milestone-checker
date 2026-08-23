@@ -1,34 +1,41 @@
-<div class="space-y-6">
-  <section class="bg-white rounded-lg border border-slate-200 p-4">
-    <h2 class="font-medium text-slate-800 mb-3">新增個案</h2>
-    <form class="flex flex-wrap items-end gap-2" (submit)="$event.preventDefault(); addCase()">
-      <input
-        type="text"
-        [(ngModel)]="newCaseLabel"
-        name="newCaseLabel"
-        placeholder="個案暱稱/代號"
-        class="flex-1 min-w-48 border border-slate-300 rounded px-3 py-2 text-sm"
-      />
+<div class="space-y-5">
+  <div class="flex items-baseline justify-between gap-3">
+    <h1 class="page-title">個案一覽</h1>
+    <span class="meta">共 {{ cases().length }} 位</span>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 class="card-title">新增個案</h2>
+    </div>
+    <form
+      class="card-body flex flex-wrap items-end gap-3"
+      (submit)="$event.preventDefault(); addCase()"
+    >
+      <div class="flex-1 min-w-56">
+        <label class="field-label mb-1" for="new-case-label">暱稱／代號</label>
+        <input
+          id="new-case-label"
+          type="text"
+          [(ngModel)]="newCaseLabel"
+          name="newCaseLabel"
+          placeholder="個案暱稱/代號"
+          class="input"
+        />
+      </div>
       <div>
-        <label class="block text-xs text-slate-500 mb-1" for="new-case-birth-date"
-          >生日（選填）</label
-        >
+        <label class="field-label mb-1" for="new-case-birth-date">生日（選填）</label>
         <input
           id="new-case-birth-date"
           type="date"
           [(ngModel)]="newCaseBirthDate"
           name="newCaseBirthDate"
-          class="border border-slate-300 rounded px-3 py-2 text-sm"
+          class="input w-40"
         />
       </div>
       <div>
-        <label class="block text-xs text-slate-500 mb-1" for="new-case-sex">性別（選填）</label>
-        <select
-          id="new-case-sex"
-          [(ngModel)]="newCaseSex"
-          name="newCaseSex"
-          class="border border-slate-300 rounded px-3 py-2 text-sm"
-        >
+        <label class="field-label mb-1" for="new-case-sex">性別（選填）</label>
+        <select id="new-case-sex" [(ngModel)]="newCaseSex" name="newCaseSex" class="select w-24">
           <option value="">未填</option>
           @for (option of sexOptions; track option.value) {
             <option [value]="option.value">{{ option.label }}</option>
@@ -36,34 +43,36 @@
         </select>
       </div>
       @if (newCaseAge(); as age) {
-        <span class="text-sm text-slate-500 pb-2">{{ age }}</span>
+        <span class="pb-1.5 text-sm text-accent-strong">{{ age }}</span>
       }
-      <button
-        type="submit"
-        class="bg-sky-600 text-white text-sm font-medium rounded px-4 py-2 hover:bg-sky-700"
-      >
-        建立
-      </button>
+      <button type="submit" class="btn btn-primary">建立</button>
     </form>
   </section>
 
-  <section class="space-y-2">
-    @for (c of cases(); track c.id) {
+  <section class="card">
+    @for (c of cases(); track c.id; let last = $last) {
       <div
-        class="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-4"
+        class="flex items-center justify-between gap-4 px-4 py-3"
+        [class]="last ? '' : 'border-b border-line'"
       >
-        <a [routerLink]="['/cases', c.id]" class="text-sky-700 font-medium hover:underline">
-          {{ c.label }}
+        <a [routerLink]="['/cases', c.id]" class="group flex items-baseline gap-3 min-w-0">
+          <span
+            class="text-base font-medium text-ink truncate group-hover:text-accent-strong group-hover:underline underline-offset-4"
+            >{{ c.label }}</span
+          >
+          @if (ageLabel(c.birthDateISO); as age) {
+            <span class="meta shrink-0">{{ age }}</span>
+          }
         </a>
-        <div class="flex items-center gap-3 text-sm text-slate-500">
-          <span>{{ c.createdOnISODate }}</span>
-          <button type="button" class="text-red-600 hover:underline" (click)="removeCase(c.id)">
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="meta">建立於 {{ c.createdOnISODate }}</span>
+          <button type="button" class="btn btn-sm btn-danger" (click)="removeCase(c.id)">
             刪除
           </button>
         </div>
       </div>
     } @empty {
-      <p class="text-sm text-slate-500">還沒有個案，先在上面新增一個。</p>
+      <p class="px-4 py-6 text-center text-sm text-muted">還沒有個案，先在上面新增一個。</p>
     }
   </section>
 </div>

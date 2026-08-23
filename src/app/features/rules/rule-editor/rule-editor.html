@@ -1,110 +1,113 @@
-<div class="space-y-4 bg-white border border-slate-200 rounded-lg p-4">
-  <div>
-    <label for="rule-name" class="block text-sm text-slate-600 mb-1">規則名稱</label>
-    <input
-      id="rule-name"
-      type="text"
-      [ngModel]="name()"
-      (ngModelChange)="name.set($event)"
-      class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-    />
+<div class="card">
+  <div class="card-head">
+    <h2 class="card-title">規則內容</h2>
   </div>
 
-  <div>
-    <span class="block text-sm text-slate-600 mb-1">條件</span>
-    <app-condition-editor
-      [node]="conditionNode()"
-      [fields]="fields()"
-      [processes]="processes()"
-      (nodeChange)="conditionNode.set($event)"
-    />
-  </div>
-
-  <div class="grid grid-cols-2 gap-3">
+  <div class="card-body space-y-5">
     <div>
-      <label for="rule-severity" class="block text-sm text-slate-600 mb-1">警示等級</label>
-      <select
-        id="rule-severity"
-        [ngModel]="severity()"
-        (ngModelChange)="severity.set($event)"
-        class="w-full border border-slate-300 rounded px-2 py-1 text-sm"
-      >
-        <option value="info">提示</option>
-        <option value="warning">警示</option>
-        <option value="critical">重要</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
+      <label for="rule-name" class="field-label mb-1">規則名稱</label>
       <input
-        type="checkbox"
-        id="rule-enabled"
-        [ngModel]="enabled()"
-        (ngModelChange)="enabled.set($event)"
-        class="h-4 w-4"
+        id="rule-name"
+        type="text"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+        class="input"
       />
-      <label for="rule-enabled" class="text-sm text-slate-600">啟用</label>
     </div>
-  </div>
 
-  <div>
-    <label for="rule-message" class="block text-sm text-slate-600 mb-1">警示/歸納文字</label>
-    <input
-      id="rule-message"
-      type="text"
-      [ngModel]="message()"
-      (ngModelChange)="message.set($event)"
-      class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-    />
-  </div>
+    <div>
+      <span class="field-label mb-1">條件</span>
+      <app-condition-editor
+        [node]="conditionNode()"
+        [fields]="fields()"
+        [processes]="processes()"
+        (nodeChange)="conditionNode.set($event)"
+      />
+    </div>
 
-  <div>
-    <label for="rule-report-template" class="block text-sm text-slate-600 mb-1"
-      >報告範本片段（選填）</label
-    >
-    <textarea
-      id="rule-report-template"
-      [ngModel]="reportTemplate()"
-      (ngModelChange)="reportTemplate.set($event)"
-      rows="3"
-      class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-    ></textarea>
-    <p class="text-xs text-slate-500 mt-1">可代入（大括號要寫兩層）：</p>
-    <ul class="text-xs text-slate-500 mt-1 space-y-0.5">
-      @for (placeholder of reportPlaceholders; track placeholder.token) {
-        <li>
-          <code class="bg-slate-100 px-1 rounded">{{ placeholder.token }}</code>
-          — {{ placeholder.meaning }}
-        </li>
-      }
-    </ul>
-  </div>
+    <div class="border-t border-line pt-4 space-y-4">
+      <div class="flex items-end gap-4 flex-wrap">
+        <div>
+          <label for="rule-severity" class="field-label mb-1">警示等級</label>
+          <select
+            id="rule-severity"
+            [ngModel]="severity()"
+            (ngModelChange)="severity.set($event)"
+            class="select w-40"
+          >
+            <option value="info">提示</option>
+            <option value="warning">警示</option>
+            <option value="critical">重要</option>
+          </select>
+        </div>
+        <label
+          for="rule-enabled"
+          class="flex items-center gap-2 pb-2 text-sm text-body cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            id="rule-enabled"
+            [ngModel]="enabled()"
+            (ngModelChange)="enabled.set($event)"
+            class="size-4"
+          />
+          啟用
+        </label>
+      </div>
 
-  <div>
-    <label for="rule-source-note" class="block text-sm text-slate-600 mb-1">臨床依據</label>
-    <textarea
-      id="rule-source-note"
-      [ngModel]="sourceNote()"
-      (ngModelChange)="sourceNote.set($event)"
-      rows="2"
-      class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-    ></textarea>
-  </div>
+      <div>
+        <label for="rule-message" class="field-label mb-1">警示/歸納文字</label>
+        <input
+          id="rule-message"
+          type="text"
+          [ngModel]="message()"
+          (ngModelChange)="message.set($event)"
+          class="input"
+        />
+      </div>
 
-  <div class="flex gap-3">
-    <button
-      type="button"
-      [disabled]="!canSave()"
-      (click)="submit()"
-      class="bg-sky-600 disabled:bg-slate-300 text-white text-sm font-medium rounded px-4 py-2 hover:enabled:bg-sky-700"
-    >
-      儲存
-    </button>
-    <button
-      type="button"
-      class="text-slate-600 text-sm hover:underline"
-      (click)="cancelEdit.emit()"
-    >
-      取消
-    </button>
+      <div>
+        <label for="rule-report-template" class="field-label mb-1">報告範本片段（選填）</label>
+        <textarea
+          id="rule-report-template"
+          [ngModel]="reportTemplate()"
+          (ngModelChange)="reportTemplate.set($event)"
+          rows="3"
+          class="textarea"
+        ></textarea>
+        <div class="mt-2 rounded border border-line bg-sunk px-3 py-2">
+          <p class="meta">可代入（大括號要寫兩層）：</p>
+          <ul class="mt-1 space-y-1">
+            @for (placeholder of reportPlaceholders; track placeholder.token) {
+              <li class="meta flex items-baseline gap-2">
+                <code
+                  class="font-mono text-[11px] text-accent-strong bg-surface border border-line rounded px-1 py-px shrink-0"
+                  >{{ placeholder.token }}</code
+                >
+                <span>— {{ placeholder.meaning }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <label for="rule-source-note" class="field-label mb-1">臨床依據</label>
+        <textarea
+          id="rule-source-note"
+          [ngModel]="sourceNote()"
+          (ngModelChange)="sourceNote.set($event)"
+          rows="2"
+          class="textarea"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="flex gap-2 border-t border-line pt-4">
+      <button type="button" [disabled]="!canSave()" (click)="submit()" class="btn btn-primary">
+        儲存
+      </button>
+      <button type="button" class="btn btn-quiet" (click)="cancelEdit.emit()">取消</button>
+    </div>
   </div>
 </div>

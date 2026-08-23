@@ -1,156 +1,162 @@
 @if (caseRecord(); as c) {
-  <div class="space-y-5">
-    <div>
-      <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案一覽</a>
-      <h2 class="text-lg font-semibold text-slate-800 mt-1">{{ c.label }}</h2>
+  <div class="space-y-6">
+    <header class="border-b border-line pb-4">
+      <a routerLink="/cases" class="link text-xs">← 回個案一覽</a>
 
-      <button
-        type="button"
-        class="text-xs text-sky-700 hover:underline mt-1"
-        (click)="detailsOpen.set(!detailsOpen())"
-      >
-        {{ detailsOpen() ? '▾' : '▸' }} 基本資料
-      </button>
+      <div class="mt-1.5 flex items-center justify-between gap-4 flex-wrap">
+        <h1 class="subject-title">{{ c.label }}</h1>
+        <button
+          type="button"
+          class="btn btn-sm btn-ghost"
+          [attr.aria-expanded]="detailsOpen()"
+          (click)="detailsOpen.set(!detailsOpen())"
+        >
+          <span aria-hidden="true" class="text-faint">{{ detailsOpen() ? '▾' : '▸' }}</span>
+          基本資料
+        </button>
+      </div>
 
       @if (detailsOpen()) {
-        <div class="flex items-center gap-2 mt-2 flex-wrap text-sm">
-          <label class="text-slate-600" for="case-birth-date">生日</label>
-          <input
-            id="case-birth-date"
-            type="date"
-            class="border border-slate-300 rounded px-2 py-1"
-            [value]="c.birthDateISO ?? ''"
-            (change)="onBirthDateChange($any($event.target).value)"
-          />
+        <div class="mt-3 flex items-end gap-4 flex-wrap">
+          <div>
+            <label class="field-label mb-1" for="case-birth-date">生日</label>
+            <input
+              id="case-birth-date"
+              type="date"
+              class="input w-40"
+              [value]="c.birthDateISO ?? ''"
+              (change)="onBirthDateChange($any($event.target).value)"
+            />
+          </div>
 
-          <label class="text-slate-600 ml-2" for="case-gestational-weeks">出生週數</label>
-          <input
-            id="case-gestational-weeks"
-            type="number"
-            min="20"
-            max="44"
-            placeholder="足月免填"
-            class="w-24 border border-slate-300 rounded px-2 py-1"
-            [value]="c.gestationalWeeks ?? ''"
-            (change)="onGestationalWeeksChange($any($event.target).value)"
-          />
+          <div>
+            <label class="field-label mb-1" for="case-gestational-weeks">出生週數</label>
+            <input
+              id="case-gestational-weeks"
+              type="number"
+              min="20"
+              max="44"
+              placeholder="足月免填"
+              class="input w-28"
+              [value]="c.gestationalWeeks ?? ''"
+              (change)="onGestationalWeeksChange($any($event.target).value)"
+            />
+          </div>
 
-          <label class="text-slate-600 ml-2" for="case-sex">性別</label>
-          <!-- `selected` per option rather than [value] on the select: Angular sets the select's
-               value property before @for has rendered the options, so the assignment is dropped
-               and the box comes back blank. -->
-          <select
-            id="case-sex"
-            class="border border-slate-300 rounded px-2 py-1"
-            (change)="onSexChange($any($event.target).value)"
-          >
-            <option value="" [selected]="!c.sex">未填</option>
-            @for (option of sexOptions; track option.value) {
-              <option [value]="option.value" [selected]="c.sex === option.value">
-                {{ option.label }}
-              </option>
-            }
-          </select>
+          <div>
+            <label class="field-label mb-1" for="case-sex">性別</label>
+            <!-- `selected` per option rather than [value] on the select: Angular sets the select's
+                 value property before @for has rendered the options, so the assignment is dropped
+                 and the box comes back blank. -->
+            <select
+              id="case-sex"
+              class="select w-24"
+              (change)="onSexChange($any($event.target).value)"
+            >
+              <option value="" [selected]="!c.sex">未填</option>
+              @for (option of sexOptions; track option.value) {
+                <option [value]="option.value" [selected]="c.sex === option.value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </div>
 
           @if (!c.birthDateISO) {
-            <span class="text-xs text-slate-400">沒填生日的話，用到年齡的規則不會判斷</span>
+            <p class="meta pb-2">沒填生日的話，用到年齡的規則不會判斷</p>
           }
         </div>
       }
-    </div>
+    </header>
 
-    <section class="bg-white rounded-lg border border-slate-200 p-4">
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <h3 class="font-medium text-slate-800">課節紀錄</h3>
-        <button type="button" class="text-sm text-sky-700 hover:underline" (click)="startCompose()">
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">課節紀錄</h2>
+        <button type="button" class="btn btn-sm btn-quiet" (click)="startCompose()">
           ＋ 新增課節紀錄
         </button>
       </div>
 
-      @if (composing()) {
-        <div class="border border-sky-200 bg-sky-50/40 rounded p-3 mb-3 space-y-2">
-          <p class="text-sm text-slate-700">這次要用哪些表？至少選一張。</p>
-          <div class="flex flex-wrap gap-1">
-            @for (form of forms(); track form.id) {
+      <div class="card-body space-y-3">
+        @if (composing()) {
+          <div class="panel p-3 space-y-2.5">
+            <p class="text-sm text-body">這次要用哪些表？至少選一張。</p>
+            <div class="flex flex-wrap gap-1.5">
+              @for (form of forms(); track form.id) {
+                <button
+                  type="button"
+                  class="chip"
+                  [class.chip-on]="draftFormIds().includes(form.id)"
+                  [attr.aria-pressed]="draftFormIds().includes(form.id)"
+                  (click)="toggleDraftForm(form.id)"
+                >
+                  {{ form.name }}
+                </button>
+              }
+            </div>
+            <div class="flex gap-2 pt-0.5">
               <button
                 type="button"
-                class="border rounded px-2 py-0.5 text-sm"
-                [class]="
-                  draftFormIds().includes(form.id)
-                    ? 'border-sky-600 bg-sky-600 text-white'
-                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                "
-                [attr.aria-pressed]="draftFormIds().includes(form.id)"
-                (click)="toggleDraftForm(form.id)"
+                class="btn btn-sm btn-primary"
+                [disabled]="!canCreate()"
+                (click)="createRecord()"
               >
-                {{ form.name }}
+                建立
               </button>
-            }
+              <button type="button" class="btn btn-sm btn-quiet" (click)="composing.set(false)">
+                取消
+              </button>
+            </div>
           </div>
-          <div class="flex gap-2 text-sm">
-            <button
-              type="button"
-              class="bg-sky-600 text-white font-medium rounded px-3 py-1 hover:bg-sky-700 disabled:opacity-40"
-              [disabled]="!canCreate()"
-              (click)="createRecord()"
-            >
-              建立
-            </button>
-            <button
-              type="button"
-              class="border border-slate-300 rounded px-3 py-1 hover:bg-slate-50"
-              (click)="composing.set(false)"
-            >
-              取消
-            </button>
-          </div>
-        </div>
-      }
+        }
 
-      @if (rows().length > 0) {
-        <table class="w-full text-sm">
-          <thead class="text-xs text-slate-500 text-left">
-            <tr class="border-b border-slate-200">
-              <th class="py-1 font-normal">日期</th>
-              <th class="py-1 font-normal">內容</th>
-              <th class="py-1 font-normal">當時年齡</th>
-              <th class="py-1 font-normal">重點</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of rows(); track row.record.id) {
-              <tr class="border-b border-slate-100 hover:bg-slate-50">
-                <td class="py-2">
-                  <a
-                    class="text-sky-700 hover:underline"
-                    [routerLink]="[
-                      '/cases',
-                      c.id,
-                      'records',
-                      row.record.id,
-                      'forms',
-                      firstFormOf(row.record),
-                    ]"
-                    >{{ row.record.onISODate }}</a
-                  >
-                </td>
-                <td class="py-2 text-slate-700">{{ row.formNames }}</td>
-                <td class="py-2 text-slate-500">{{ row.ageLabel }}</td>
-                <td class="py-2 text-slate-500">
-                  @if (row.warningCount > 0) {
-                    <span class="text-amber-700">⚠ {{ row.warningCount }}</span>
-                  }
-                </td>
+        @if (rows().length > 0) {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="w-28">日期</th>
+                <th>內容</th>
+                <th class="w-32">當時年齡</th>
+                <th class="w-20">重點</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      } @else {
-        <p class="text-sm text-slate-500">還沒有任何課節紀錄，點右上角新增一筆。</p>
-      }
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.record.id) {
+                <tr>
+                  <td>
+                    <a
+                      class="link font-medium"
+                      [routerLink]="[
+                        '/cases',
+                        c.id,
+                        'records',
+                        row.record.id,
+                        'forms',
+                        firstFormOf(row.record),
+                      ]"
+                      >{{ row.record.onISODate }}</a
+                    >
+                  </td>
+                  <td class="text-ink">{{ row.formNames }}</td>
+                  <td class="text-muted">{{ row.ageLabel }}</td>
+                  <td>
+                    @if (row.warningCount > 0) {
+                      <span class="sev-count">⚠ {{ row.warningCount }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="py-4 text-center text-sm text-muted">還沒有任何課節紀錄，點右上角新增一筆。</p>
+        }
+      </div>
     </section>
   </div>
 } @else {
-  <p class="text-sm text-slate-500">找不到這個個案。</p>
-  <a routerLink="/cases" class="text-sm text-sky-700 hover:underline">← 回個案一覽</a>
+  <div class="card card-body space-y-2">
+    <p class="text-sm text-body">找不到這個個案。</p>
+    <a routerLink="/cases" class="link text-sm">← 回個案一覽</a>
+  </div>
 }
