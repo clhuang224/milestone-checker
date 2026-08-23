@@ -145,11 +145,12 @@ key 帶命名空間與版號，目前一律 `:v5`。分開存而不是一包大 
 
 **連動刪除**（不留孤兒資料）:
 
-- `removeCase()` → 該個案的課節紀錄、profile、構音音對、音韻歷程覆寫
-- `removeRecord()` → 該筆紀錄的 profile、音對、覆寫
+- `removeCase()` → 該個案的課節紀錄、profile、構音音對、吞嚥嘗試、音韻歷程覆寫、報告草稿
+- `removeRecord()` → 該筆紀錄的 profile、音對、嘗試、覆寫、報告草稿
 - `removeArticulationProcess()` → 把該歷程從所有**手動**分組裡拔掉；推導的分組不用清，它們是重算出來的，自然就不再產出那條
+- `setRecordForms()` → 拿掉一張表時，丟掉那張表在這筆紀錄上的內容（構音與吞嚥;`itemList` 與 `soapNote` 尚未處理，見 `docs/todo.md`）
 
-已知缺口：`ReportDraftRecord` 沒有被任何一條連動刪除清掉，刪個案或刪紀錄之後草稿會留在 `localStorage` 裡。
+**升版不跑連動刪除。** key 的版號一跳，舊資料是整批被無視而不是被清理，所以版號必須**所有 key 一起跳**——只跳 `CASES_KEY` 會讓課節紀錄、音對、profile、草稿全部變成讀不到主體的孤兒。
 
 ---
 
