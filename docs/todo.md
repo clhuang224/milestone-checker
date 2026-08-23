@@ -16,8 +16,7 @@
 
 ## 要開發者決定
 
-- [ ] **矯正年齡的兩個常數**（`FULL_TERM_WEEKS = 40`、`CORRECTION_APPLIES_UNTIL_MONTHS = 24`）是模型生成的，待確認或改成可設定。細節在 `references/open-questions.md`。
-- [ ] `references/open-questions.md` 裡其餘的臨床待議事項:聲調、邊音化與 ㄋ／ㄌ 互換、介音省略的推導、擦音化的例子、前置化／後置化的對照表、蒟蒻果凍的標記、台灣本土食物的等級。
+- [ ] `references/open-questions.md` 剩下的待議事項:邊音化與 ㄋ／ㄌ 互換（開發者要求延後討論）、蒟蒻果凍要不要另立標記、台灣本土食物的等級對照（兩者都延後）。前置化／後置化的對照表**開發者決定不做**，維持手動貼標籤。
 
 ## 沒做完的規格
 
