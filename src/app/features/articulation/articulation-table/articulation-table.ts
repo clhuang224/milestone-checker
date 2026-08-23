@@ -5,6 +5,7 @@ import { Storage } from '../../../core/storage/storage';
 import {
   ASPIRATION_LABELS,
   INITIAL_COLUMNS,
+  INITIAL_COLUMN_PLACES,
   MANNER_LABELS,
   PLACE_LABELS,
   VOICING_LABELS,
@@ -40,6 +41,8 @@ interface GridSection {
   label: string;
   /** Columns for the initials; a single wrapping column for everything else. */
   columns: GridCell[][];
+  /** Place of articulation over each initials column; empty for sections without one. */
+  columnPlaces: string[];
   /**
    * The initials are ordered by place of articulation, so their columns must never wrap. The
    * other sections have no such ordering and may.
@@ -83,6 +86,7 @@ export class ArticulationTable {
     const initials: GridSection = {
       label: ZHUYIN_CATEGORY_LABELS.initial,
       columns: INITIAL_COLUMNS.map((column) => column.map((id) => this.cellFor(findZhuyin(id)!))),
+      columnPlaces: INITIAL_COLUMN_PLACES,
       placeOrdered: true,
     };
 
@@ -93,6 +97,7 @@ export class ArticulationTable {
           this.cellFor(symbol),
         ),
       ],
+      columnPlaces: [],
       placeOrdered: false,
     }));
 

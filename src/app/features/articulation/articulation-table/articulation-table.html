@@ -34,6 +34,13 @@
               <!-- `contents` in the wrapping sections: the cells themselves become the grid
                    items, so they flow across the row instead of stacking in one column. -->
               <div [class]="section.placeOrdered ? 'flex flex-col gap-3' : 'contents'">
+                @if (section.placeOrdered) {
+                  <!-- Names what the column is, so the front-to-back ordering is stated rather
+                       than left tacit. Costs height, not width. -->
+                  <span class="field-label border-b border-line pb-1">{{
+                    section.columnPlaces[$index]
+                  }}</span>
+                }
                 @for (cell of column; track cell.symbol.id) {
                   <div class="flex items-start gap-1.5">
                     <div

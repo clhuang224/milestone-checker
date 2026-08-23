@@ -328,6 +328,23 @@ export const INITIAL_COLUMNS: string[][] = [
   ['g', 'k', 'h'],
 ];
 
+/**
+ * Heading over each column, in the same order. Written out rather than derived from each column's
+ * first symbol because column one holds two places — ㄅㄆㄇ are 雙唇 and ㄈ is 唇齒 — and the
+ * heading has to say so rather than quietly pick one.
+ *
+ * These name what a column IS. They are data, not a caption explaining how to read the chart;
+ * see docs/畫面說明文字準則.md for why that distinction decides whether text belongs on screen.
+ */
+export const INITIAL_COLUMN_PLACES: string[] = [
+  '雙唇/唇齒',
+  '舌尖前',
+  '齒槽',
+  '舌尖後',
+  '舌面',
+  '舌根',
+];
+
 export const PLACE_LABELS: Record<Place, string> = {
   bilabial: '雙唇',
   labiodental: '唇齒',
