@@ -52,7 +52,7 @@
 ## 對既有規格的影響
 
 - **`規則定義` 要 MODIFIED**:條件列從兩種（比較／適用條件）變成四種（比較／分數區間／加權總分／適用條件）。
-- **與 `add-tone-and-case-background` 會撞到同兩個檔案。** 那份 change 目前一項都還沒做，它要改 `condition-mapper.ts` 的 `setRowFrom()`（改成先看集合再看述詞）與 `json-logic.ts` 的守門（延伸到母語列）。本案改的是**別的分支**:`fromJsonLogic()` 的 `and` 與二元比較兩條路徑，以及守門的欄位蒐集。兩份互相不依賴，先後都可以，後做的那份 rebase 一次測試檔即可。
+- **與 `add-case-background-conditions` 會撞到同兩個檔案。** 那份 change 目前一項都還沒做，它要改 `condition-mapper.ts` 的 `setRowFrom()`（改成先看集合再看述詞）與 `json-logic.ts` 的守門（延伸到母語列）。本案改的是**別的分支**:`fromJsonLogic()` 的 `and` 與二元比較兩條路徑，以及守門的欄位蒐集。兩份互相不依賴，先後都可以，後做的那份 rebase 一次測試檔即可。
 - **儲存版號不用動**，除非 Q6 決定要出貨那條佔位規則——seed 只在集合為空時才跑，所以要出貨就得把 `storage.ts` **全部**的 key 一起升版，而**升版是作廢不是遷移**。
 
 ## 技術方向
