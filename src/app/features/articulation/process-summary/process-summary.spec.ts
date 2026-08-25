@@ -118,4 +118,18 @@ describe('ProcessSummary', () => {
       expect(option.targets.map((t) => t.id)).toEqual(['s']);
     }
   });
+
+  it('offers a manual-only process for a recorded sound, even though nothing derives it', async () => {
+    // 後置化, 前置化 and 介音省略 are in the catalogue precisely because they cannot be derived.
+    // Filtering the picker by the derivation rules made them the only three unavailable by hand.
+    const fixture = setup([probe('zh', 'ㄉ')]);
+    fixture.componentInstance.setUseDerived(false);
+    await fixture.whenStable();
+
+    const backing = fixture.componentInstance
+      .manualOptions()
+      .find((option) => option.processId === 'backing');
+
+    expect(backing?.targets.map((target) => target.id)).toEqual(['zh']);
+  });
 });

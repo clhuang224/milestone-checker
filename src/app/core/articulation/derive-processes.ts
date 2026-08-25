@@ -82,11 +82,26 @@ export function deriveProcessIds(targetPhonemeId: string, heard: HeardSound): st
 }
 
 /**
+ * Whether any derivation rule can ever produce this process.
+ *
+ * A process with no rule is manual-only by construction — 前置化, 後置化 and 介音省略 are in the
+ * catalogue precisely because they cannot be derived. The manual picker has to offer those for
+ * every recorded sound, or the three processes reserved for hand-tagging become the only three
+ * that cannot be hand-tagged.
+ */
+export function isDerivable(processId: string): boolean {
+  return processId in RULES;
+}
+
+/**
  * The processes that could ever apply to a target sound.
  *
  * Derived by pairing the target with every symbol in the inventory rather than kept as a second
  * table — one source of truth, so 「ㄅ 不該出現塞音化」 falls out of the same rules that do the
  * deriving instead of being maintained alongside them.
+ *
+ * Only covers derivable processes. A manual-only one has no rule to fall out of, so the caller
+ * must offer it separately — see `isDerivable`.
  */
 export function applicableProcessIds(targetPhonemeId: string): string[] {
   const found = new Set<string>();

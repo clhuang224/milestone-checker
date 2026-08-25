@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 
-import { applicableProcessIds } from '../../../core/articulation/derive-processes';
+import { applicableProcessIds, isDerivable } from '../../../core/articulation/derive-processes';
 import { derivedProcessGroups, effectiveProcessGroups } from '../../../core/articulation/summary';
 import { Storage } from '../../../core/storage/storage';
 import { ZHUYIN_INVENTORY, findZhuyin } from '../../../data/zhuyin-inventory';
@@ -48,8 +48,12 @@ export class ProcessSummary {
       .map((process) => ({
         processId: process.id,
         name: process.name,
+        // A manual-only process has no derivation rule to fall out of, so it is offered for
+        // every recorded sound. Without this, 前置化, 後置化 and 介音省略 — the three kept in
+        // the catalogue precisely because they cannot be derived — were the only three that
+        // could not be tagged by hand.
         targets: recorded
-          .filter((id) => applicableProcessIds(id).includes(process.id))
+          .filter((id) => !isDerivable(process.id) || applicableProcessIds(id).includes(process.id))
           .map((id) => ({
             id,
             symbol: findZhuyin(id)?.symbol ?? id,
