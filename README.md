@@ -12,7 +12,7 @@
 
 目前手上有的是**構音評估**：記錄目標音與實際聽到的音，系統比對兩者的辨異徵性（distinctive feature）差異，推導出可能的音韻歷程。吞嚥的核心邏輯（IDDSI 質地、成功率）已經有了，畫面還沒接上。其他評估表（SOAP 治療紀錄、成人／兒童語言、語暢等）是設計上預留的擴充位置，還沒實作。
 
-使用方式見 [`docs/使用說明.md`](docs/使用說明.md)。
+使用方式見 [`docs/user-guide.md`](docs/user-guide.md)。
 
 ## 目標使用者
 
@@ -35,7 +35,7 @@
 
 ## 臨床內容的來源
 
-臨床知識（辨異徵性、音韻歷程、吞嚥質地等）**一律由治療師本人提供，不是模型生成的**。專案早期吃過這個虧，詳見 [`docs/開發方式紀錄.md`](docs/開發方式紀錄.md)。
+臨床知識（辨異徵性、音韻歷程、吞嚥質地等）**一律由治療師本人提供，不是模型生成的**。專案早期吃過這個虧，詳見 [`docs/development-notes.md`](docs/development-notes.md)。
 
 這些內容放在 [`references/`](references/) 的 markdown 表格裡，跟程式碼分開，方便查閱、也方便交給另一位治療師校對。程式碼讀的是同一組值，`scripts/check-references.mjs` 會在 commit 前檢查兩邊有沒有走鐘。
 
@@ -45,7 +45,7 @@
 
 這個 repo 有兩個實驗目的，應用本身的完成度不是重點：
 
-1. **[Claude Code](https://claude.com/product/claude-code) 的開發方式**——OpenSpec 規格驅動，以及用 subagents 分工（文獻查證、質疑辯論、UI/UX、Angular/TS），由主 agent 統一跟開發者對話。開發者不做逐行 code review，改由小顆粒 commit + 測試把關。這部分的實際狀況、踩到的坑、以及模型出過的錯，都記在 [`docs/開發方式紀錄.md`](docs/開發方式紀錄.md)。
+1. **[Claude Code](https://claude.com/product/claude-code) 的開發方式**——OpenSpec 規格驅動，以及用 subagents 分工（文獻查證、質疑辯論、UI/UX、Angular/TS），由主 agent 統一跟開發者對話。開發者不做逐行 code review，改由小顆粒 commit + 測試把關。這部分的實際狀況、踩到的坑、以及模型出過的錯，都記在 [`docs/development-notes.md`](docs/development-notes.md)。
 2. **Angular 本身**——standalone components + Signals、zoneless。
 
 ## 授權
@@ -61,8 +61,8 @@ milestone-checker/
 ├── README.md                   本檔
 ├── CLAUDE.md                   給 Claude Code 看的專案規則
 ├── docs/
-│   ├── 使用說明.md              給治療師的操作說明
-│   ├── 開發方式紀錄.md           subagent 分工、踩過的坑
+│   ├── user-guide.md              給治療師的操作說明
+│   ├── development-notes.md           subagent 分工、踩過的坑
 │   ├── ARCHITECTURE.md         架構與資料流
 │   └── CONTRIBUTING.md         環境設定與開發慣例
 ├── references/                 臨床參考資料（markdown 表格，程式碼的真實來源）

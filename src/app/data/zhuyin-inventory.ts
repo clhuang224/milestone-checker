@@ -334,7 +334,7 @@ export const INITIAL_COLUMNS: string[][] = [
  * heading has to say so rather than quietly pick one.
  *
  * These name what a column IS. They are data, not a caption explaining how to read the chart;
- * see docs/畫面說明文字準則.md for why that distinction decides whether text belongs on screen.
+ * see docs/screen-text-policy.md for why that distinction decides whether text belongs on screen.
  */
 export const INITIAL_COLUMN_PLACES: string[] = [
   '雙唇/唇齒',

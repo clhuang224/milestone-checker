@@ -89,7 +89,9 @@ function checkInitials() {
     }
     for (const key of ['symbol', 'place', 'manner', 'aspiration', 'voicing']) {
       if (entry[key] !== row[key]) {
-        problems.push(`${row.symbol} (${row.id}) 的 ${key}:references 是 ${row[key]}，程式碼是 ${entry[key]}`);
+        problems.push(
+          `${row.symbol} (${row.id}) 的 ${key}:references 是 ${row[key]}，程式碼是 ${entry[key]}`,
+        );
       }
     }
   }
@@ -270,7 +272,45 @@ function checkSwallowing() {
   return { name: 'swallowing-consistencies', count: rows.length, problems };
 }
 
-const results = [checkInitials(), checkFinals(), checkProcesses(), checkSwallowing()];
+/**
+ * The two preterm-correction constants.
+ *
+ * Nothing else pins them. The age tests were worked through by hand and stay green with
+ * FULL_TERM_WEEKS set to 36 as well as 37, because at 36 weeks the correction rounds to zero
+ * months anyway — so a threshold the developer chose was held in place by nothing at all.
+ */
+function checkPretermCorrection() {
+  const markdown = readFileSync('references/preterm-correction.md', 'utf8');
+  const source = readFileSync('src/app/core/age.ts', 'utf8');
+
+  const rows = markdownTable(markdown, '## 兩個常數')
+    .filter((cells) => cells[0] !== '常數')
+    .map(([name, value]) => ({
+      name: name.replaceAll('`', '').trim(),
+      value: Number(value.replace(/[^0-9]/g, '')),
+    }));
+
+  const problems = [];
+  for (const row of rows) {
+    const match = source.match(new RegExp(`const ${row.name} = (\\d+);`));
+    if (!match) {
+      problems.push(`age.ts 裡找不到 ${row.name}`);
+      continue;
+    }
+    if (Number(match[1]) !== row.value) {
+      problems.push(`${row.name}:references 是 ${row.value}，程式碼是 ${match[1]}`);
+    }
+  }
+  return { name: 'preterm-correction', count: rows.length, problems };
+}
+
+const results = [
+  checkInitials(),
+  checkFinals(),
+  checkProcesses(),
+  checkSwallowing(),
+  checkPretermCorrection(),
+];
 const failed = results.filter((result) => result.problems.length > 0);
 
 for (const result of results) {
@@ -285,6 +325,8 @@ for (const result of results) {
 }
 
 if (failed.length > 0) {
-  console.log(`\n${RED}references/ 與程式碼不一致。${RESET}先改 references/，再同步 src/app/data/。`);
+  console.log(
+    `\n${RED}references/ 與程式碼不一致。${RESET}先改 references/，再同步 src/app/data/。`,
+  );
   process.exit(1);
 }

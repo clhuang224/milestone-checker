@@ -14,13 +14,15 @@
 
 ## 檔案
 
-| 檔案                            | 內容                              | 狀態           |
-| ------------------------------- | --------------------------------- | -------------- |
-| `taiwan-mandarin-consonants.md` | 21 個聲母的部位／方式／送氣／清濁 | 已由開發者確認 |
-| `taiwan-mandarin-vowels.md`     | 韻母與介音的辨異徵性              | 已由開發者確認 |
-| `phonological-processes.md`     | 音韻歷程定義                      | 已由開發者確認 |
-| `swallowing-consistencies.md`   | 吞嚥質地分級與質性標記            | 已由開發者確認 |
-| `open-questions.md`             | 擱置的臨床問題                    | 持續更新       |
+| 檔案                            | 內容                              | 狀態                   |
+| ------------------------------- | --------------------------------- | ---------------------- |
+| `taiwan-mandarin-consonants.md` | 21 個聲母的部位／方式／送氣／清濁 | 已由開發者確認         |
+| `taiwan-mandarin-vowels.md`     | 韻母與介音的辨異徵性              | 已由開發者確認         |
+| `phonological-processes.md`     | 音韻歷程定義                      | 已由開發者確認         |
+| `swallowing-consistencies.md`   | 吞嚥質地分級與質性標記            | 已由開發者確認         |
+| `preterm-correction.md`         | 矯正年齡的兩個門檻                | 已由開發者確認         |
+| `open-questions.md`             | 擱置的臨床問題                    | 持續更新               |
+| `copyright-and-sources.md`      | 版權界線與可用的開放授權來源      | 查證紀錄，不是臨床資料 |
 
 ## 不引用標準化測驗
 
@@ -34,8 +36,10 @@
 
 - `taiwan-mandarin-consonants.md` ↔ `src/app/data/zhuyin-inventory.ts`
 - `taiwan-mandarin-vowels.md` ↔ `src/app/data/zhuyin-inventory.ts`
-- `phonological-processes.md` ↔ `src/app/data/starter-articulation-processes.ts`
+- `phonological-processes.md` ↔ `src/app/data/starter-articulation-processes.ts`，以及該檔的
+  〈推導條件〉表 ↔ `src/app/core/articulation/derive-processes.ts` 實際存在的規則
 - `swallowing-consistencies.md` ↔ `src/app/data/starter-swallow-catalogue.ts`
+- `preterm-correction.md` ↔ `src/app/core/age.ts` 的兩個常數
 
 表格用英文 id 那一欄對應程式碼裡的值，中文欄位是畫面顯示用的。
 
