@@ -68,7 +68,15 @@
     </div>
 
     @if (s.values.length === 0) {
-      <p class="sev sev-warning text-xs">還沒選任何項目，這個條件不會成立。</p>
+      <!-- The two modes behave oppositely when empty, so the warning cannot be one sentence:
+           an empty 排除 means 「扣掉零個之後還有錯誤嗎」, true of any case with any error. -->
+      @if (s.mode === 'excludes') {
+        <p class="sev sev-critical text-xs">
+          還沒選任何項目。「排除」在這個狀態下等於「只要有任何構音錯誤就成立」，幾乎每個個案都會觸發——要嘛選幾個音，要嘛改成「包含」。
+        </p>
+      } @else {
+        <p class="sev sev-warning text-xs">還沒選任何項目，這個條件不會成立。</p>
+      }
     }
   </div>
 } @else if (group(); as g) {

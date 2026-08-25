@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import { FindingDefinition } from '../../models/finding.model';
+import { RuleFacts } from './facts';
+import { evaluateCondition } from './json-logic';
 import {
   ConditionGroup,
   ConditionRow,
   ConditionSetRow,
   defaultGroup,
   defaultRow,
+  defaultSetRow,
   fromJsonLogic,
   toJsonLogic,
 } from './condition-mapper';
@@ -213,5 +216,26 @@ describe('defaultRow / defaultGroup', () => {
       combinator: 'and',
       children: [{ type: 'row', fieldId: 'drooling', operator: '==', value: true }],
     });
+  });
+});
+
+describe('defaultSetRow evaluated, not just round-tripped', () => {
+  const oneError = {
+    case: {},
+    articulation: { errors: [{ targetPhonemeId: 'zh', processIds: [] }] },
+    swallowing: { trials: [] },
+  } as unknown as RuleFacts;
+
+  it('matches nothing before any sound is picked', () => {
+    // The bug this pins: the row used to default to `excludes`, which compiles to
+    // 「扣掉零個音之後還有錯誤嗎」 — true for every case with any articulation error. A rule
+    // saved without ticking anything fired on nearly everyone, and the editor said it would not.
+    expect(evaluateCondition(toJsonLogic(defaultSetRow()), oneError)).toBe(false);
+  });
+
+  it('still reads an empty excludes row as "has some other error", which is what it means', () => {
+    const row: ConditionSetRow = { ...defaultSetRow(), mode: 'excludes' };
+
+    expect(evaluateCondition(toJsonLogic(row), oneError)).toBe(true);
   });
 });

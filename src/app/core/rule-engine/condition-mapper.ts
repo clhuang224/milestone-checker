@@ -309,9 +309,16 @@ export function defaultRow(fields: RuleField[]): ConditionRow {
   };
 }
 
-/** A starter applicability row — empty, so it matches nothing until sounds are picked. */
+/**
+ * A starter applicability row — empty, so it matches nothing until sounds are picked.
+ *
+ * The mode must be `includes` for that to be true. An empty `excludes` row is not a harmless
+ * blank: it compiles to 「扣掉零個音之後還有錯誤嗎」, which is true of every case that has any
+ * articulation error at all. Defaulting to it meant a therapist who added a row and saved
+ * without ticking anything got a rule that fires on nearly everyone.
+ */
 export function defaultSetRow(): ConditionSetRow {
-  return { type: 'set', subject: 'articulationTarget', mode: 'excludes', values: [] };
+  return { type: 'set', subject: 'articulationTarget', mode: 'includes', values: [] };
 }
 
 /** A starter trial row, seeded with 「會嗆咳」 so it is never an empty match-nothing row. */

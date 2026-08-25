@@ -160,3 +160,35 @@ describe('evaluateRules', () => {
     expect(triggered).toEqual([]);
   });
 });
+
+describe('an unrecorded field only silences its own comparison', () => {
+  const drooling = { '==': [{ var: 'drooling' }, true] };
+  const overFour = { '>': [{ var: 'case.ageInMonths' }, 48] };
+  const lowScore = { '<': [{ var: 'oralMotorScore' }, 40] };
+
+  it('lets an or fire on the branch it can judge', () => {
+    // The bug: the gate collected every comparison field in the tree and required all of them,
+    // so a drooling case with no birth date silenced the whole rule.
+    expect(evaluateCondition({ or: [overFour, drooling] }, profileWith({ drooling: true }))).toBe(
+      true,
+    );
+  });
+
+  it('does not let an unrecorded numeric branch carry an or on its own', () => {
+    // The mirror image: null < 40 is true in JS, so evaluating the rule unguarded would fire on
+    // a score nobody entered.
+    expect(evaluateCondition({ or: [lowScore, drooling] }, profileWith({ drooling: false }))).toBe(
+      false,
+    );
+  });
+
+  it('still fails an and when any branch is unrecorded', () => {
+    expect(evaluateCondition({ and: [overFour, drooling] }, profileWith({ drooling: true }))).toBe(
+      false,
+    );
+  });
+
+  it('still refuses a bare comparison on an unrecorded field', () => {
+    expect(evaluateCondition(lowScore, profileWith({}))).toBe(false);
+  });
+});

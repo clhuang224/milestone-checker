@@ -1,25 +1,37 @@
 import jsonLogic from 'json-logic-js';
 
 import { JsonLogicRule, Rule } from '../../models/rule.model';
-import { ConditionNode, fromJsonLogic } from './condition-mapper';
+import { ConditionNode, fromJsonLogic, toJsonLogic } from './condition-mapper';
 import { RuleFacts } from './facts';
 
+/** A clause that is false whatever the facts say. */
+const NEVER: JsonLogicRule = { '==': [1, 0] };
+
 /**
- * Field ids referenced by comparison rows only.
+ * Recompiles the condition with unrecorded comparisons forced false, rather than testing the
+ * whole rule for missing fields up front.
  *
- * Applicability rows — both `set` and `trial` — are deliberately skipped: they run over a list,
- * and an empty list is a legitimate "nothing recorded" answer rather than a missing value. A
- * trial row guards its own missing values inside the compiled predicate, since this gate cannot
- * see into a `some`.
+ * Doing it per-node matters twice over. Collecting the field ids flat and requiring all of them
+ * meant one unrecorded field suppressed the entire rule, including branches that would have
+ * decided it alone — an `or` of 「四歲以上」 and 「流口水」 returned false for a drooling case with
+ * no birth date. And the reverse: had that rule been evaluated anyway, `oralMotorScore < 40`
+ * with no score recorded coerces to `null < 40`, which is `true`, so an `or` would have fired on
+ * a field nobody filled in. Substituting the clause fixes both, and lets `and`/`or` compose
+ * normally instead of needing their own judgeability rules.
+ *
+ * Applicability rows — both `set` and `trial` — are always judgeable: they run over a list, and
+ * an empty list is a legitimate "nothing recorded" answer rather than a missing value. A trial
+ * row guards its own missing values inside the compiled predicate, since this gate cannot see
+ * into a `some`.
  */
-function comparisonFieldIdsIn(node: ConditionNode): string[] {
+function guardedCondition(node: ConditionNode, facts: RuleFacts): JsonLogicRule {
   if (node.type === 'row') {
-    return [node.fieldId];
+    return hasFact(facts, node.fieldId) ? toJsonLogic(node) : NEVER;
   }
   if (node.type === 'set' || node.type === 'trial') {
-    return [];
+    return toJsonLogic(node);
   }
-  return node.children.flatMap(comparisonFieldIdsIn);
+  return { [node.combinator]: node.children.map((child) => guardedCondition(child, facts)) };
 }
 
 /** Resolves a possibly-dotted path like `case.ageInMonths`, reporting whether it has a value. */
@@ -54,12 +66,7 @@ export function evaluateCondition(condition: JsonLogicRule, facts: RuleFacts): b
     return false;
   }
 
-  const hasEveryField = comparisonFieldIdsIn(node).every((fieldId) => hasFact(facts, fieldId));
-  if (!hasEveryField) {
-    return false;
-  }
-
-  return Boolean(jsonLogic.apply(condition, facts));
+  return Boolean(jsonLogic.apply(guardedCondition(node, facts), facts));
 }
 
 /** Returns the enabled rules whose condition matches the case's current facts. */

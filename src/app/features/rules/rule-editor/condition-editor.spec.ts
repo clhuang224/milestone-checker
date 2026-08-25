@@ -106,11 +106,21 @@ describe('ConditionEditor applicability rows', () => {
     });
   });
 
-  it('warns that an empty selection matches nothing', async () => {
-    const fixture = setup({ ...excludeRow, values: [] });
+  it('warns that an empty 包含 selection matches nothing', async () => {
+    const fixture = setup({ ...excludeRow, mode: 'includes', values: [] });
     await fixture.whenStable();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('這個條件不會成立');
+  });
+
+  it('warns harder for an empty 排除, because that one matches almost everyone', async () => {
+    // The two modes behave oppositely when empty. Saying 「不會成立」 for 排除 was untrue.
+    const fixture = setup({ ...excludeRow, values: [] });
+    await fixture.whenStable();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('只要有任何構音錯誤就成立');
+    expect(text).not.toContain('這個條件不會成立');
   });
 
   it('builds a condition the rule engine can evaluate', async () => {
