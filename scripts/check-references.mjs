@@ -183,7 +183,49 @@ function checkProcesses() {
     }
   }
 
+  problems.push(...derivationProblems(markdown));
+
   return { name: 'phonological-processes', count: rows.length, problems };
+}
+
+/**
+ * The 推導條件 table says which processes the code derives. It drifted once, in the worst possible
+ * direction: it claimed 前置化/後置化 come from comparing place indices, which is the exact
+ * mistake the project removed from the code and wrote a whole section of that same file to warn
+ * against. Nothing caught it, because checkProcesses only ever read the 清單 table.
+ *
+ * So compare the table against the rules that actually exist. A process the table gives a real
+ * criterion for must have a rule; one the table marks 不推導 must not.
+ */
+function derivationProblems(markdown) {
+  const source = readFileSync('src/app/core/articulation/derive-processes.ts', 'utf8');
+  const rulesBlock = source.slice(source.indexOf('const RULES'), source.indexOf('\n};'));
+  const derived = new Set([...rulesBlock.matchAll(/^  (\w+):/gm)].map(([, id]) => id));
+
+  const names = new Map(
+    markdownTable(markdown, '## 清單')
+      .filter((cells) => cells[0] !== 'id')
+      .map(([id, name]) => [name, id]),
+  );
+
+  const problems = [];
+  for (const [name, criterion] of markdownTable(markdown, '## 推導條件')
+    .filter((cells) => cells[0] !== '歷程')
+    .map(([name, criterion]) => [name, criterion])) {
+    const id = names.get(name);
+    if (!id) {
+      problems.push(`推導條件表裡的「${name}」在清單表裡找不到`);
+      continue;
+    }
+    const saysNo = criterion.includes('不推導') || criterion.includes('推導不出來');
+    if (saysNo && derived.has(id)) {
+      problems.push(`推導條件說「${name}」不推導，但 derive-processes.ts 有 ${id} 這條規則`);
+    }
+    if (!saysNo && !derived.has(id)) {
+      problems.push(`推導條件給了「${name}」判準，但 derive-processes.ts 沒有 ${id} 這條規則`);
+    }
+  }
+  return problems;
 }
 
 /** Consistencies, their qualitative flags, and the counting units, all id + label pairs. */
