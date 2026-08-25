@@ -18,13 +18,21 @@ As of the `add-therapist-rule-engine` change， this app's target audience is **
 
 ## Working as a team
 
-**The user is the 需求方** — they state what is needed, and they are the clinical authority.
-**Claude Code is the reviewer and the account manager**: the only one who talks to the user,
+**The user is the developer (開發者)** — they state what is needed and they are the clinical
+authority. **Call them 開發者, never 治療師.** 治療師 means this app's end users, and using it
+for the user makes every document ambiguous about who decided what.
+
+**Claude Code is the reviewer and the account manager**: the only one who talks to the developer,
 and the one who checks the team's output against the repo before it reaches them. Everything
-below reports through Claude Code, never directly to the user.
+below reports through Claude Code, never directly to the developer.
 
 Reviewing means actually reviewing. A subagent's report is a claim, not a result — verify it
 against the code before repeating it, and say so when it does not hold up.
+
+**Never quote the developer verbatim in a file.** Not in documents, specs, code comments or
+commit messages. Record the decision and the reasoning in your own words; a decision does not
+become more authoritative for being a transcript, and quotes make every document read like
+conversation minutes. This applies retroactively — if you find a quotation, rewrite it.
 
 The team is defined in `.claude/agents/`; dispatch by `subagent_type`:
 
@@ -69,6 +77,17 @@ Some domain terms have a settled translation in this project. Use it and no othe
 | English             | 用這個   | 不要用                   |
 | ------------------- | -------- | ------------------------ |
 | distinctive feature | 辨異徵性 | 特徵、構音特徵、區別特徵 |
+
+### Don't code-switch mid-sentence
+
+Chinese prose stays Chinese. Dropping English words into the middle of a Chinese sentence makes
+it slower to read, and most of the time a Chinese term already exists.
+
+English stays only where it is a name that has no Chinese form: identifiers, file paths, type
+names, library names, and the OpenSpec structural keywords. `condition-mapper.ts` and
+`ConditionSetRow` keep their names. 「這個 condition 要 map 到哪個 row」 does not.
+
+The same applies in reverse: English prose stays English, naming a Chinese term where needed.
 
 ### Punctuation in Chinese text
 
