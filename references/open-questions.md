@@ -131,3 +131,181 @@
 - 許逸如〈你是台灣國語還是台灣狗蟻？一窺 11 種很「台」的發音〉，鏡週刊，2019。<https://www.mirrormedia.mg/story/20190425cul001>
 - 慈濟衛教天地〈構音異常〉。<https://app.tzuchi.com.tw/a_f/f_tp/tp_xd/Content/CR/teach5_1_5.htm>
 - 中國醫藥大學附設醫院衛教單張〈小兒語言遲緩或構音異常〉。<https://www.cmuh.org.tw/HealthEdus/Detail?no=4700>
+
+## 治療目標的結構、吞嚥策略清單、口吃次數 —— 查證結果
+
+開發者觀察到治療目標的句子跨領域有同一個形狀（前置條件＋任務內容＋成功率），而 app 目前只有中段與末段。以下三題分開回答，三題各自都還有留給開發者的決定。
+
+### 一、行為目標要有哪幾個成分
+
+**開發者的三段式讀法跟主流寫法一致，這一格可以定案。** Mager（1962）的行為目標三要素是
+performance／condition／criterion，語言治療領域常用的 Roth ＆ Worthington 治療手冊沿用同一組。
+「前置條件」就是 condition，「任務內容」就是 do statement，「成功率」就是 criterion。
+
+《溝通障礙導論》確實有 Behavioral Objectives 一節，排在選目標與測基線之後——但只查得到章節結構，
+拿不到內文，所以不能說它列的是哪幾個成分。
+
+**文獻多出來的成分有兩個值得記:**
+
+1. **「達成日期」在台灣是法規要求。**《特殊教育法施行細則》第 10 條要求 IEP 須含「達成學期教育
+   目標之評量方式、日期及標準」。注意那一組跟 Mager 不是同一組——它多了評量方式與日期，卻沒有
+   「條件」，兩邊各自漏掉對方那一半。這個 app 不是 IEP 系統，但治療師可能要把產出的文字貼進 IEP。
+2. **中文教學用的是五要素**（對象、行為、結果、情境、標準），多出來的兩個在單一個案的紀錄裡是
+   記帳性質:對象恆為該個案，結果實務上併進行為描述。
+
+**最會影響資料模型的一個發現:前置條件那一格裡裝著三種不同的東西。**
+
+- **手勢提示、節拍器提示**——治療師給的線索，之後要退除（fading）。
+- **冰檸檬棒刺激**——治療師施加的處置，不是線索也不是評量情境。
+- **低頭吞**——個案自己執行的代償姿勢，是要教會、要類化的技能本身，退不掉。
+
+退除線索跟教會代償姿勢在臨床上是相反的方向。一個欄位吃掉三者，就分不出「提示層級進步了」和
+「還是得靠代償策略」。文獻提供了拆的框架（THIMS 把治療師處置獨立成 ingredient），但不要求拆。
+
+**成功率的 80% 是慣例不是門檻。** Moore（ASHA Leader, 2018）指出它對語音與機械性技能較適用，
+對字彙、語用、吞嚥、嗓音都不是好選擇。而且「80%」沒有分母就讀不出意思——是一節課裡的還是一天
+裡的。對這個 app 的意涵:80% 可以是 UI 預設值，不可以是臨床門檻。
+
+**還沒定論的**:台灣的語言治療教學有沒有自己一套行為目標分解法，查不到——中文來源全是師培／特教
+脈絡。代償姿勢在目標句裡算條件還是算行為，也沒查到專門討論，看治療階段而定。
+
+**要決定的**
+
+- 前置條件做成一欄，還是至少拆成「提示」與「策略／處置」兩類？
+- 要不要「達成日期」欄位？
+- 成功率要不要連分母一起記？「80%」和「10 次中 8 次」在報告裡讀起來不一樣。
+- 「評量方式」要不要獨立成欄？法規要求它，Mager 三分法沒有它。
+
+### 二、吞嚥策略清單的用語與英文 id
+
+七項都查得到對應的既有名稱，沒有一項是自創的。ASHA Adult Dysphagia practice portal 的用語當作英文基準，中文以台灣醫院衛教單張的寫法為準。
+
+| 開發者的寫法 | 台灣衛教常見寫法                     | 英文（ASHA 用語）                         | 建議 id                               | 類別     |
+| ------------ | ------------------------------------ | ----------------------------------------- | ------------------------------------- | -------- |
+| 冰檸檬刺激   | 冰檸檬棒刺激、冰刺激、冰棉棒         | thermal-tactile stimulation（見下方註記） | `thermalTactileStimulation`（待確認） | 感覺刺激 |
+| 低頭吞       | 低頭吞嚥法                           | chin-down posture（別名 chin tuck）       | `chinDown`                            | 姿勢     |
+| 閉氣吞       | 上聲門吞嚥法（另見「安全性吞嚥法」） | supraglottic swallow                      | `supraglotticSwallow`                 | 吞嚥技巧 |
+| 抬頭吞       | 仰頭／頭向後（未查到固定短名，見下） | chin-up posture（別名 head extension）    | `chinUp`                              | 姿勢     |
+| 用力吞       | 用力吞嚥法                           | effortful swallow                         | `effortfulSwallow`                    | 吞嚥技巧 |
+| 右轉吞       | 頭轉向患側                           | head rotation（turn to the side）         | `headRotationRight`                   | 姿勢     |
+| 左轉吞       | 同上                                 | head rotation                             | `headRotationLeft`                    | 姿勢     |
+
+開發者的短名（低頭吞、用力吞、閉氣吞）是口語形式，衛教單張多寫成「…吞嚥法」——正德醫院的護理指導同一段裡就並列了「用力吞嚥法」「上聲門吞嚥法」「低頭吞嚥法」。兩種都在用，短名不算錯，但寫進報告時可能要用長名。奇美醫療體系的衛教把同一個動作（先憋氣、吞下後立即用力咳）叫**安全性吞嚥法**，所以「閉氣吞」在台灣至少有兩個書面名字。
+
+#### 五個值得知道的地方
+
+1. **冰檸檬刺激跟其他六項不是同一種東西。** 其他六項是**個案自己做**的姿勢或技巧；冰檸檬棒刺激是**治療師施加**的感覺刺激，屬間接訓練，ASHA 的分類裡它是 sensory stimulation，不在 postural techniques 或 maneuvers 底下。放進同一個多選欄位在 UI 上沒問題，但規則引擎要分辨「提示可以退除」與「策略要類化」時，它是第三類。
+2. **「冰檸檬」有兩個作用成分，英文文獻分開命名。** 冰是溫度（thermal-tactile stimulation, TTS），檸檬是味覺（gustatory／sour）。英文沒有一個專指「冰檸檬棉棒」的固定術語——文獻要嘛叫 TTS（只講冷），要嘛把三者並列成 tactile, thermal and gustatory stimulation。所以 `thermalTactileStimulation` 這個 id **漏掉了檸檬那一半**。台灣的用語反而比較精確:奇美的衛教有〈檸檬冰棒做法〉（棉籤＋檸檬汁冷凍，劃過左右前咽門弓每側 5–10 次），台中榮總的衛教單叫〈冰檸檬棒製作方法〉;北醫的單張則只寫「利用溫度（冰）刺激兩側前咽門弓」，把檸檬省掉。也就是說**台灣自己的寫法就有含檸檬與不含檸檬兩種**。**這個 id 要用哪一個，是開發者的決定，不是我能替他定的。**
+3. **「閉氣吞」一個名字蓋住兩個手法。** supraglottic swallow（閉氣後吞、吞完立刻咳）與 super-supraglottic swallow（閉氣時額外用力、憋住往下壓）在文獻上是兩個手法，台灣寫成「聲門上吞嚥法」與「超聲門上吞嚥法」。一個「閉氣吞」勾選框分不出來。
+4. **右／左不是可以自由選的偏好。** 轉頭吞的方向由**患側**決定——頭轉向弱的那一側，把該側咽道關掉，食團走向健側。臺北醫學大學附設醫院的衛教單把姿勢直接對到適應症，寫的就是「單側咽部蠕動能力欠佳 → 頭轉向患側」。所以「右轉吞」這一格真正記錄的是「右側較弱」;app 只存左右而沒記哪一側弱，這筆紀錄就讀不出理由。
+   同一張表下一列是「單側口腔或舌頭功能欠佳 → **頭傾向健側**」——那是頭側傾（head tilt），**方向跟轉頭相反**。這是臨床上有名的易混對，兩個名字都是「頭」加一個方向，UI 上放在一起容易寫錯。
+5. **有兩項不適合做成單純的勾選框。**
+   - **閉氣吞**:閉氣接近 Valsalva。Chaudhuri 等人（2002, _Dysphagia_）測 15 位吞嚥障礙中風個案，86.6%（13/15）在做聲門上／超聲門上吞嚥時出現異常心律（室上性心搏過速、心房與心室早期收縮），停止後數分鐘內恢復，其他活動時不出現;對照的骨科個案幾乎沒有。文獻普遍把有冠狀動脈疾病或中風病史列為**謹慎使用或禁忌**。
+   - **抬頭吞**:它靠重力把食團送到後方，適應症是舌頭控制不佳（北醫的表寫成「頭下垂將食物放口中，咀嚼吞嚥時頭同時向後甩高」），但同時把呼吸道打開。奇美的衛教在一般姿勢建議裡寫的是「一般建議以低頭姿勢來進食，且應盡量避免仰頭姿勢」——也就是說**抬頭在台灣衛教裡的預設是「避免」，是有特定適應症才用的例外**。一個跟其他項並排的勾選框讀不出這件事。
+   - 另外**低頭吞的效果沒有想像中確定**:Robbins 等人（2008, _Annals of Internal Medicine_）在 515 位失智或帕金森氏症、確認會嗆入稀薄液體的個案身上比較「低頭姿勢喝稀薄液」與「頭中立喝增稠液」，三個月肺炎累積發生率 0.098 vs 0.116，無顯著差異。低頭吞不是「勾了就安全」。
+
+#### 清單完整嗎——回報，不擅自加
+
+ASHA practice portal 列到而開發者沒列的還有:**head tilt（頭側傾）**、**super-supraglottic swallow（超聲門上吞嚥法）**、**Mendelsohn maneuver（孟德森／門德爾松吞嚥法）**，台灣衛教單張也都寫得到。**我沒有把它們加進清單**——開發者說了要哪七項就是哪七項，而且他保留了自由輸入。這裡只回報「清單不是文獻上的全集」這件事實。
+
+#### 還沒定論的
+
+- **「冰檸檬棒刺激」的英文 id 要不要含味覺那一半**，文獻沒給現成答案。
+- **「抬頭吞」在台灣有沒有固定短名**查不到。衛教資料用「仰頭」「頭同時向後甩高」描述動作，沒查到寫成「抬頭吞嚥法」的醫院單張。開發者的用語可能是口語慣用，但我指不到書面來源。
+- **策略是否要記錄「用在哪一種食物／劑量」**沒查到共識，但開發者自己的例句（3cc thick liquid）已經把食團資訊寫進句子了。
+
+#### 要決定的（一兩句話就能回答）
+
+- **冰檸檬棒刺激的 id 用哪個？** `thermalTactileStimulation`（漏掉檸檬）還是含味覺的寫法。
+- **「閉氣吞」要不要拆成聲門上／超聲門上兩項？** 拆了才記得出治療師實際教的是哪一個。
+- **右轉／左轉要不要改成「轉向患側」＋一個患側欄位？** 現在的左右存的是結果，不是理由。
+- **有禁忌的兩項（閉氣吞、抬頭吞）在 UI 上要不要帶提示？** 純勾選框會讓它們看起來跟用力吞一樣沒有前提。
+
+### 三、口吃次數怎麼數
+
+**版權線**（完整分析見 `copyright-and-sources.md`）:不流暢的分類定義、計算公式、分母算法、
+語料長度要求都是**方法**，可以進 repo;任何測驗的換算表、嚴重度分界值、百分等級都不行。下面提到
+工具名稱只是為了指出某個定義出自哪裡，不是提議把它做成 app 的內容。
+
+#### 數的東西:不流暢要先分兩類
+
+文獻是一致的:不流暢分成**類口吃不流暢**（stuttering-like disfluencies, SLD）與**其他不流暢**（other disfluencies, OD;也叫非口吃不流暢、典型不流暢）。Yairi 與 Ambrose 的分法是這條線最常被引的來源。
+
+| 類別                | 包含                                               |
+| ------------------- | -------------------------------------------------- |
+| 類口吃不流暢（SLD） | 語音／音節重複、單音節整詞重複、延長、阻塞、破碎詞 |
+| 其他不流暢（OD）    | 插入語、修正、放棄的話語、多音節詞重複、片語重複   |
+
+這個二分法本身就是重點:兩組都會出現在不口吃的人身上，**區辨口吃的是 SLD 的量，不是不流暢的總量**。台灣的臨床科普寫法一致（重複、延長／拖長音、阻塞／中斷 vs 插入、修正），用詞是「類口吃不流暢」與「非口吃不流暢／正常不流暢」。
+
+#### 分母:音節是主流
+
+英文文獻的標準指標是 **%SS（percent syllables stuttered）＝ 口吃音節數 ÷ 總音節數 × 100**。另有以詞為單位的 %WS，但用音節的理由很具體:學齡前兒童的多音節詞使用量隨年齡變，用詞當分母會讓不流暢率被灌水。
+
+**華語的情況比英語單純**:一個字大致就是一個音節，所以分母可以直接是字數。華語口吃研究實際上就是用 %SS。但**台灣臨床上習慣講「每百字」還是「音節百分比」，我查不到來源**——查到的台灣衛教資料（臺灣聽力語言學會、北榮復健部）都只定性描述「重複語音或字、拖長、不適當的中斷」，沒有一份給計算單位。這個缺口要注意:app 的欄位標籤寫「字」還是「音節」，會影響治療師怎麼數。
+
+計算上有幾條慣例，但**不完全一致**:
+
+- 不流暢本身不計入分母——重複的那幾次、插入語不算進總音節數。
+- 修正裡的詞計入分母。
+- 整詞與片語重複計入分母。至於它們算不算**分子**，兩邊說法不一樣:一種計數指引把整詞與片語重複排除在口吃音節之外，Yairi／Ambrose 的 SLD 定義卻把**單音節**整詞重複算成 SLD。這個分歧是真的，不是我讀錯。
+
+#### 語料長度:沒有它，次數不可比
+
+文獻建議會話語料至少 300 個音節，500–600 更好。Sawyer 與 Yairi（2006）把同一份語料切成連續四段各 300 音節，發現「每百音節的 SLD 數」在前段與後段之間有統計上顯著的差異——同一個孩子、同一次談話，數字會往上飄。
+
+對這個 app 的意涵很直接:**只存一個「口吃次數」是不可比的。**要能跨次比較，至少得同時存語料長度（分母）與說話情境（會話／敘事／朗讀／獨白），否則兩次紀錄的數字放在一起沒有意義。這跟第一題「成功率要不要記分母」是同一個問題的兩個面。
+
+#### 嚴重度怎麼表達:三種做法，性質不同
+
+1. **只報頻率**（%SS）。純數字，方法公開。
+2. **主觀嚴重度量尺**。例如 Lidcombe Program 的 severity rating，家長與治療師各自評一個等第（現行 0 至 9，0 表示沒有口吃、9 表示極嚴重;2015 年以前是 1 至 10）。該方案的 treatment guide 是公開發布的文件。值得知道的是:Lidcombe 的 treatment guide 後來把 %SS 改成非必要，主要靠嚴重度量尺——也就是說「一定要算百分比」本身就不是共識。
+3. **測驗的合成分數**。臨床常用的口吃嚴重度工具走三個向度:發生頻率、最長幾次口吃的**時長**、**伴隨的身體動作**（眨眼、聳肩、掙扎等），各自轉成分數後相加再落到一個嚴重度等第。**「用這三個向度」是公開的方法**，可以照著設計欄位;**換算表與等第分界是那份測驗的東西，不能抄**。
+
+第 3 點對這個 app 有個實質提醒:如果語暢功能只做「次數」，那是三個向度裡的一個。時長與伴隨動作在文獻上跟頻率一樣被當成嚴重度的成分，而且它們不是靠數次數就能得到的。
+
+#### 還沒定論的
+
+- **台灣臨床實際用什麼單位與什麼慣例，查不到。** 學會與醫院的衛教文件只有定性描述。楊淑蘭《口吃:理論與實務》是國內第一本系統性的口吃教科書，很可能寫了計算方法，但我取不到內文，不能替它說話。
+- **整詞重複算不算分子**，文獻本身有分歧（見上）。
+- **華語的「字」與「音節」在語料裡不完全等同**:輕聲、兒化、外來語音譯都會讓兩者對不上。沒查到華語口吃研究怎麼處理這幾個邊界。
+- **迅吃（cluttering）不在這個範圍內**。它也是語暢異常，但不流暢的形態與計數方式跟口吃不同，文獻是分開處理的。開發者沒提，我也沒查。
+
+#### 要決定的（一兩句話就能回答）
+
+- **分母是「字」還是「音節」？** 華語裡兩者大致重合，但欄位標籤會決定治療師怎麼數。
+- **只數類口吃不流暢，還是兩類都數？** 只數 SLD 是文獻主流，但要求治療師當場分類。
+- **要不要跟著存語料長度與說話情境？** 不存的話跨次比較沒有意義。
+- **嚴重度要不要由系統算？** 若要，三個向度（頻率／時長／伴隨動作）的欄位可以做，**但分界值必須由開發者自己定，不從任何測驗抄**——這跟第二節分數欄位的結論是同一條線。
+
+### 來源
+
+**第一題**
+
+- Mager, R. F. (1962). _Preparing Instructional Objectives_。三要素整理見 Georgia State University 教學資源。<http://www2.gsu.edu/~mstmbs/CrsTools/Magerobj.html>
+- Roth, F. P. & Worthington, C. K.《Treatment Resource Manual for Speech-Language Pathology》。<https://www.pluralpublishing.com/publications/treatment-resource-manual-for-speech-language-pathology-2>
+- Owens, R. E., Farinella, K. A. & Metz, D. E.《Introduction to Communication Disorders: A Lifespan Evidence-Based Perspective》第 2 章章節結構（中譯本《溝通障礙導論:以實證本位觀點為導向》，心理出版社）。<https://www.books.com.tw/products/0010815405>
+- Kibler 等（1974）行為目標五要素，中文整理。<https://blog.xuite.net/st868221/twblog/126834372>
+- 特殊教育法施行細則第 10 條（112 年 12 月 20 日修正）。<https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=H0080032>
+- Moore, R. (2018)〈Beyond 80-Percent Accuracy: Consider alternative objective criteria in writing your treatment goals〉，_The ASHA Leader_ 23(5):6-7。<https://leader.pubs.asha.org/doi/10.1044/leader.FMP.23052018.6>
+- THIMS 框架:〈Goal Setting in Speech–Language Pathology: A Pilot Test of a "One-Size-Fits-All" Planning Framework〉。<https://pmc.ncbi.nlm.nih.gov/articles/PMC12441661/>
+
+**第二題**
+
+- ASHA Practice Portal — Adult Dysphagia（姿勢與吞嚥技巧的英文名稱基準）。<https://www.asha.org/practice-portal/clinical-topics/adult-dysphagia/>
+- 臺中榮民總醫院耳鼻喉頭頸部語言治療衛教單〈冰檸檬棒製作方法〉。<https://www.vghtc.gov.tw/UploadFiles/WebFiles/WebPagesFiles/Files/eb2bf17b-6cf2-4f97-9f3d-a2a375d16baa/%E6%B8%9B%E5%B0%91%E6%B5%81%E5%8F%A3%E6%B0%B4%E7%9A%84%E5%8F%A3%E8%85%94%E9%81%8B%E5%8B%95%E6%96%B9%E6%B3%95.pdf>
+- 正德醫院〈吞嚥困難病人護理指導〉（「用力吞嚥法」「上聲門吞嚥法」「低頭吞嚥法」並列，以及「低頭勿仰頭」）。<https://www.bch.org.tw/health/%E8%AD%B7%E7%90%86%E6%8C%87%E5%B0%8E/%E5%90%9E%E5%9A%A5%E5%9B%B0%E9%9B%A3%E7%97%85%E4%BA%BA%E8%AD%B7%E7%90%86%E6%8C%87%E5%B0%8E_i993.html>
+- 臺北醫學大學附設醫院復健科衛教單〈吞嚥異常〉（姿勢對適應症的表:頭轉向患側、頭傾向健側、頭向後甩高;冰刺激前咽門弓）。<https://www.tmuh.org.tw/UploadFile/files/%E8%A1%9B%E6%95%99%E8%B3%87%E8%A8%8A/%E5%BE%A9%E5%81%A5%E7%A7%91/F-4200-OT-002%E5%90%9E%E5%9A%A5%E7%95%B0%E5%B8%B8.pdf>
+- 奇美醫療體系衛教資訊網（「安全性吞嚥法」、檸檬冰棒做法、「應盡量避免仰頭姿勢」）。<https://www.chimei.org.tw/main/cmh_department/59012/info/5100/A5100224.html>
+- Chaudhuri, G. et al. (2002)〈Cardiovascular Effects of the Supraglottic and Super-supraglottic Swallowing Maneuvers in Stroke Patients with Dysphagia〉，_Dysphagia_ 17(1)。<https://link.springer.com/article/10.1007/s00455-001-0097-1>
+- Robbins, J. et al. (2008)〈Comparison of 2 Interventions for Liquid Aspiration on Pneumonia Incidence: A Randomized Trial〉，_Annals of Internal Medicine_ 148(7)。<https://www.acpjournals.org/doi/10.7326/0003-4819-148-7-200804010-00007>
+- 〈Tactile, thermal and gustatory stimulation therapy in the treatment of post-stroke oropharyngeal dysphagia: a scoping review〉（冷刺激與味覺刺激在文獻上分開命名）。<https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11758856/>
+
+**第三題**
+
+- Yairi, E. & Ambrose, N. (1999)〈Normative Disfluency Data for Early Childhood Stuttering〉，_JSLHR_ 42(5)（SLD／OD 二分法的來源）。<https://pubs.asha.org/doi/10.1044/jslhr.4204.895>
+- ASHA Practice Portal — Stuttering, Cluttering, and Fluency。<https://www.asha.org/practice-portal/clinical-topics/fluency-disorders/>
+- Sawyer, J. & Yairi, E. (2006)〈The Effect of Sample Size on the Assessment of Stuttering Severity〉，_AJSLP_ 15(1)。<https://pubs.asha.org/doi/10.1044/1058-0360%282006/005%29>
+- Lidcombe Program Treatment Guide（severity rating 量尺的公開文件）。<https://www.uts.edu.au/globalassets/sites/default/files/2018-10/lidcombe-program-treatment-guide-december-2017.pdf>
+- 臺北榮民總醫院復健部鍾玉梅語言治療師〈口吃〉衛教單（台灣衛教的定性描述，未給計算單位）。<https://wd.vghtpe.gov.tw/PMREIP/files/%E8%A1%9B%E6%95%99%E5%96%AE/ST/%E5%8F%A3%E5%90%83.pdf>
+- 語言治療百寶箱〈什麼是兒童期語暢障礙（口吃 & 迅吃）〉（類口吃不流暢／非口吃不流暢的中文用詞）。<https://st-box.blogspot.com/2017/10/childhood-fluency-disorders.html>
