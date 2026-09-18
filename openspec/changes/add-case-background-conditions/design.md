@@ -9,7 +9,7 @@
 | 原本的東西                             | 判定       | 理由                                                                                                |
 | -------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------- |
 | 那條規則本身                           | **刪**     | 決定一                                                                                              |
-| 出貨 starter rule ＋ 升版到 `:v8`      | **刪**     | 沒有規則要出貨。附註規則要不要出貨是 Q5，建議也不出                                                 |
+| 出貨 starter rule ＋ 升版到 `:v8`      | **改**     | 聲調那條規則沒了，但開發者裁定要出貨決定六那種附註規則的示範，升版跟著回來，見第七節                |
 | 「完全不含某語言」第三種 mode          | **刪**     | 只有那條規則需要全稱否定;決定六的附註是存在型的「包含」，見第三節                                   |
 | Q「華語還是台灣華語」                  | **刪**     | 是被規則措辭逼出來的。清單依決定七自己的兩條界線走                                                  |
 | Q「一聲怎麼寫」「輕聲算不算聲調錯誤」  | **刪**     | 兩題都在問「規則要怎麼算」。沒有規則要算了                                                          |
@@ -65,7 +65,7 @@
 
 `RuleSeverity` 已經是 `'info' | 'warning' | 'critical'`，`warnings-list.ts` 已經把 `info` 顯示成「提示」。**一個新概念、一行新程式碼都不用加**，本案只要讓規則二的第一列寫得出來。
 
-規則二實際涵蓋哪些錯誤、哪些語言算數，是治療師自己的臨床判斷，本案不代填。
+一位治療師實際要讓規則二涵蓋哪些錯誤、哪些語言，是他自己的臨床判斷，本案不代填。本案出貨的是**一條照著這個形狀寫好的示範**，內容由開發者指定（決定十一），治療師可以改、可以刪。
 
 ### 附註不能以歷程 id 當條件
 
@@ -166,12 +166,18 @@ export interface Case {
 ### 這次做:個案上的兩個欄位
 
 ```ts
-/** 一耳的聽力狀態。沒有 'unknown' 這個成員——未評估就是那一耳的欄位不存在。 */
-export type HearingStatus = 'normal' | 'abnormal';
+/**
+ * 一耳的聽力狀態。沒有 'unknown' 這個成員——未評估就是那一耳的欄位不存在。
+ *
+ * 'aided' covers both a hearing aid and a cochlear implant: nothing tells the two apart today,
+ * and splitting them would raise a clinical question nobody needs answered yet.
+ */
+export type HearingStatus = 'normal' | 'abnormal' | 'aided';
 
 export const HEARING_STATUS_LABELS: Record<HearingStatus, string> = {
   normal: '正常',
   abnormal: '異常',
+  aided: '配戴助聽器／人工電子耳',
 };
 
 /** 左右耳分開記。任一耳未填時該欄位 undefined，用到那一耳的規則就不會判斷。 */
@@ -193,7 +199,7 @@ case: { ageInMonths, correctedAgeInMonths, nativeLanguages,
         hearing: { leftNormal, rightNormal, betterEarNormal } }
 ```
 
-`leftNormal = hearing?.left === undefined ? undefined : hearing.left === 'normal'`，右耳同理。
+`leftNormal = hearing?.left === undefined ? undefined : hearing.left === 'normal'`，右耳同理。**配戴輔具因此投影成 `false`**——開發者裁定它在優耳判定裡算異常（決定五），單耳事實只能跟著一致，否則同一個個案身上會同時成立「左耳聽力正常 ＝ 是」與「整體聽力正常 ＝ 否」，而那兩句話沒有人解釋得了。
 
 ### 這一節推翻了本案原本的決定
 
@@ -215,46 +221,53 @@ case: { ageInMonths, correctedAgeInMonths, nativeLanguages,
 
 這是這一節最容易做錯的地方，所以把真值表寫死:
 
+「非正常」在這張表裡指**異常或配戴輔具**兩者之一——決定五把配戴輔具歸在整體聽力的異常那一側，所以兩者在這裡行為相同。
+
 | 左耳           | 右耳           | `betterEarNormal` | 理由                                             |
 | -------------- | -------------- | ----------------- | ------------------------------------------------ |
 | 正常           | 任何（含未填） | `true`            | 優耳至少跟這一耳一樣好，另一耳是什麼都不影響結論 |
 | 任何（含未填） | 正常           | `true`            | 同上                                             |
-| 異常           | 異常           | `false`           | 兩耳都異常，優耳只能是異常                       |
-| 異常           | 未填           | `undefined`       | **沒填的那一耳可能才是優耳**，結論還沒定         |
-| 未填           | 異常           | `undefined`       | 同上                                             |
+| 非正常         | 非正常         | `false`           | 兩耳都不正常，優耳只能是不正常                   |
+| 非正常         | 未填           | `undefined`       | **沒填的那一耳可能才是優耳**，結論還沒定         |
+| 未填           | 非正常         | `undefined`       | 同上                                             |
 | 未填           | 未填           | `undefined`       | 什麼都不知道                                     |
+
+第三列在測試裡要涵蓋四種搭配（異常＋異常、異常＋配戴輔具、配戴輔具＋異常、配戴輔具＋配戴輔具），四種都是 `false`。一則只測「異常＋異常」的測試會讓「配戴輔具其實被漏掉了」這種寫法照樣通過。
 
 ```ts
 /**
- * 整體聽力狀態看優耳 —— the convention Taiwan's disability determination uses, the therapist's
- * ruling. Deliberately named after that basis: an exported rule carries `betterEarNormal` in its
- * JSON, so a therapist reading the file elsewhere can tell which reading it means.
+ * 整體聽力狀態看優耳 —— the convention Taiwan's disability determination uses, and the ruling this
+ * project settled on. Deliberately named after that basis: an exported rule carries
+ * `betterEarNormal` in its JSON, so a therapist reading the file elsewhere can tell which reading
+ * it means.
  *
  * Order matters. One normal ear settles it whatever the other ear is (the better ear is at least
- * that good), but one abnormal ear settles nothing — an unrecorded ear could be the better one,
+ * that good), but one non-normal ear settles nothing — an unrecorded ear could be the better one,
  * so the answer stays undefined and the unrecorded-field gate keeps the rule from firing.
  *
- * Lossy projection: adding a member to HearingStatus (Q2's 「配戴助聽器」) means deciding what it
- * counts as here, not just in leftNormal/rightNormal.
+ * 'aided' sits on the non-normal side — a settled ruling, not an inference.
+ *
+ * Lossy projection: adding a member to HearingStatus means deciding what it counts as here, not
+ * just in leftNormal/rightNormal.
  */
 function betterEarNormal(hearing?: CaseHearing): boolean | undefined {
   if (hearing?.left === 'normal' || hearing?.right === 'normal') {
     return true;
   }
-  if (hearing?.left === 'abnormal' && hearing?.right === 'abnormal') {
+  if (hearing?.left !== undefined && hearing?.right !== undefined) {
     return false;
   }
   return undefined;
 }
 ```
 
-**「異常 ＋ 未填」是 `undefined` 而不是 `false`，這一格是整張表的重點。** 直覺會想「已經有一耳異常了，整體當然算異常」——那是把「優耳」讀成了「任一耳」。優耳是兩耳裡**比較好**的那一隻，沒填的那一隻完全可能是正常的，那樣整體就是正常。填一半就下結論，等於替沒填的那一耳假設它也是異常。
+**「非正常 ＋ 未填」是 `undefined` 而不是 `false`，這一格是整張表的重點。** 直覺會想「已經有一耳不正常了，整體當然算不正常」——那是把「優耳」讀成了「任一耳」。優耳是兩耳裡**比較好**的那一隻，沒填的那一隻完全可能是正常的，那樣整體就是正常。填一半就下結論，等於替沒填的那一耳假設它也不正常。
 
 ### 守門在這一格上的行為是對的
 
 `hasFact()` 逐段走點路徑，最後一段要 `!== undefined && !== null` 才算有值，所以 `betterEarNormal` 是 `undefined` 時，**任何**用到它的比較列都會讓整條規則不成立——不管那條規則寫的是 `== true` 還是 `== false`。這正是要的:不知道就不判斷，跟沒填生日一樣。
 
-兩種寫法都會被守門擋住，這一點要在測試裡釘住:一個「異常 ＋ 未填」的個案，對「整體聽力正常 == true」與「整體聽力正常 == false」**兩條規則都不觸發**。少了後者那一則測試，把 `undefined` 悄悄改成 `false` 的改動不會有任何東西抗議。
+兩種寫法都會被守門擋住，這一點要在測試裡釘住:一個「一耳異常、另一耳未填」的個案，對「整體聽力正常 == true」與「整體聽力正常 == false」**兩條規則都不觸發**。少了後者那一則測試，把 `undefined` 悄悄改成 `false` 的改動不會有任何東西抗議。
 
 實作上這個事實可以是「這個 key 不存在」或「這個 key 的值是 `undefined`」，`hasFact()` 兩種都判成沒有值（先 `hasOwnProperty` 再看值）。
 
@@ -277,9 +290,11 @@ tooltip 承接完整那一句（「整體狀態看兩耳中較好的那一耳」
 
 左右耳那兩個欄位**不需要**這個揭露:它們是原始記錄，沒有任何合成，填什麼就是什麼。
 
-### 三態不能用兩態的控制項——現在有兩組
+### 四個狀態不能用兩態的控制項——現在有兩組
 
-「未填／正常／異常」是三個狀態，而一個 switch 只有兩個位置。一個預設在「正常」的開關，會讓**每一個現有個案**都靜靜地主張自己聽力正常——這正是準則第三問裡「無聲地產生錯判斷」那一級。所以 PM 這邊的要求是**兩耳都不准有預設值**，具體用什麼控制項（三段式、`select` 第一項留白、比照〈出生週數〉的 placeholder）是 UX 的事。
+「未填／正常／異常／配戴助聽器或人工電子耳」是四個狀態，而一個 switch 只有兩個位置。一個預設在「正常」的開關，會讓**每一個現有個案**都靜靜地主張自己聽力正常——這正是準則第三問裡「無聲地產生錯判斷」那一級。所以 PM 這邊的要求是**兩耳都不准有預設值**，具體用什麼控制項（`select` 第一項留白、比照〈出生週數〉的 placeholder，或其他）是 UX 的事;第四個值的存在讓三段式那種控制項不再適用，可選的形式因此少了一個。
+
+**這兩個欄位不加任何說明文字**（決定九）。原本規劃在 label 旁邊放一句「由誰判定」，開發者裁定拿掉:病歷上本來就有這項資訊，治療師是照著病歷填的。所以這裡只有 label 與選項名，沒有補充句。
 
 多出來的一項要求:**兩耳要看得出是同一件事的兩半**，而且**只填一耳是合法狀態**，畫面不能逼使用者兩耳都填才存得起來——治療師手上可能真的只有一耳的資訊，而優耳那個事實在「有一耳正常」時本來就結論已定，不需要另一耳。
 
@@ -287,9 +302,9 @@ tooltip 承接完整那一句（「整體狀態看兩耳中較好的那一耳」
 
 因為 `ConditionRow.value` 的型別是 `boolean | number`——**條件列根本比不了字串**。要讓 `case.hearing.left == 'normal'` 寫得出來，得動 `ConditionOperator`、動 `value` 的型別、動編輯器的值輸入框、動已經匯出的規則檔會長什麼樣。為了這幾個欄位做這些不值得。
 
-反過來把領域型別也做成布林（`left?: boolean`）則會在第一次要加第三個值的時候卡住——Q2 問的「配戴助聽器」如果是一個獨立狀態，聯集加一個成員就好，布林要改資料形狀。
+反過來把領域型別也做成布林（`left?: boolean`）則在第一次要加第三個可填值的時候就卡住——而那件事**這次就發生了**:開發者裁定配戴輔具是一個獨立狀態，聯集加一個成員就好，布林得改資料形狀。這一段原本是假設性的論證，現在是既成事實。
 
-代價寫清楚:**投影是有損的。** 聯集之後多出來的成員不會自動有正確的布林值，加成員的人必須同時決定它在 `leftNormal`／`rightNormal` **以及 `betterEarNormal`** 這三處各算什麼。型別註解要寫這句話。
+代價寫清楚:**投影是有損的。** 聯集之後多出來的成員不會自動有正確的布林值，加成員的人必須同時決定它在 `leftNormal`／`rightNormal` **以及 `betterEarNormal`** 這三處各算什麼。`'aided'` 這次就是這樣決定的（三處都算非正常）。型別註解要寫這句話。
 
 ### 這次不做:純音聽力檢查評估表
 
@@ -372,7 +387,7 @@ const SUBJECT_COLLECTION: Record<ConditionSubject, string> = {
 
 （`add-score-band-conditions` 也會動 `fromJsonLogic()`，但動的是 `and` 與二元比較那兩條路徑，跟這裡不衝突;先後都可以，後做的那份 rebase 一次測試檔即可。）
 
-### 決定六那條附註規則長這樣
+### 要出貨的那條示範附註規則長這樣
 
 ```json
 {
@@ -381,14 +396,16 @@ const SUBJECT_COLLECTION: Record<ConditionSubject, string> = {
     {
       "some": [
         { "var": "articulation.errors" },
-        { "in": [{ "var": "targetPhonemeId" }, ["zh", "ch", "sh", "r"]] }
+        { "in": [{ "var": "targetPhonemeId" }, ["sh", "f", "yu"]] }
       ]
     }
   ]
 }
 ```
 
-（第二列的內容是治療師自己挑的，這裡只是示意。）全部是 JsonLogic 原生運算子，沒有自訂的東西，匯出去對別的實作照樣成立。
+第二列的三個目標音是開發者以台灣國語為例指定的（決定十一）。全部是 JsonLogic 原生運算子，沒有自訂的東西，匯出去對別的實作照樣成立，而且 4.2 之後編輯器反解得回兩列條件——**這是出貨的硬條件**:一條打不開的示範規則沒有示範作用。
+
+**條件比它想講的事寬，這一點要在程式碼註解裡寫明。** 開發者描述的是三組替代（ㄕ→ㄙ、ㄈ→ㄏ、ㄩ→ㄧ），而條件列問得出目標音、問不出替代成哪個音——`ArticulationErrorFact.errorPhonemeId` 存在，但沒有任何 `ConditionSubject` 指得到它。所以這條規則對一個把 ㄕ 說成 ㄉ 的個案也會成立。承載替代方向的是規則的訊息文字，不是條件。要讓條件也認得錯音，就得新增一種條件對象，那是它自己的 change:新的條件詞彙會動來回轉換、編輯器選項與匯出格式，為了一條示範規則把這些一起做，是把本案撐開。
 
 ## 六、未填欄位的守門要延伸到母語列
 
@@ -421,7 +438,9 @@ const SUBJECT_COLLECTION: Record<ConditionSubject, string> = {
 | 要放的東西                           | 判定                                                                                                                   |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | 母語欄位的 label、選項名、其他輸入框 | **介面標籤**，不受份量準則管                                                                                           |
-| 左右耳兩個欄位的 label 與三個狀態名  | 同上。承載「這不是純音聽檢結果」這件事的是 label 本身，不是另外一句說明                                                |
+| 左右耳兩個欄位的 label 與三個選項名  | 同上。承載「這不是純音聽檢結果」這件事的是 label 本身，不是另外一句說明                                                |
+| 聽力欄位「由誰判定」的說明句         | **不上畫面**——決定九。病歷上就有這項資訊，治療師是照病歷填;這一格是開發者對使用者實際工作方式的認定，不是三問的結果    |
+| 出貨的示範附註規則是示範、可以改掉   | 不上畫面，寫在規則自己的名稱與訊息文字裡，以及《使用說明》                                                             |
 | 「整體聽力正常看的是優耳」           | 問一工具行為、問二**無聲**、問三無聲地產生錯判斷 → **一定要講**，而且不能只靠 tooltip。載體見第四節                    |
 | 「沒填的話規則不會判斷」那一行       | 問一工具行為、問二無聲、問三靜靜產生錯判斷 → **一定要講**;本案是把既有那一行擴大，不是新增一行                         |
 | 「其他自行輸入的語言規則讀不到」     | 問二**自證的**（規則編輯器的選單裡就是沒有）→ **不上畫面**，改用輸入方式處理                                           |
@@ -433,10 +452,10 @@ const SUBJECT_COLLECTION: Record<ConditionSubject, string> = {
 
 `Case` 新增的欄位（母語兩個、聽力一個巢狀物件）都是選填的，舊資料讀出來就是 `undefined`——而 `undefined` 的意思正好就是「未填」，包含「只填一耳、另一耳缺席」這種情況，這都是正確的意思。**所以只為了這些欄位不需要升版。**
 
-會逼出升版的只有一件事:**種子只在集合是空的時候才跑。** 所以
+會逼出升版的只有一件事:**種子只在集合是空的時候才跑。** 而開發者裁定要出貨那條示範附註規則（決定十一），所以升版這次一定會發生:
 
-- 要讓示範個案帶上母語／聽力 → 得升 `CASES_KEY`。
-- 要出貨決定六那條附註規則 → 得升 `RULES_KEY`。
+- 出貨示範規則 → 得升 `RULES_KEY`。
+- 示範個案要補上母語與那三筆音對，否則規則出貨了也沒有東西會讓它觸發 → 得升 `CASES_KEY` 與 `ARTICULATION_RECORDS_KEY`。
 
 而**升版是作廢不是遷移**，這是 `storage.ts` 最上面寫明的 PoC 取捨。還有一個沒寫在那裡但這次必須講的:**升版必須所有 key 一起升。** 各集合分開存，只升 `CASES_KEY` 的話個案沒了，但課節紀錄、填答值、構音音對、音韻歷程覆寫、吞嚥嘗試、報告草稿全部留著，指著一堆不存在的個案 id——`removeCase()` 的連動刪除不會被升版觸發。所以既有的 key 才會全部一致停在 `:v7`。
 
@@ -449,7 +468,11 @@ const SUBJECT_COLLECTION: Record<ConditionSubject, string> = {
 
 規則可以匯出成檔案再匯回來，其他的不行。
 
-**建議:不升版**（Q5）。附註規則的價值在於「寫得出來」，而不在於「內建好了」;治療師在編輯器裡建一次的成本，遠低於所有人資料歸零，而且那條規則的內容本來就該由他自己定。
+**PM 這邊原本建議不升版**，理由是附註規則的價值在於「寫得出來」而不在於「內建好了」。開發者在被告知上面這份清單之後**推翻**了這個建議:一個沒有人示範過的兩規則寫法，實務上等於不存在。這個取捨已經做完，不要在實作時重開——實作時該做的是把破壞性降到最低:
+
+- **升版單獨一個 commit**（`tasks.md` 6.4），不跟任何功能改動綁在一起，出事時 bisect 認得出來。
+- **升版排在最後**，前面每一項都是在舊版 key 上做的，中途放棄本案不會毀掉任何人的資料。
+- **commit 訊息要寫明這是作廢不是遷移**，因為這是唯一會留在 git 歷史裡、事後查得到的紀錄。
 
 ## 八、事實物件不變量
 
