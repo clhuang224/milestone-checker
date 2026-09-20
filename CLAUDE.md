@@ -53,6 +53,12 @@ Subagents run on **Opus 5 at most** — pass `model: "opus"`, never a larger tie
 
 Do not let a subagent invent clinical content either — the rule below binds them too.
 
+**Subagents do not commit.** They leave their work in the tree and report; Claude Code reviews it
+and makes the commit. Commit granularity is a safety mechanism here — it is what makes a
+regression bisectable when nobody is reading the diff line by line — and an agent that only sees
+its own slice cannot judge where one commit should end and the next begin. The same goes for
+anything else that leaves the working tree: no pushing, no branch surgery.
+
 ## Scope discipline
 
 This is an experiment project for trying Claude Code + Angular. Scope is bounded by **the
