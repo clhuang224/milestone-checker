@@ -24,6 +24,11 @@ import { successPercent } from '../swallowing/success-rate';
 export const AGE_FIELD_ID = 'case.ageInMonths';
 export const CORRECTED_AGE_FIELD_ID = 'case.correctedAgeInMonths';
 
+/** Hearing facts — projected from the per-ear status on the case, never stored. */
+export const BETTER_EAR_NORMAL_FIELD_ID = 'case.hearing.betterEarNormal';
+export const LEFT_EAR_NORMAL_FIELD_ID = 'case.hearing.leftNormal';
+export const RIGHT_EAR_NORMAL_FIELD_ID = 'case.hearing.rightNormal';
+
 /**
  * A fact a comparison row can be written against. Wider than `FindingDefinition`, because case
  * attributes like age are derived rather than recorded by the therapist.
@@ -37,6 +42,11 @@ export interface RuleField {
 const CASE_FIELDS: RuleField[] = [
   { id: AGE_FIELD_ID, label: '月齡（實齡）', kind: 'number' },
   { id: CORRECTED_AGE_FIELD_ID, label: '月齡（矯正齡）', kind: 'number' },
+  // The better-ear basis is in the label itself, not left to a tooltip: a rule author picking
+  // 「整體聽力正常」 must see which reading of "overall" they are getting.
+  { id: BETTER_EAR_NORMAL_FIELD_ID, label: '整體聽力正常（優耳）', kind: 'boolean' },
+  { id: LEFT_EAR_NORMAL_FIELD_ID, label: '左耳聽力正常', kind: 'boolean' },
+  { id: RIGHT_EAR_NORMAL_FIELD_ID, label: '右耳聽力正常', kind: 'boolean' },
 ];
 
 /** Everything selectable in the rule editor's field dropdown. */
