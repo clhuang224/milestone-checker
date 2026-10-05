@@ -18,25 +18,22 @@ As of the `add-therapist-rule-engine` change， this app's target audience is **
 
 ## Working as a team
 
+Team mode follows the global `/team` protocol: Claude Code coordinates and reviews, is the only one
+who talks to the user, treats a subagent's report as a claim to verify, and makes every commit
+itself. This section only adds what is specific to this project.
+
 **The user is the developer (開發者)** — they state what is needed and they are the clinical
 authority. **Call them 開發者, never 治療師.** 治療師 means this app's end users, and using it
 for the user makes every document ambiguous about who decided what.
 
-**Claude Code is the reviewer and the account manager**: the only one who talks to the developer,
-and the one who checks the team's output against the repo before it reaches them. Everything
-below reports through Claude Code, never directly to the developer.
+**Never quote the developer verbatim in a file** (a global rule). Here it also applies
+retroactively: if you find a quotation in a document, spec, comment or commit message, rewrite it
+in your own words.
 
-Reviewing means actually reviewing. A subagent's report is a claim, not a result — verify it
-against the code before repeating it, and say so when it does not hold up.
+The team is defined in `.claude/agents/`. These project agents replace the user-level agents of
+the same name, and `domain` exists only here. Dispatch by `subagent_type`:
 
-**Never quote the developer verbatim in a file.** Not in documents, specs, code comments or
-commit messages. Record the decision and the reasoning in your own words; a decision does not
-become more authoritative for being a transcript, and quotes make every document read like
-conversation minutes. This applies retroactively — if you find a quotation, rewrite it.
-
-The team is defined in `.claude/agents/`; dispatch by `subagent_type`:
-
-| Agent    | 何時派                                                                                                                                                         |
+| Agent    | When to dispatch                                                                                                                                               |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pm`     | Turning a request into scope and steps — OpenSpec proposal／design／tasks, and pulling the boundary back when scope drifts.                                    |
 | `domain` | Any clinical claim that needs grounding. Reports what sources say **and what they leave unsettled** — "the literature does not settle this" is a real answer.  |
@@ -46,18 +43,13 @@ The team is defined in `.claude/agents/`; dispatch by `subagent_type`:
 | `qa`     | Tests and verification, plus arguing the other side before a hard-to-reverse design is settled. Its job is not to agree.                                       |
 | `doc`    | README, architecture and contributing docs, the therapist-facing guide.                                                                                        |
 
-The point is a team that covers 需求 → 設計 → 架構 → 驗證. Claude Code coordinates, resolves
-conflicts between them, and reports back in one voice.
-
-Subagents run on **Opus 5 at most** — pass `model: "opus"`, never a larger tier.
+The point is a team that covers 需求 → 設計 → 架構 → 驗證.
 
 Do not let a subagent invent clinical content either — the rule below binds them too.
 
-**Subagents do not commit.** They leave their work in the tree and report; Claude Code reviews it
-and makes the commit. Commit granularity is a safety mechanism here — it is what makes a
-regression bisectable when nobody is reading the diff line by line — and an agent that only sees
-its own slice cannot judge where one commit should end and the next begin. The same goes for
-anything else that leaves the working tree: no pushing, no branch surgery.
+Commit granularity matters more than usual here: nobody reads the diff line by line, so small
+commits are what make a regression bisectable. That is why subagents leave their work in the tree
+and Claude Code decides where each commit ends.
 
 ## Scope discipline
 
