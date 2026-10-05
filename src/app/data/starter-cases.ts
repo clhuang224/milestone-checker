@@ -55,6 +55,9 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
       sex: 'female',
       birthDateISO: yearsBefore(onDateISO, 8),
       note: '示範個案——改寫、簡化過的示意資料，可以直接修改或刪除。',
+      nativeLanguages: ['taiwanese'],
+      // `hearing` is left unset on purpose, not by oversight: it shows that an unfilled field is
+      // not judged, and a fictional case gives no basis for choosing a hearing status.
     },
     record: {
       id: RECORD_ID,

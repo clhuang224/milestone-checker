@@ -44,7 +44,7 @@
 這一輪只升一次版到 `:v8`，由本案的 6.4 **單獨**執行：`add-score-band-conditions` 的 Q6 定案為不出貨它的佔位規則，那份 change 沒有 seed，也不升版。6.1 到 6.3 是把 seed 的內容備好，那本來就是升版的前提;6.5 驗的是 seed 的內容而不是版號。
 
 - [x] 6.1 `data/starter-rules.ts`:新增一條 `severity: 'info'` 的示範附註規則，條件是「母語包含台灣台語 AND 構音錯誤目標音包含 ㄕ、ㄈ、ㄩ」，用 4.2 之後編輯器反解得出來的形狀寫，**不要手寫編輯器打不開的 JsonLogic**;訊息文字要講出開發者指定的那三組替代（石頭說成俗頭、飛機說成灰機、萵苣說成萵記），並讓治療師讀得出這是可以照著改的示範;程式碼註解寫明條件比訊息寬的原因是條件列問不出「替代成哪個音」，**不要為此擴充條件詞彙**
-- [ ] 6.2 `data/starter-cases.ts`:示範個案的母語補上台灣台語，讓 6.1 那條規則在守門之後仍然判斷得到;**聽力兩耳刻意留空**，程式碼註解寫明留空是為了示範「沒填就不判斷」，不是漏掉
+- [x] 6.2 `data/starter-cases.ts`:示範個案的母語補上台灣台語，讓 6.1 那條規則在守門之後仍然判斷得到;**聽力兩耳刻意留空**，程式碼註解寫明留空是為了示範「沒填就不判斷」，不是漏掉
 - [ ] 6.3 `data/starter-cases.ts`:依開發者給的三組詞加三筆音對——石頭（目標音 ㄕ）、飛機（目標音 ㄈ）、萵苣（目標音 ㄩ），錯音格記的是他給的那個誤讀（俗、灰、記）;**不要再自行補充其他例子**;跑一次 `starter-cases.spec.ts`，示範個案推導出來的音韻歷程會跟著變，該調整的是斷言不是資料
 - [ ] 6.4 `core/storage/storage.ts`:**十個 key 全部**從 `:v7` 升到 `:v8`（`findings`／`cases`／`rules`／`articulation-processes`／`articulation-records`／`phonological-summaries`／`swallow-trials`／`session-records`／`assessment-forms`／`reports`，一個都不能漏，只升一部分會留下讀不到主體的孤兒）;`storage.spec.ts` 裡寫死的 key 一併改;commit 訊息要寫明這一版是**作廢不是遷移**，既有使用者的資料歸零。**這一輪只升一次版，就是這一項**：`add-score-band-conditions` 原本也要升，兩個各升一次等於把使用者的資料清空兩次；那份 change 的 Q6 定案為不出貨之後已經不升版，所以本項單獨執行、單獨一個 commit，不跟任何其他改動綁在一起
 - [ ] 6.5 `data/starter-content.spec.ts` 補斷言:6.1 那條規則存在、等級是提示、條件經 `fromJsonLogic()` 反解得出條件列而不是原始 JSON、對示範個案會觸發、對一個什麼都沒填（含沒填母語）的個案不觸發
