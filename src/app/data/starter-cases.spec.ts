@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { derivedProcessGroups } from '../core/articulation/summary';
 import { buildFacts } from '../core/rule-engine/facts';
-import { evaluateCondition } from '../core/rule-engine/json-logic';
+import { evaluateCondition, evaluateRules } from '../core/rule-engine/json-logic';
 import { findZhuyin } from './zhuyin-inventory';
 import { STARTER_ARTICULATION_PROCESSES } from './starter-articulation-processes';
 import { STARTER_RULES } from './starter-rules';
@@ -75,5 +75,38 @@ describe('starter case seed', () => {
     const rule = STARTER_RULES.find((r) => r.id === 'rule-articulation-therapy-referral');
 
     expect(evaluateCondition(rule!.condition, factsFor())).toBe(true);
+  });
+
+  // Decision three (決定三) in openspec/changes/add-case-background-conditions/proposal.md:
+  // the developer chose to keep this rule firing for a tone-only case. "Tone is record-only"
+  // means the system derives nothing from tone errors; it does not mean a general articulation
+  // rule must step around them. This is deliberate, not a change still waiting to be made. A
+  // therapist who wants a rule to skip tones writes that exclusion in their own rule.
+  it('still triggers the referral rule when the only errors are tone errors (decision three, kept on purpose)', () => {
+    const toneOnly = {
+      ...seed,
+      probes: [
+        {
+          id: `${seed.caseRecord.id}-tone4`,
+          caseId: seed.caseRecord.id,
+          recordId: seed.record.id,
+          targetPhonemeId: 'tone4',
+          items: [
+            { word: '炮', heard: 'ㄆㄠˊ' },
+            { word: '', heard: '' },
+            { word: '', heard: '' },
+          ],
+          updatedOnISODate: TODAY,
+        },
+      ],
+    };
+    const facts = factsFor(toneOnly);
+
+    // Guard the premise: the case is past the rule's age bound and its only error is on a tone row.
+    expect(facts.case.ageInMonths).toBe(96);
+    expect(facts.articulation.errors.map((e) => e.targetPhonemeId)).toEqual(['tone4']);
+
+    const fired = evaluateRules(STARTER_RULES, facts).map((r) => r.id);
+    expect(fired).toContain('rule-articulation-therapy-referral');
   });
 });
