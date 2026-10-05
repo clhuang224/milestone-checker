@@ -109,4 +109,106 @@ describe('CaseDetail', () => {
     const [record] = storage.recordsFor('case-1');
     expect(record.formIds).toEqual(['articulation']);
   });
+
+  describe('native languages', () => {
+    function stored() {
+      const found = storage.cases().find((c) => c.id === 'case-1');
+      if (!found) {
+        throw new Error('case-1 missing');
+      }
+      return found;
+    }
+
+    async function openDetails() {
+      const fixture = setup();
+      await fixture.whenStable();
+      fixture.componentInstance.detailsOpen.set(true);
+      await fixture.whenStable();
+      return fixture;
+    }
+
+    function checkbox(fixture: { nativeElement: unknown }, label: string): HTMLInputElement {
+      const labels = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLLabelElement>('fieldset label'),
+      );
+      const match = labels.find((l) => l.textContent?.trim() === label);
+      const input = match?.querySelector<HTMLInputElement>('input[type="checkbox"]');
+      if (!input) {
+        throw new Error(`no checkbox for ${label}`);
+      }
+      return input;
+    }
+
+    it('leaves both fields absent on a case nobody has asked about', async () => {
+      const fixture = await openDetails();
+      fixture.componentInstance.onSexChange('male');
+
+      expect('nativeLanguages' in stored()).toBe(false);
+      expect('otherNativeLanguages' in stored()).toBe(false);
+    });
+
+    it('goes back to absent, not [], when the last box is unchecked', async () => {
+      const fixture = await openDetails();
+      checkbox(fixture, '台灣台語').click();
+      await fixture.whenStable();
+      checkbox(fixture, '台灣台語').click();
+      await fixture.whenStable();
+
+      expect('nativeLanguages' in stored()).toBe(false);
+    });
+
+    it('persists two checked languages and shows them checked again on reload', async () => {
+      const fixture = await openDetails();
+      checkbox(fixture, '台灣台語').click();
+      await fixture.whenStable();
+      checkbox(fixture, '華語').click();
+      await fixture.whenStable();
+
+      expect(stored().nativeLanguages).toEqual(['mandarin', 'taiwanese']);
+
+      fixture.destroy();
+      const reloaded = await openDetails();
+      expect(checkbox(reloaded, '華語').checked).toBe(true);
+      expect(checkbox(reloaded, '台灣台語').checked).toBe(true);
+      expect(checkbox(reloaded, '台灣客語').checked).toBe(false);
+    });
+
+    it('refuses a built-in language typed into 其他 and points to the checkbox', async () => {
+      const fixture = await openDetails();
+      fixture.componentInstance.addOtherLanguages(' 台灣台語 ');
+      await fixture.whenStable();
+
+      expect(stored().otherNativeLanguages).toBeUndefined();
+      expect(textOf(fixture)).toContain('「台灣台語」在清單上，請直接勾選。');
+    });
+
+    it('refuses a shortened name of a built-in language too', async () => {
+      const fixture = await openDetails();
+      fixture.componentInstance.addOtherLanguages('台語');
+
+      expect(stored().otherNativeLanguages).toBeUndefined();
+    });
+
+    it('accepts a language whose name merely contains a built-in label', async () => {
+      // 馬來西亞華語 is a distinct background from 華語; refusing it would leave no way to record it.
+      const fixture = await openDetails();
+      fixture.componentInstance.addOtherLanguages('馬來西亞華語');
+
+      expect(stored().otherNativeLanguages).toEqual(['馬來西亞華語']);
+    });
+
+    it('saves a genuinely other language as typed, trimmed and without duplicates', async () => {
+      const fixture = await openDetails();
+      fixture.componentInstance.addOtherLanguages('  日語 ');
+      fixture.componentInstance.addOtherLanguages('日語、');
+
+      expect(stored().otherNativeLanguages).toEqual(['日語']);
+      // Answered, just not from the list: a rule asking about a listed language reads no.
+      expect(stored().nativeLanguages).toEqual([]);
+
+      fixture.componentInstance.removeOtherLanguage('日語');
+      expect('otherNativeLanguages' in stored()).toBe(false);
+      expect('nativeLanguages' in stored()).toBe(false);
+    });
+  });
 });

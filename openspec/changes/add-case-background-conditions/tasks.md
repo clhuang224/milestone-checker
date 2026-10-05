@@ -14,7 +14,7 @@
 ## 2. 個案母語
 
 - [x] 2.1 `models/case.model.ts`:新增 `NativeLanguageId` 聯集（成員依決定七的清單）、`NATIVE_LANGUAGE_LABELS`，以及 `Case` 的 `nativeLanguages?` 與 `otherNativeLanguages?` 兩個欄位;型別註解寫明三件事——「未填是 undefined，不是空陣列」、「其他不進規則事實」，以及決定八的推廣（規則問的是「評估標的跟他的語言背景對不對得上」）
-- [ ] 2.2 `features/cases/case-detail`:〈基本資料〉加母語多選與「其他」輸入;**不設選取數量上限**（決定十:不擋、不提示、不為「填太多」設計任何行為）;「其他」不接受清單上已經有的語言
+- [x] 2.2 `features/cases/case-detail`:〈基本資料〉加母語多選與「其他」輸入;**不設選取數量上限**（決定十:不擋、不提示、不為「填太多」設計任何行為）;「其他」不接受清單上已經有的語言
 - [ ] 2.3 `core/rule-engine/facts.ts`:`buildFacts()` 的 `case` 加上 `nativeLanguages`，只放有 id 的那些;單元測試:未填時該欄位不存在（不是空陣列）
 
 ## 3. 個案聽力（決定四、決定五）
