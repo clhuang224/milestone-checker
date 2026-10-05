@@ -77,6 +77,12 @@ describe('starter case seed', () => {
     expect(evaluateCondition(rule!.condition, factsFor())).toBe(true);
   });
 
+  it('triggers the Taiwanese dialect influence demo rule', () => {
+    const fired = evaluateRules(STARTER_RULES, factsFor()).map((r) => r.id);
+
+    expect(fired).toContain('rule-taiwanese-dialect-influence-demo');
+  });
+
   // Decision three (決定三) in openspec/changes/add-case-background-conditions/proposal.md:
   // the developer chose to keep this rule firing for a tone-only case. "Tone is record-only"
   // means the system derives nothing from tone errors; it does not mean a general articulation

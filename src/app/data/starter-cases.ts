@@ -73,6 +73,9 @@ export function starterCaseSeed(onDateISO: string): StarterCaseSeed {
       probe('ai', items(['菜', 'ㄚ'])),
       probe('i', items(['衣', 'ㄧⁿ'])),
       probe('u', items(['烏', 'ㄨⁿ'])),
+      probe('sh', items(['石頭', 'ㄙㄨˊ'])),
+      probe('f', items(['飛機', 'ㄏㄨㄟ'])),
+      probe('yu', items(['萵苣', 'ㄐㄧˋ'])),
     ],
   };
 }
