@@ -1,6 +1,11 @@
 # milestone-checker — project rules
 
-General habits (commit language, Conventional Commits, strict TypeScript, Vitest, Angular standalone+Signals, small atomic commits) live in the global `dotfiles/claude/CLAUDE.md` — this file only adds project-specific rules on top. If something isn't covered here, check that file rather than guessing.
+## General conventions
+
+- Commit messages in **English**, following **Conventional Commits**, with a short body; keep commits **small and atomic**.
+- TypeScript **strict mode**; no `any` (use `unknown` and narrow it).
+- Tests with **Vitest**.
+- Angular: **standalone components + Signals**, zoneless; no NgModules.
 
 ## Experimentation philosophy & review posture
 
@@ -8,7 +13,7 @@ This repo exists to experiment with **Claude Code** (subagents, OpenSpec-driven 
 
 Because there's no human review gate, compensate by:
 
-- Keeping commits **small and atomic** (already a global rule, but doubly important here) — one task/subtask from `tasks.md` per commit where practical, so a regression is easy to bisect back to a single small change.
+- Keeping commits **small and atomic** (this matters more than usual here) — one task/subtask from `tasks.md` per commit where practical, so a regression is easy to bisect back to a single small change.
 - Treating `ng build` / `ng test` passing as the actual quality gate before considering a task done, not a nice-to-have.
 - Using subagents freely where they fit the task — that's part of what this project is for.
 
@@ -68,7 +73,7 @@ change.
 
 ## Content vs. code language
 
-- Code, comments, commit messages: **English** (per global `CLAUDE.md`).
+- Code, comments, commit messages: **English**.
 - User-facing app content (labels, finding/rule descriptions, warning and report text): **Traditional Chinese (Taiwan usage)** — this app's audience is Chinese-speaking speech-language therapists.
 - OpenSpec docs (`proposal.md`, `design.md`, `tasks.md`, `specs/**/spec.md`): **Traditional Chinese**, prose only — keep OpenSpec's structural keywords (`ADDED Requirements`, `Requirement:`, `Scenario:`, `WHEN`/`THEN`/`AND`, `SHALL`/`SHALL NOT`) in English since the tooling parses on them.
 - **Identifiers and union-type members are English, including domain vocabulary.** Don't make
