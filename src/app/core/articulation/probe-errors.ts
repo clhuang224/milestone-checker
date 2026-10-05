@@ -4,6 +4,7 @@ import {
   ArticulationProbe,
   ProbeItem,
 } from '../../models/articulation-record.model';
+import { ZhuyinCategory } from '../../models/zhuyin.model';
 import { deriveProcessIds } from './derive-processes';
 import { HeardSound, NASALIZED_MARK, parseHeard } from './parse-heard';
 
@@ -24,6 +25,15 @@ export interface ProbeError {
 
 function glyph(symbolId: string | undefined): string {
   return symbolId ? (findZhuyin(symbolId)?.symbol ?? symbolId) : '';
+}
+
+/**
+ * A tone row's 錯音 box holds a whole syllable, so the symbol worth reading out of it is the tone
+ * mark rather than whatever comes first — see parseHeard for why a wrong value here goes unnoticed.
+ * Other rows stay unrestricted: a substitution may well land in another category than its target.
+ */
+function toneOnly(targetPhonemeId: string): ZhuyinCategory | undefined {
+  return findZhuyin(targetPhonemeId)?.category === 'tone' ? 'tone' : undefined;
 }
 
 /** An item counts as an error whenever anything was written in the 錯音 box. */
@@ -48,7 +58,7 @@ export function errorLabel(error: ProbeError): string {
 export function probeErrors(probes: ArticulationProbe[]): ProbeError[] {
   return probes.flatMap((probe) =>
     probe.items.filter(isErrorItem).map((item) => {
-      const sound = parseHeard(item.heard);
+      const sound = parseHeard(item.heard, toneOnly(probe.targetPhonemeId));
       return {
         targetPhonemeId: probe.targetPhonemeId,
         word: item.word,

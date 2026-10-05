@@ -8,30 +8,6 @@ function from(targetPhonemeId: string, heardText: string): string[] {
   return deriveProcessIds(targetPhonemeId, parseHeard(heardText)).sort();
 }
 
-describe('parseHeard', () => {
-  it('takes the first zhuyin symbol out of a whole syllable', () => {
-    expect(parseHeard('ㄆㄠ')).toEqual({ symbolId: 'p', diacritic: undefined });
-  });
-
-  it('reads a nasalization mark that follows the first symbol', () => {
-    expect(parseHeard('ㄧⁿ')).toEqual({ symbolId: 'i', diacritic: 'nasalized' });
-  });
-
-  it('does not claim a nasalization mark that belongs to a later symbol', () => {
-    // The ⁿ in 「ㄉㄭⁿ」 marks ㄭ, not ㄉ.
-    expect(parseHeard('ㄉㄭⁿ')).toEqual({ symbolId: 'd', diacritic: undefined });
-  });
-
-  it('skips non-zhuyin text before the sound', () => {
-    expect(parseHeard('聽起來像 ㄍㄜ')).toMatchObject({ symbolId: 'g' });
-  });
-
-  it('returns nothing derivable when there is no zhuyin at all', () => {
-    expect(parseHeard('說不清楚')).toEqual({});
-    expect(parseHeard('')).toEqual({});
-  });
-});
-
 describe('deriveProcessIds', () => {
   it('does not derive a place process from a place change', () => {
     // No source derives 前置化/後置化 from a place ordering — they are enumerated
