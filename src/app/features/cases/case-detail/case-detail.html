@@ -61,10 +61,6 @@
             </select>
           </div>
 
-          @if (!c.birthDateISO) {
-            <p class="meta pb-2">沒填生日的話，用到年齡的規則不會判斷</p>
-          }
-
           <!-- Hearing on its own row: the third label is long, and two ears inline with 生日 would
                wrap unpredictably. Pressing the chosen status again clears that ear, so a mis-click
                can go back to not-filled (no chip on) instead of forcing a guess. -->
@@ -148,6 +144,14 @@
               </p>
             }
           </fieldset>
+
+          <!-- One sentence for the whole section, so it sits after every field it covers. Gone once
+               all of them are filled: from then on it cannot affect this case. -->
+          @if (hasUnjudgedFields()) {
+            <p class="basis-full meta">
+              生日、母語、左右耳聽力哪一項沒填，用到那一項的規則就不會判斷
+            </p>
+          }
         </div>
       }
     </header>

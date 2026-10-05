@@ -63,6 +63,22 @@ export class CaseDetail {
   /** Basic details are filled once at intake; they should not own the top of every visit. */
   readonly detailsOpen = signal(false);
 
+  /**
+   * True while any field a rule can read is still unfilled, which is when "not filled, not judged"
+   * can still bite this case. Gestational weeks is not among them: blank there means term, not
+   * unknown. Typed-only languages count as answered (`nativeLanguages: []`), matching the rule guard.
+   */
+  readonly hasUnjudgedFields = computed(() => {
+    const c = this.caseRecord();
+    return (
+      !!c &&
+      (!c.birthDateISO ||
+        c.nativeLanguages === undefined ||
+        c.hearing?.left === undefined ||
+        c.hearing?.right === undefined)
+    );
+  });
+
   readonly draftFormIds = signal<string[]>([]);
   readonly composing = signal(false);
   readonly canCreate = computed(() => this.draftFormIds().length > 0);

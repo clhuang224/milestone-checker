@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { Storage } from '../../../core/storage/storage';
+import { Case } from '../../../models/case.model';
 import { CaseDetail } from './case-detail';
 
 function setup() {
@@ -86,6 +87,52 @@ describe('CaseDetail', () => {
 
     expect(fixture.componentInstance.detailsOpen()).toBe(false);
     expect((fixture.nativeElement as HTMLElement).querySelector('#case-birth-date')).toBeNull();
+  });
+
+  describe('the not-filled, not-judged line', () => {
+    const LINE = '生日、母語、左右耳聽力哪一項沒填，用到那一項的規則就不會判斷';
+
+    async function openDetails() {
+      const fixture = setup();
+      await fixture.whenStable();
+      fixture.componentInstance.detailsOpen.set(true);
+      await fixture.whenStable();
+      return fixture;
+    }
+
+    function fillEverything(hearing: Case['hearing'] = { left: 'normal', right: 'aided' }) {
+      storage.upsertCase({
+        id: 'case-1',
+        label: '個案 A',
+        sex: 'female',
+        createdOnISODate: '2026-01-01',
+        birthDateISO: '2022-09-05',
+        nativeLanguages: [],
+        otherNativeLanguages: ['日語'],
+        hearing,
+      });
+    }
+
+    it('shows while a field rules read is still unfilled, even with the birth date in', async () => {
+      // The seeded case has a birth date but no languages and no hearing.
+      expect(textOf(await openDetails())).toContain(LINE);
+    });
+
+    it('shows when only one ear is missing', async () => {
+      fillEverything({ left: 'normal' });
+
+      expect(textOf(await openDetails())).toContain(LINE);
+    });
+
+    it('goes away once every one of them is filled', async () => {
+      fillEverything();
+
+      expect(textOf(await openDetails())).not.toContain(LINE);
+    });
+
+    it('no longer names the birth date alone', async () => {
+      expect(textOf(await openDetails())).not.toContain('用到年齡的規則');
+    });
   });
 
   it('refuses to create a record with no form attached', async () => {
