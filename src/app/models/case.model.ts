@@ -76,6 +76,37 @@ export const NATIVE_LANGUAGE_ORDER: NativeLanguageId[] = [
   'cantonese',
 ];
 
+/**
+ * Hearing status of one ear. There is deliberately no 'unknown' member: an ear nobody has
+ * assessed is an absent field, not a value.
+ *
+ * 'aided' covers both a hearing aid and a cochlear implant: nothing tells the two apart today,
+ * and splitting them would raise a clinical question nobody needs answered yet.
+ *
+ * The projection to facts is lossy: each ear becomes a boolean "normal" (`leftNormal`,
+ * `rightNormal`) and a better-ear value (`betterEarNormal`) is synthesised from both. Whoever adds
+ * a member here must decide what it counts as in all three of those places, not just one.
+ */
+export type HearingStatus = 'normal' | 'abnormal' | 'aided';
+
+export const HEARING_STATUS_LABELS: Record<HearingStatus, string> = {
+  normal: '正常',
+  abnormal: '異常',
+  aided: '配戴助聽器／人工電子耳',
+};
+
+/** Display order for the case form and the condition editor's dropdown. */
+export const HEARING_STATUS_ORDER: HearingStatus[] = ['normal', 'abnormal', 'aided'];
+
+/**
+ * Left and right ears are recorded separately. An ear left blank is `undefined`, and rules that
+ * read that ear do not evaluate.
+ */
+export interface CaseHearing {
+  left?: HearingStatus;
+  right?: HearingStatus;
+}
+
 export interface Case {
   id: string;
   label: string;
@@ -103,6 +134,11 @@ export interface Case {
    * `string[]` and the union would stop checking anything.
    */
   otherNativeLanguages?: string[];
+  /**
+   * Absent when neither ear has been recorded. Recording only one ear is a legal state — never
+   * fill in a default for the other ear.
+   */
+  hearing?: CaseHearing;
   note?: string;
 }
 
