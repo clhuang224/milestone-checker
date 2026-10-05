@@ -18,20 +18,23 @@ As of the `add-therapist-rule-engine` change， this app's target audience is **
 
 ## Working as a team
 
-Team mode follows the global `/team` protocol: Claude Code coordinates and reviews, is the only one
-who talks to the user, treats a subagent's report as a claim to verify, and makes every commit
-itself. This section only adds what is specific to this project.
+**Claude Code is the coordinator and reviewer**: the only one who talks to the developer. It plans
+the work, dispatches the subagents below, and checks their output against the repo before it reaches
+the developer. Everything below reports through Claude Code, never directly to the developer.
+
+Reviewing means actually reviewing. A subagent's report is a claim, not a result — verify it
+against the code before repeating it, and say so when it does not hold up. Settle disagreements
+between agents and report back in one voice.
 
 **The user is the developer (開發者)** — they state what is needed and they are the clinical
 authority. **Call them 開發者, never 治療師.** 治療師 means this app's end users, and using it
 for the user makes every document ambiguous about who decided what.
 
-**Never quote the developer verbatim in a file** (a global rule). Here it also applies
-retroactively: if you find a quotation in a document, spec, comment or commit message, rewrite it
-in your own words.
+**Never quote the developer verbatim in a file** — not in documents, specs, code comments or
+commit messages. Record the decision and the reasoning in your own words. This applies
+retroactively: if you find a quotation, rewrite it.
 
-The team is defined in `.claude/agents/`. These project agents replace the user-level agents of
-the same name, and `domain` exists only here. Dispatch by `subagent_type`:
+The team is defined in `.claude/agents/`; dispatch by `subagent_type`:
 
 | Agent    | When to dispatch                                                                                                                                               |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -45,11 +48,15 @@ the same name, and `domain` exists only here. Dispatch by `subagent_type`:
 
 The point is a team that covers 需求 → 設計 → 架構 → 驗證.
 
+Subagents run on **opus at most** — pass `model: "opus"`, never a larger tier.
+
 Do not let a subagent invent clinical content either — the rule below binds them too.
 
-Commit granularity matters more than usual here: nobody reads the diff line by line, so small
-commits are what make a regression bisectable. That is why subagents leave their work in the tree
-and Claude Code decides where each commit ends.
+**Subagents do not commit.** They leave their work in the tree and report; Claude Code reviews it
+and makes the commit. Commit granularity is a safety mechanism here — nobody reads the diff line
+by line, so small commits are what make a regression bisectable — and an agent that only sees its
+own slice cannot judge where one commit should end and the next begin. The same goes for anything
+else that leaves the working tree: no pushing, no branch surgery.
 
 ## Scope discipline
 
