@@ -13,7 +13,8 @@ export interface ConditionRow {
 }
 
 /** What collection an applicability row tests. */
-export type ConditionSubject = 'articulationTarget' | 'articulationProcess';
+export type ConditionSubject =
+  'articulationTarget' | 'articulationCategory' | 'articulationProcess';
 
 /**
  * An applicability ("適用條件") row: does the case have an articulation error matching this set?
@@ -26,7 +27,14 @@ export interface ConditionSetRow {
   type: 'set';
   subject: ConditionSubject;
   mode: 'includes' | 'excludes';
-  /** ZhuyinSymbol ids, or PhonologicalProcessDefinition ids for the process subject. */
+  /**
+   * What the values are depends on the subject:
+   * - `articulationTarget`: ZhuyinSymbol ids, matched against each error's target sound.
+   * - `articulationCategory`: ZhuyinCategory ids (`initial` / `medial` / `final` / `tone`),
+   *   matched against each error's target category — a whole category, so it keeps covering
+   *   every sound in it even if the inventory changes.
+   * - `articulationProcess`: PhonologicalProcessDefinition ids.
+   */
   values: string[];
 }
 
@@ -66,12 +74,13 @@ const ERRORS_VAR = 'articulation.errors';
 /** The per-error property each subject matches on. */
 const SUBJECT_FIELD: Record<ConditionSubject, string> = {
   articulationTarget: 'targetPhonemeId',
+  articulationCategory: 'targetCategory',
   articulationProcess: 'processIds',
 };
 
 /**
- * The predicate applied to each error inside `some`. For the target subject that is a plain
- * membership test; for processes the error's own `processIds` is a list, so it needs its own
+ * The predicate applied to each error inside `some`. For the target and category subjects that
+ * is a plain membership test; for processes the error's own `processIds` is a list, so it needs its own
  * `some` — `{"var": ""}` is json-logic-js's reference to the current scalar item.
  */
 function subjectPredicate(subject: ConditionSubject, values: string[]): JsonLogicRule {
@@ -227,8 +236,15 @@ function subjectOf(
 
   if (operator === 'in' && Array.isArray(args) && args.length === 2) {
     const [field, values] = args as [unknown, unknown];
-    if (varNameOf(field) === SUBJECT_FIELD.articulationTarget && Array.isArray(values)) {
+    if (!Array.isArray(values)) {
+      return undefined;
+    }
+    const fieldName = varNameOf(field);
+    if (fieldName === SUBJECT_FIELD.articulationTarget) {
       return { subject: 'articulationTarget', values: values as string[] };
+    }
+    if (fieldName === SUBJECT_FIELD.articulationCategory) {
+      return { subject: 'articulationCategory', values: values as string[] };
     }
   }
 

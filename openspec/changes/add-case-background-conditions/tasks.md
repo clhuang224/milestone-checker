@@ -26,7 +26,7 @@
 
 ## 4. 條件列
 
-- [ ] 4.1 `core/rule-engine/condition-mapper.ts`:`ConditionSubject` 新增 `'articulationCategory'`，比對 `targetCategory`;來回轉換測試
+- [x] 4.1 `core/rule-engine/condition-mapper.ts`:`ConditionSubject` 新增 `'articulationCategory'`，比對 `targetCategory`;來回轉換測試
 - [ ] 4.2 `condition-mapper.ts`:集合改由 subject 決定（`SUBJECT_COLLECTION`），新增 `'nativeLanguage'`;`setRowFrom()` **先看集合再看述詞**;來回轉換測試涵蓋母語列與音韻歷程列不會互相認錯（兩者的內層述詞形狀相同）
 - [ ] 4.3 `core/rule-engine/json-logic.ts`:未填欄位守門延伸到母語列（構音三種 subject 維持跳過），註解寫明跳過的理由是「空清單是合法答案」而母語不滿足這個前提;單元測試:沒填母語與填了但不含指定語言，兩者行為要分得出來
 - [ ] 4.4 `features/rules/rule-editor/condition-editor`:對象下拉分組（構音／個案），新增「構音錯誤類別」（選項取 `ZHUYIN_CATEGORY_LABELS`）與「母語」;母語列**只提供「包含」**;聲調的選項標籤用 `label` 不用 `symbol`
