@@ -211,4 +211,96 @@ describe('CaseDetail', () => {
       expect('nativeLanguages' in stored()).toBe(false);
     });
   });
+  describe('hearing', () => {
+    function stored() {
+      const found = storage.cases().find((c) => c.id === 'case-1');
+      if (!found) {
+        throw new Error('case-1 missing');
+      }
+      return found;
+    }
+
+    async function openDetails() {
+      const fixture = setup();
+      await fixture.whenStable();
+      fixture.componentInstance.detailsOpen.set(true);
+      await fixture.whenStable();
+      return fixture;
+    }
+
+    function chip(
+      fixture: { nativeElement: unknown },
+      ear: string,
+      label: string,
+    ): HTMLButtonElement {
+      const fieldsets = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLFieldSetElement>('fieldset'),
+      );
+      const fieldset = fieldsets.find(
+        (f) => f.querySelector('legend')?.textContent?.trim() === ear,
+      );
+      const button = Array.from(fieldset?.querySelectorAll<HTMLButtonElement>('button') ?? []).find(
+        (b) => b.textContent?.trim() === label,
+      );
+      if (!button) {
+        throw new Error(`no ${label} chip for ${ear}`);
+      }
+      return button;
+    }
+
+    function pressedIn(fixture: { nativeElement: unknown }, ear: string): string[] {
+      return ['正常', '異常', '配戴助聽器／人工電子耳'].filter(
+        (label) => chip(fixture, ear, label).getAttribute('aria-pressed') === 'true',
+      );
+    }
+
+    it('reads no status for either ear on a new case', async () => {
+      const fixture = await openDetails();
+
+      expect(stored().hearing).toBeUndefined();
+      expect(pressedIn(fixture, '左耳聽力')).toEqual([]);
+      expect(pressedIn(fixture, '右耳聽力')).toEqual([]);
+    });
+
+    it('saves one ear alone without filling the other', async () => {
+      const fixture = await openDetails();
+      chip(fixture, '左耳聽力', '異常').click();
+      await fixture.whenStable();
+
+      expect(stored().hearing).toEqual({ left: 'abnormal' });
+      expect('right' in (stored().hearing ?? {})).toBe(false);
+      expect(pressedIn(fixture, '右耳聽力')).toEqual([]);
+    });
+
+    it('saves aided and reads it back after reload', async () => {
+      const fixture = await openDetails();
+      chip(fixture, '右耳聽力', '配戴助聽器／人工電子耳').click();
+      await fixture.whenStable();
+
+      expect(stored().hearing).toEqual({ right: 'aided' });
+
+      fixture.destroy();
+      const reloaded = await openDetails();
+      expect(pressedIn(reloaded, '右耳聽力')).toEqual(['配戴助聽器／人工電子耳']);
+      expect(pressedIn(reloaded, '左耳聽力')).toEqual([]);
+    });
+
+    it('removes hearing from the case once both ears are cleared', async () => {
+      const fixture = await openDetails();
+      chip(fixture, '左耳聽力', '正常').click();
+      await fixture.whenStable();
+      chip(fixture, '右耳聽力', '異常').click();
+      await fixture.whenStable();
+      chip(fixture, '左耳聽力', '正常').click();
+      await fixture.whenStable();
+
+      expect(stored().hearing).toEqual({ right: 'abnormal' });
+
+      chip(fixture, '右耳聽力', '異常').click();
+      await fixture.whenStable();
+
+      expect('hearing' in stored()).toBe(false);
+      expect(pressedIn(fixture, '左耳聽力')).toEqual([]);
+    });
+  });
 });

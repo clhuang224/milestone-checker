@@ -65,6 +65,30 @@
             <p class="meta pb-2">沒填生日的話，用到年齡的規則不會判斷</p>
           }
 
+          <!-- Hearing on its own row: the third label is long, and two ears inline with 生日 would
+               wrap unpredictably. Pressing the chosen status again clears that ear, so a mis-click
+               can go back to not-filled (no chip on) instead of forcing a guess. -->
+          <div class="basis-full flex flex-wrap gap-x-8 gap-y-3">
+            @for (ear of hearingEars; track ear.side) {
+              <fieldset class="min-w-0">
+                <legend class="field-label mb-1">{{ ear.label }}</legend>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (option of hearingOptions; track option.value) {
+                    <button
+                      type="button"
+                      class="chip"
+                      [class.chip-on]="c.hearing?.[ear.side] === option.value"
+                      [attr.aria-pressed]="c.hearing?.[ear.side] === option.value"
+                      (click)="toggleHearing(ear.side, option.value)"
+                    >
+                      {{ option.label }}
+                    </button>
+                  }
+                </div>
+              </fieldset>
+            }
+          </div>
+
           <!-- Own full-width row: sixteen options inline with 生日 would push everything else off.
                Groups follow NATIVE_LANGUAGE_ORDER and are told apart by spacing alone. -->
           <fieldset class="basis-full min-w-0">

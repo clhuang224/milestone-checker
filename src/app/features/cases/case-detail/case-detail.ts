@@ -13,6 +13,10 @@ import { evaluateRules } from '../../../core/rule-engine/json-logic';
 import { Storage } from '../../../core/storage/storage';
 import {
   Case,
+  CaseHearing,
+  HEARING_STATUS_LABELS,
+  HEARING_STATUS_ORDER,
+  HearingStatus,
   NATIVE_LANGUAGE_LABELS,
   NATIVE_LANGUAGE_ORDER,
   NativeLanguageId,
@@ -134,6 +138,38 @@ export class CaseDetail {
       ...caseRecord,
       gestationalWeeks: weeks === undefined || Number.isNaN(weeks) ? undefined : weeks,
     });
+  }
+
+  readonly hearingEars: { side: keyof CaseHearing; label: string }[] = [
+    { side: 'left', label: '左耳聽力' },
+    { side: 'right', label: '右耳聽力' },
+  ];
+
+  readonly hearingOptions: { value: HearingStatus; label: string }[] = HEARING_STATUS_ORDER.map(
+    (value) => ({ value, label: HEARING_STATUS_LABELS[value] }),
+  );
+
+  /**
+   * Sets one ear, or clears it when the status already chosen is picked again. The other ear is
+   * never filled in, and with both ears cleared `hearing` is removed rather than stored as `{}`.
+   */
+  toggleHearing(side: keyof CaseHearing, status: HearingStatus): void {
+    const caseRecord = this.caseRecord();
+    if (!caseRecord) {
+      return;
+    }
+    const hearing: CaseHearing = { ...caseRecord.hearing };
+    if (hearing[side] === status) {
+      delete hearing[side];
+    } else {
+      hearing[side] = status;
+    }
+    const next: Case = { ...caseRecord };
+    delete next.hearing;
+    if (hearing.left !== undefined || hearing.right !== undefined) {
+      next.hearing = hearing;
+    }
+    this.storage.upsertCase(next);
   }
 
   readonly nativeLanguageGroups: NativeLanguageOption[][] = (() => {
