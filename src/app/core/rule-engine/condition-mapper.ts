@@ -74,7 +74,7 @@ const TRIALS_VAR = 'swallowing.trials';
 
 const ERRORS_VAR = 'articulation.errors';
 
-const NATIVE_LANGUAGES_VAR = 'case.nativeLanguages';
+export const NATIVE_LANGUAGES_VAR = 'case.nativeLanguages';
 
 /** The collection a set row's `some` iterates, decided by its subject. */
 const SUBJECT_COLLECTION: Record<ConditionSubject, string> = {

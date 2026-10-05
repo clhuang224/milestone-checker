@@ -1,7 +1,12 @@
 import jsonLogic from 'json-logic-js';
 
 import { JsonLogicRule, Rule } from '../../models/rule.model';
-import { ConditionNode, fromJsonLogic, toJsonLogic } from './condition-mapper';
+import {
+  ConditionNode,
+  NATIVE_LANGUAGES_VAR,
+  fromJsonLogic,
+  toJsonLogic,
+} from './condition-mapper';
 import { RuleFacts } from './facts';
 
 /** A clause that is false whatever the facts say. */
@@ -19,14 +24,24 @@ const NEVER: JsonLogicRule = { '==': [1, 0] };
  * a field nobody filled in. Substituting the clause fixes both, and lets `and`/`or` compose
  * normally instead of needing their own judgeability rules.
  *
- * Applicability rows — both `set` and `trial` — are always judgeable: they run over a list, and
- * an empty list is a legitimate "nothing recorded" answer rather than a missing value. A trial
- * row guards its own missing values inside the compiled predicate, since this gate cannot see
- * into a `some`.
+ * Applicability rows run over a list, and whether one needs this gate turns on a premise: is an
+ * empty or absent list a legitimate answer? For articulation errors and swallow trials it is —
+ * no errors recorded means no errors — so those rows are always judged. A trial row guards its
+ * own missing values inside the compiled predicate, since this gate cannot see into a `some`.
+ *
+ * Native language fails that premise. The list is absent when nobody asked, which is not the
+ * same as "none of these", so a native-language row on an unanswered case is forced false for
+ * both `includes` and `excludes`. An answered list, even `[]` (only typed, unlisted languages),
+ * is present and judged normally. json-logic-js's `some` already returns false for a missing
+ * list, so today the outcome would be the same without this branch; it is here so the meaning
+ * "unanswered is not judged" is stated rather than borrowed from one library's handling of null.
  */
 function guardedCondition(node: ConditionNode, facts: RuleFacts): JsonLogicRule {
   if (node.type === 'row') {
     return hasFact(facts, node.fieldId) ? toJsonLogic(node) : NEVER;
+  }
+  if (node.type === 'set' && node.subject === 'nativeLanguage') {
+    return hasFact(facts, NATIVE_LANGUAGES_VAR) ? toJsonLogic(node) : NEVER;
   }
   if (node.type === 'set' || node.type === 'trial') {
     return toJsonLogic(node);
