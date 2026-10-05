@@ -6,7 +6,13 @@ import {
 import { probeErrors } from '../articulation/probe-errors';
 import { processIdsForTarget } from '../articulation/summary';
 import { SessionRecord } from '../../models/session-record.model';
-import { RecordProfile, Case, NativeLanguageId } from '../../models/case.model';
+import {
+  RecordProfile,
+  Case,
+  CaseHearing,
+  HearingStatus,
+  NativeLanguageId,
+} from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { ZhuyinCategory } from '../../models/zhuyin.model';
 import { SwallowTrial } from '../../models/swallow-trial.model';
@@ -83,6 +89,12 @@ export interface RuleFacts {
      * `otherNativeLanguages` are left out because rules can only be written against a known list.
      */
     nativeLanguages?: NativeLanguageId[];
+    /** Each value is undefined when it cannot be known — the missing-field guard treats that as unrecorded. */
+    hearing?: {
+      leftNormal?: boolean;
+      rightNormal?: boolean;
+      betterEarNormal?: boolean;
+    };
   };
   articulation: { errors: ArticulationErrorFact[] };
   swallowing: { trials: SwallowTrialFact[] };
@@ -96,6 +108,37 @@ function trialFacts(trials: SwallowTrial[]): SwallowTrialFact[] {
     volumeCc: trial.volumeCc,
     successPercent: successPercent(trial.outcome),
   }));
+}
+
+/**
+ * 'aided' projects to false: it counts as non-normal for the better ear (see betterEarNormal), and
+ * the single-ear facts must agree, or one case could read "left ear normal" yet "overall not normal".
+ */
+function earNormal(status?: HearingStatus): boolean | undefined {
+  return status === undefined ? undefined : status === 'normal';
+}
+
+/**
+ * Overall hearing goes by the better ear — the convention of Taiwan's disability determination,
+ * settled by the developer. Named after that basis so an exported rule's `betterEarNormal` says
+ * which reading it means.
+ *
+ * One normal ear settles it whatever the other ear is (the better ear is at least that good). One
+ * non-normal ear settles nothing: an unrecorded ear could be the better one, so the answer stays
+ * undefined rather than false, and the missing-field guard keeps the rule from firing.
+ *
+ * 'aided' sits on the non-normal side — a settled ruling, not an inference.
+ *
+ * Lossy projection: a new HearingStatus member must be decided here too, not only in earNormal.
+ */
+function betterEarNormal(hearing?: CaseHearing): boolean | undefined {
+  if (hearing?.left === 'normal' || hearing?.right === 'normal') {
+    return true;
+  }
+  if (hearing?.left !== undefined && hearing?.right !== undefined) {
+    return false;
+  }
+  return undefined;
 }
 
 /**
@@ -147,6 +190,11 @@ export function buildFacts(
       // Spread rather than assigned, so "never asked" leaves no key at all: the missing-field
       // guard has to tell that apart from an answer that names no listed language.
       ...(caseRecord.nativeLanguages ? { nativeLanguages: caseRecord.nativeLanguages } : {}),
+      hearing: {
+        leftNormal: earNormal(caseRecord.hearing?.left),
+        rightNormal: earNormal(caseRecord.hearing?.right),
+        betterEarNormal: betterEarNormal(caseRecord.hearing),
+      },
     },
     articulation: { errors: errorFacts(probes, processGroups) },
     swallowing: { trials: trialFacts(trials) },

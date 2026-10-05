@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ArticulationProbe, ManualProcessGroup } from '../../models/articulation-record.model';
 import { SessionRecord } from '../../models/session-record.model';
-import { RecordProfile, Case } from '../../models/case.model';
+import { RecordProfile, Case, CaseHearing, HearingStatus } from '../../models/case.model';
 import { buildFacts } from './facts';
 
 const TODAY = '2026-08-17';
@@ -146,5 +146,75 @@ describe('buildFacts', () => {
 
     expect(result.case.nativeLanguages).toEqual([]);
     expect(JSON.stringify(result)).not.toContain('日語');
+  });
+
+  describe('hearing', () => {
+    function hearingFacts(hearing: CaseHearing) {
+      const result = facts({ hearing }).case.hearing;
+      if (!result) {
+        throw new Error('buildFacts always emits case.hearing');
+      }
+      return result;
+    }
+
+    it('leaves all three hearing facts undefined when no hearing was recorded', () => {
+      expect(facts().case.hearing).toEqual({
+        leftNormal: undefined,
+        rightNormal: undefined,
+        betterEarNormal: undefined,
+      });
+    });
+
+    it.each<[HearingStatus | undefined, boolean | undefined]>([
+      [undefined, undefined],
+      ['normal', true],
+      ['abnormal', false],
+      // Aided counts as non-normal, so the single-ear facts agree with betterEarNormal.
+      ['aided', false],
+    ])('projects a single ear recorded as %s to %s', (status, expected) => {
+      expect(hearingFacts({ left: status }).leftNormal).toBe(expected);
+      expect(hearingFacts({ right: status }).rightNormal).toBe(expected);
+    });
+
+    const anyEar: (HearingStatus | undefined)[] = [undefined, 'normal', 'abnormal', 'aided'];
+
+    it.each(anyEar)(
+      'reads the better ear as normal when the left is normal and the right is %s',
+      (right) => {
+        expect(hearingFacts({ left: 'normal', right }).betterEarNormal).toBe(true);
+      },
+    );
+
+    it.each(anyEar)(
+      'reads the better ear as normal when the right is normal and the left is %s',
+      (left) => {
+        expect(hearingFacts({ left, right: 'normal' }).betterEarNormal).toBe(true);
+      },
+    );
+
+    it.each<[HearingStatus, HearingStatus]>([
+      ['abnormal', 'abnormal'],
+      ['abnormal', 'aided'],
+      ['aided', 'abnormal'],
+      ['aided', 'aided'],
+    ])(
+      'reads the better ear as not normal when both ears are non-normal (%s + %s)',
+      (left, right) => {
+        expect(hearingFacts({ left, right }).betterEarNormal).toBe(false);
+      },
+    );
+
+    // The key cell: the unrecorded ear could be the better one, so this must not become false.
+    it.each<HearingStatus>(['abnormal', 'aided'])(
+      'leaves the better ear undefined when one ear is %s and the other unrecorded',
+      (status) => {
+        expect(hearingFacts({ left: status }).betterEarNormal).toBeUndefined();
+        expect(hearingFacts({ right: status }).betterEarNormal).toBeUndefined();
+      },
+    );
+
+    it('leaves the better ear undefined when neither ear is recorded', () => {
+      expect(hearingFacts({}).betterEarNormal).toBeUndefined();
+    });
   });
 });
