@@ -11,7 +11,7 @@ import {
   defaultRow,
   defaultSetRow,
 } from '../../../core/rule-engine/condition-mapper';
-import { RuleField } from '../../../core/rule-engine/facts';
+import { BETTER_EAR_NORMAL_FIELD_ID, RuleField } from '../../../core/rule-engine/facts';
 import {
   ZHUYIN_CATEGORY_LABELS,
   ZHUYIN_CATEGORY_ORDER,
@@ -43,6 +43,16 @@ function modeHint(row: ConditionSetRow): string {
     ? '個案身上有勾選的其中任一項時成立'
     : `扣掉勾選的項目後，個案身上仍然有其他${remainderNounOf(row.subject)}時成立`;
 }
+
+/**
+ * Comparison fields whose label cannot carry what the tool does with them. The better ear is the
+ * only one: 「（優耳）」 names the basis, but not that aided counts as non-normal or that a
+ * missing ear can leave the answer unknown — both silent, since an unjudged rule just doesn't fire.
+ */
+const FIELD_HINTS: Partial<Record<string, string>> = {
+  [BETTER_EAR_NORMAL_FIELD_ID]:
+    '任一耳正常就是「是」，兩耳都填了且都非正常才是「否」，其餘不判斷；配戴助聽器／人工電子耳算非正常',
+};
 
 /**
  * What an 排除 row looks for once the checked items are set aside. Native languages are their own
@@ -167,6 +177,11 @@ export class ConditionEditor {
   readonly selectedField = computed(() => {
     const row = this.row();
     return row ? this.fields().find((f) => f.id === row.fieldId) : undefined;
+  });
+
+  readonly fieldHint = computed(() => {
+    const row = this.row();
+    return row ? (FIELD_HINTS[row.fieldId] ?? '') : '';
   });
 
   readonly availableOperators = computed(() =>

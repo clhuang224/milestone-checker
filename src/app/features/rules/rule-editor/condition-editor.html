@@ -1,33 +1,39 @@
 @if (row(); as r) {
-  <div class="flex items-center gap-2 flex-wrap">
-    <select [ngModel]="r.fieldId" (ngModelChange)="setField($event)" class="select w-auto">
-      @for (f of fields(); track f.id) {
-        <option [value]="f.id">{{ f.label }}</option>
-      }
-    </select>
-
-    <select
-      [ngModel]="r.operator"
-      (ngModelChange)="setOperator($event)"
-      class="select w-auto font-mono text-center"
-    >
-      @for (op of availableOperators(); track op) {
-        <option [value]="op">{{ op }}</option>
-      }
-    </select>
-
-    @if (selectedField()?.kind === 'boolean') {
-      <select [ngModel]="r.value" (ngModelChange)="setBooleanValue($event)" class="select w-auto">
-        <option [ngValue]="true">是</option>
-        <option [ngValue]="false">否</option>
+  <div class="space-y-1">
+    <div class="flex items-center gap-2 flex-wrap">
+      <select [ngModel]="r.fieldId" (ngModelChange)="setField($event)" class="select w-auto">
+        @for (f of fields(); track f.id) {
+          <option [value]="f.id">{{ f.label }}</option>
+        }
       </select>
-    } @else {
-      <input
-        type="number"
-        [ngModel]="r.value"
-        (ngModelChange)="setNumberValue($event)"
-        class="input w-24"
-      />
+
+      <select
+        [ngModel]="r.operator"
+        (ngModelChange)="setOperator($event)"
+        class="select w-auto font-mono text-center"
+      >
+        @for (op of availableOperators(); track op) {
+          <option [value]="op">{{ op }}</option>
+        }
+      </select>
+
+      @if (selectedField()?.kind === 'boolean') {
+        <select [ngModel]="r.value" (ngModelChange)="setBooleanValue($event)" class="select w-auto">
+          <option [ngValue]="true">是</option>
+          <option [ngValue]="false">否</option>
+        </select>
+      } @else {
+        <input
+          type="number"
+          [ngModel]="r.value"
+          (ngModelChange)="setNumberValue($event)"
+          class="input w-24"
+        />
+      }
+    </div>
+
+    @if (fieldHint()) {
+      <p class="meta">{{ fieldHint() }}</p>
     }
   </div>
 } @else if (setRow(); as s) {

@@ -6,7 +6,7 @@ import {
   ConditionSetRow,
   toJsonLogic,
 } from '../../../core/rule-engine/condition-mapper';
-import { RuleField } from '../../../core/rule-engine/facts';
+import { BETTER_EAR_NORMAL_FIELD_ID, RuleField } from '../../../core/rule-engine/facts';
 import { PhonologicalProcessDefinition } from '../../../models/phonological-process.model';
 import { ConditionEditor } from './condition-editor';
 
@@ -213,5 +213,56 @@ describe('ConditionEditor applicability rows', () => {
     expect(element.textContent).toContain('仍然有其他母語時成立');
     expect(element.querySelector('p.meta')?.textContent).not.toContain('構音錯誤');
     expect(emitted).toEqual([]);
+  });
+});
+
+describe('ConditionEditor comparison rows', () => {
+  const HINT =
+    '任一耳正常就是「是」，兩耳都填了且都非正常才是「否」，其餘不判斷；配戴助聽器／人工電子耳算非正常';
+  const HEARING_FIELDS: RuleField[] = [
+    ...FIELDS,
+    { id: BETTER_EAR_NORMAL_FIELD_ID, label: '整體聽力正常（優耳）', kind: 'boolean' },
+    { id: 'case.hearing.leftNormal', label: '左耳聽力正常', kind: 'boolean' },
+  ];
+
+  function setupRow(fieldId: string) {
+    const fixture = TestBed.createComponent(ConditionEditor);
+    fixture.componentRef.setInput('node', { type: 'row', fieldId, operator: '==', value: true });
+    fixture.componentRef.setInput('fields', HEARING_FIELDS);
+    fixture.componentRef.setInput('processes', PROCESSES);
+    return fixture;
+  }
+
+  function visibleText(fixture: { nativeElement: unknown }): string {
+    // Paragraphs only: the field <select> lists every label, so the whole text would always match.
+    return Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('p'))
+      .map((p) => p.textContent?.trim() ?? '')
+      .join('\n');
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [ConditionEditor] });
+  });
+
+  it('restates the better-ear basis in plain text, not as a tooltip', async () => {
+    const fixture = setupRow(BETTER_EAR_NORMAL_FIELD_ID);
+    await fixture.whenStable();
+
+    expect(visibleText(fixture)).toContain(HINT);
+    expect((fixture.nativeElement as HTMLElement).querySelector('[title]')).toBeNull();
+  });
+
+  it('says nothing extra on a single-ear field', async () => {
+    const fixture = setupRow('case.hearing.leftNormal');
+    await fixture.whenStable();
+
+    expect(visibleText(fixture)).toBe('');
+  });
+
+  it('says nothing extra on an ordinary field', async () => {
+    const fixture = setupRow('drooling');
+    await fixture.whenStable();
+
+    expect(visibleText(fixture)).toBe('');
   });
 });
