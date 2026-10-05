@@ -12,12 +12,13 @@ export interface ConditionRow {
   value: boolean | number;
 }
 
-/** What collection an applicability row tests. */
+/** What an applicability row tests; it also decides which collection the row iterates. */
 export type ConditionSubject =
-  'articulationTarget' | 'articulationCategory' | 'articulationProcess';
+  'articulationTarget' | 'articulationCategory' | 'articulationProcess' | 'nativeLanguage';
 
 /**
- * An applicability ("適用條件") row: does the case have an articulation error matching this set?
+ * An applicability ("適用條件") row: does some item of the subject's collection (an articulation
+ * error, or one of the case's native languages) match this set?
  *
  * `excludes` is existential, not universal — "excludes ㄓㄔㄕㄖ" means *some error remains once
  * those are set aside*, which is what 「有 ㄓㄔㄕㄖ 以外的構音錯誤」 asks. It does NOT mean the
@@ -34,6 +35,8 @@ export interface ConditionSetRow {
    *   matched against each error's target category — a whole category, so it keeps covering
    *   every sound in it even if the inventory changes.
    * - `articulationProcess`: PhonologicalProcessDefinition ids.
+   * - `nativeLanguage`: NativeLanguageId ids, matched against each of the case's native
+   *   languages.
    */
   values: string[];
 }
@@ -71,23 +74,50 @@ const TRIALS_VAR = 'swallowing.trials';
 
 const ERRORS_VAR = 'articulation.errors';
 
-/** The per-error property each subject matches on. */
-const SUBJECT_FIELD: Record<ConditionSubject, string> = {
+const NATIVE_LANGUAGES_VAR = 'case.nativeLanguages';
+
+/** The collection a set row's `some` iterates, decided by its subject. */
+const SUBJECT_COLLECTION: Record<ConditionSubject, string> = {
+  articulationTarget: ERRORS_VAR,
+  articulationCategory: ERRORS_VAR,
+  articulationProcess: ERRORS_VAR,
+  nativeLanguage: NATIVE_LANGUAGES_VAR,
+};
+
+/** The per-error property each articulation subject matches on. */
+const SUBJECT_FIELD: Record<Exclude<ConditionSubject, 'nativeLanguage'>, string> = {
   articulationTarget: 'targetPhonemeId',
   articulationCategory: 'targetCategory',
   articulationProcess: 'processIds',
 };
 
+/** A membership test on the current scalar item — `{"var": ""}` in json-logic-js. */
+function scalarMembership(values: string[]): JsonLogicRule {
+  return { in: [{ var: '' }, values] };
+}
+
+/** Reads back a {@link scalarMembership} predicate, or undefined if it is not one. */
+function scalarMembershipValues(predicate: unknown): string[] | undefined {
+  const entry = singleKey(predicate);
+  if (!entry || entry[0] !== 'in' || !Array.isArray(entry[1]) || entry[1].length !== 2) {
+    return undefined;
+  }
+  const [item, values] = entry[1] as [unknown, unknown];
+  return varNameOf(item) === '' && Array.isArray(values) ? (values as string[]) : undefined;
+}
+
 /**
- * The predicate applied to each error inside `some`. For the target and category subjects that
- * is a plain membership test; for processes the error's own `processIds` is a list, so it needs its own
- * `some` — `{"var": ""}` is json-logic-js's reference to the current scalar item.
+ * The predicate applied to each collection item inside `some`. For the target and category
+ * subjects that is a plain membership test on a field of the error; for processes the error's
+ * own `processIds` is a list, so it needs its own `some`. Native languages are a list of plain
+ * ids, so each item is tested directly.
  */
 function subjectPredicate(subject: ConditionSubject, values: string[]): JsonLogicRule {
+  if (subject === 'nativeLanguage') {
+    return scalarMembership(values);
+  }
   if (subject === 'articulationProcess') {
-    return {
-      some: [{ var: SUBJECT_FIELD[subject] }, { in: [{ var: '' }, values] }],
-    };
+    return { some: [{ var: SUBJECT_FIELD[subject] }, scalarMembership(values)] };
   }
   return { in: [{ var: SUBJECT_FIELD[subject] }, values] };
 }
@@ -134,7 +164,10 @@ export function toJsonLogic(node: ConditionNode): JsonLogicRule {
   if (node.type === 'set') {
     const predicate = subjectPredicate(node.subject, node.values);
     return {
-      some: [{ var: ERRORS_VAR }, node.mode === 'excludes' ? { '!': predicate } : predicate],
+      some: [
+        { var: SUBJECT_COLLECTION[node.subject] },
+        node.mode === 'excludes' ? { '!': predicate } : predicate,
+      ],
     };
   }
   return { [node.combinator]: node.children.map(toJsonLogic) };
@@ -206,7 +239,11 @@ function singleKey(node: unknown): [string, unknown] | undefined {
   return keys.length === 1 ? [keys[0], (node as Record<string, unknown>)[keys[0]]] : undefined;
 }
 
-/** Reads back the `in` (or nested `some`) predicate, returning which subject it tests. */
+/**
+ * Reads back the `in` (or nested `some`) predicate of a row over `articulation.errors`, returning
+ * which articulation subject it tests. Only meaningful once the collection is known to be the
+ * errors list — see setRowFrom().
+ */
 function subjectOf(
   predicate: unknown,
 ): { subject: ConditionSubject; values: string[] } | undefined {
@@ -223,15 +260,8 @@ function subjectOf(
     if (varNameOf(args[0]) !== SUBJECT_FIELD.articulationProcess) {
       return undefined;
     }
-    const inner = singleKey(args[1]);
-    if (!inner || inner[0] !== 'in' || !Array.isArray(inner[1])) {
-      return undefined;
-    }
-    const [item, values] = inner[1] as [unknown, unknown];
-    if (varNameOf(item) !== '' || !Array.isArray(values)) {
-      return undefined;
-    }
-    return { subject: 'articulationProcess', values: values as string[] };
+    const values = scalarMembershipValues(args[1]);
+    return values ? { subject: 'articulationProcess', values } : undefined;
   }
 
   if (operator === 'in' && Array.isArray(args) && args.length === 2) {
@@ -294,14 +324,29 @@ function setRowFrom(args: unknown): ConditionSetRow {
   if (!Array.isArray(args) || args.length !== 2) {
     throw new Error('Invalid JsonLogic "some" rule: expected [{ var }, predicate]');
   }
-  if (varNameOf(args[0]) !== ERRORS_VAR) {
-    throw new Error(`Unsupported JsonLogic "some" target: expected { var: "${ERRORS_VAR}" }`);
+  // The collection is read FIRST. A native-language predicate, `{"in": [{"var": ""}, [...]]}`,
+  // names no field and has the same shape as the innermost part of a process row, so the
+  // predicate alone cannot tell the two apart; the collection can.
+  const collection = varNameOf(args[0]);
+  if (collection !== ERRORS_VAR && collection !== NATIVE_LANGUAGES_VAR) {
+    throw new Error(
+      `Unsupported JsonLogic "some" target: expected { var: "${ERRORS_VAR}" } or ` +
+        `{ var: "${NATIVE_LANGUAGES_VAR}" }`,
+    );
   }
 
   // An outer `!` is what distinguishes 「排除」 from 「包含」.
   const negated = singleKey(args[1]);
   const isExcludes = negated?.[0] === '!';
-  const matched = subjectOf(isExcludes ? negated[1] : args[1]);
+  const predicate = isExcludes ? negated[1] : args[1];
+
+  let matched: { subject: ConditionSubject; values: string[] } | undefined;
+  if (collection === NATIVE_LANGUAGES_VAR) {
+    const values = scalarMembershipValues(predicate);
+    matched = values ? { subject: 'nativeLanguage', values } : undefined;
+  } else {
+    matched = subjectOf(predicate);
+  }
   if (!matched) {
     throw new Error('Unsupported JsonLogic "some" predicate in an applicability condition');
   }
