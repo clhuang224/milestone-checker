@@ -131,4 +131,87 @@ describe('ConditionEditor applicability rows', () => {
       some: [{ var: 'articulation.errors' }, { '!': { in: [{ var: 'targetPhonemeId' }, ['zh']] } }],
     });
   });
+
+  it('offers the four categories, by their labels, for the category subject', async () => {
+    const fixture = setup({ ...excludeRow, subject: 'articulationCategory', values: [] });
+    await fixture.whenStable();
+
+    const options = fixture.componentInstance.setOptions().flatMap((g) => g.options);
+    expect(options.map((o) => o.id)).toEqual(['initial', 'medial', 'final', 'tone']);
+    expect(options.map((o) => o.label)).toEqual(['聲母', '介音', '韻母', '聲調']);
+  });
+
+  it('offers every native language for the native-language subject', async () => {
+    const fixture = setup({
+      ...excludeRow,
+      subject: 'nativeLanguage',
+      mode: 'includes',
+      values: [],
+    });
+    await fixture.whenStable();
+
+    const options = fixture.componentInstance.setOptions().flatMap((g) => g.options);
+    expect(options).toHaveLength(16);
+    expect(options[0]).toEqual({ id: 'mandarin', label: '華語' });
+  });
+
+  it('names tones in the target grid instead of showing bare tone marks', async () => {
+    const fixture = setup(excludeRow);
+    await fixture.whenStable();
+
+    const tones = fixture.componentInstance.setOptions().find((g) => g.label === '聲調');
+    expect(tones?.options.map((o) => o.label)).toContain('二聲');
+    expect(tones?.options.map((o) => o.label)).not.toContain('ˊ');
+    // Other categories keep their symbols.
+    const initials = fixture.componentInstance.setOptions().find((g) => g.label === '聲母');
+    expect(initials?.options.map((o) => o.label)).toContain('ㄓ');
+  });
+
+  it('switching to 母語 from 排除 resets to 包含, since 母語 offers only 包含', async () => {
+    const fixture = setup(excludeRow);
+    await fixture.whenStable();
+
+    const emitted: ConditionNode[] = [];
+    fixture.componentInstance.nodeChange.subscribe((node) => emitted.push(node));
+    fixture.componentInstance.setSubject('nativeLanguage');
+
+    expect(emitted).toEqual([
+      { type: 'set', subject: 'nativeLanguage', mode: 'includes', values: [] },
+    ]);
+  });
+
+  it('offers only 包含 on a native-language row', async () => {
+    const fixture = setup({
+      ...excludeRow,
+      subject: 'nativeLanguage',
+      mode: 'includes',
+      values: [],
+    });
+    await fixture.whenStable();
+
+    const values = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll('select')[1].options,
+    ].map((o) => o.value);
+    expect(values).toEqual(['includes']);
+  });
+
+  it('shows an imported native-language 排除 row truthfully, without rewriting it', async () => {
+    const row: ConditionSetRow = {
+      type: 'set',
+      subject: 'nativeLanguage',
+      mode: 'excludes',
+      values: ['mandarin'],
+    };
+    const fixture = setup(row);
+    const emitted: ConditionNode[] = [];
+    fixture.componentInstance.nodeChange.subscribe((node) => emitted.push(node));
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const modeSelect = element.querySelectorAll('select')[1];
+    expect(modeSelect.value).toBe('excludes');
+    expect(element.textContent).toContain('仍然有其他母語時成立');
+    expect(element.querySelector('p.meta')?.textContent).not.toContain('構音錯誤');
+    expect(emitted).toEqual([]);
+  });
 });

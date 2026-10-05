@@ -35,12 +35,20 @@
     <div class="flex items-center gap-2 flex-wrap">
       <span class="field-label">適用條件</span>
       <select [ngModel]="s.subject" (ngModelChange)="setSubject($event)" class="select w-auto">
-        <option value="articulationTarget">構音錯誤的目標音</option>
-        <option value="articulationProcess">音韻歷程</option>
+        <optgroup label="構音">
+          <option value="articulationTarget">構音錯誤的目標音</option>
+          <option value="articulationCategory">構音錯誤類別</option>
+          <option value="articulationProcess">音韻歷程</option>
+        </optgroup>
+        <optgroup label="個案">
+          <option value="nativeLanguage">母語</option>
+        </optgroup>
       </select>
       <select [ngModel]="s.mode" (ngModelChange)="setMode($event)" class="select w-auto">
         <option value="includes">包含</option>
-        <option value="excludes">排除</option>
+        @if (offersExcludes()) {
+          <option value="excludes">排除</option>
+        }
       </select>
     </div>
 
@@ -49,7 +57,9 @@
     <div class="space-y-1.5">
       @for (optionGroup of setOptions(); track optionGroup.label) {
         <div class="flex items-start gap-2">
-          <span class="field-label w-12 shrink-0 pt-1.5">{{ optionGroup.label }}</span>
+          @if (optionGroup.label) {
+            <span class="field-label w-12 shrink-0 pt-1.5">{{ optionGroup.label }}</span>
+          }
           <div class="flex flex-wrap gap-1">
             @for (option of optionGroup.options; track option.id) {
               <button
@@ -72,7 +82,9 @@
            an empty 排除 means 「扣掉零個之後還有錯誤嗎」, true of any case with any error. -->
       @if (s.mode === 'excludes') {
         <p class="sev sev-critical text-xs">
-          還沒選任何項目。「排除」在這個狀態下等於「只要有任何構音錯誤就成立」，幾乎每個個案都會觸發——要嘛選幾個音，要嘛改成「包含」。
+          還沒選任何項目。「排除」在這個狀態下等於「只要有任何{{
+            remainderNoun()
+          }}就成立」，幾乎每個個案都會觸發——要嘛選幾個項目，要嘛改成「包含」。
         </p>
       } @else {
         <p class="sev sev-warning text-xs">還沒選任何項目，這個條件不會成立。</p>
