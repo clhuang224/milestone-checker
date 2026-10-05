@@ -1,6 +1,6 @@
 # 任務:add-case-background-conditions
 
-順序就是執行順序。這份 change 是這一輪**第一個動工**的。原本擋住第 2、3、6 節的五個問題開發者都已經裁決，**只剩 6.4 一項在等答案**（等的是 `add-score-band-conditions` 的 Q6，理由見第 6 節與那份 change 的〈已定案〉決定二）;已定案的決定（聲調只記錄不判斷、轉介規則維持原樣、聽力分左右耳且有第四個值、整體看優耳、母語的用途與清單、出貨示範規則）見 `proposal.md` 的〈已定案〉，不要在實作時重開。
+順序就是執行順序。這份 change 是這一輪**第一個動工**的。原本擋住第 2、3、6 節的五個問題開發者都已經裁決，6.4 原本等的 `add-score-band-conditions` Q6 也已定案，**沒有任何一項還在等答案**；已定案的決定（聲調只記錄不判斷、轉介規則維持原樣、聽力分左右耳且有第四個值、整體看優耳、母語的用途與清單、出貨示範規則）見 `proposal.md` 的〈已定案〉，不要在實作時重開。
 
 第 6 節排在最後而且要獨立提交:它會把儲存 key 整組升版，而升版是作廢，既有資料歸零。前面五節一項都不需要它，所以那個破壞性的改動要單獨站在一個 commit 上，好在出事的時候一眼認得出來。
 
@@ -41,12 +41,12 @@
 
 這一節每一項各自一個 commit，6.4 尤其不可以跟別的改動綁在一起。
 
-**6.4 暫緩，6.1 到 6.3 與 6.5 照常做。**這一輪只升一次版到 `:v8`，而由哪一個 change 執行那一次，取決於 `add-score-band-conditions` 的 Q6。6.1 到 6.3 是把 seed 的內容備好，那本來就是升版的前提;6.5 驗的是 seed 的內容而不是版號。
+這一輪只升一次版到 `:v8`，由本案的 6.4 **單獨**執行：`add-score-band-conditions` 的 Q6 定案為不出貨它的佔位規則，那份 change 沒有 seed，也不升版。6.1 到 6.3 是把 seed 的內容備好，那本來就是升版的前提;6.5 驗的是 seed 的內容而不是版號。
 
 - [x] 6.1 `data/starter-rules.ts`:新增一條 `severity: 'info'` 的示範附註規則，條件是「母語包含台灣台語 AND 構音錯誤目標音包含 ㄕ、ㄈ、ㄩ」，用 4.2 之後編輯器反解得出來的形狀寫，**不要手寫編輯器打不開的 JsonLogic**;訊息文字要講出開發者指定的那三組替代（石頭說成俗頭、飛機說成灰機、萵苣說成萵記），並讓治療師讀得出這是可以照著改的示範;程式碼註解寫明條件比訊息寬的原因是條件列問不出「替代成哪個音」，**不要為此擴充條件詞彙**
 - [ ] 6.2 `data/starter-cases.ts`:示範個案的母語補上台灣台語，讓 6.1 那條規則在守門之後仍然判斷得到;**聽力兩耳刻意留空**，程式碼註解寫明留空是為了示範「沒填就不判斷」，不是漏掉
 - [ ] 6.3 `data/starter-cases.ts`:依開發者給的三組詞加三筆音對——石頭（目標音 ㄕ）、飛機（目標音 ㄈ）、萵苣（目標音 ㄩ），錯音格記的是他給的那個誤讀（俗、灰、記）;**不要再自行補充其他例子**;跑一次 `starter-cases.spec.ts`，示範個案推導出來的音韻歷程會跟著變，該調整的是斷言不是資料
-- [ ] 6.4 **（暫緩執行:等 `add-score-band-conditions` 的 Q6）**`core/storage/storage.ts`:**十個 key 全部**從 `:v7` 升到 `:v8`（`findings`／`cases`／`rules`／`articulation-processes`／`articulation-records`／`phonological-summaries`／`swallow-trials`／`session-records`／`assessment-forms`／`reports`，一個都不能漏，只升一部分會留下讀不到主體的孤兒）;`storage.spec.ts` 裡寫死的 key 一併改;commit 訊息要寫明這一版是**作廢不是遷移**，既有使用者的資料歸零。**這一輪只升一次版**:`add-score-band-conditions` 的 5.3 原本也要升，兩個各升一次等於把使用者的資料清空兩次。由哪一個 change 執行這一次升版，取決於那份 change 的 Q6（佔位規則要不要出貨）——答「不出貨」就由本項執行，答「要出貨」則等它的 seed 也備妥後合併成同一個 commit。**在 Q6 有答案之前這一項不要動手**，前面每一項都是在 `:v7` 上做的，不做這一項不會擋住它們
+- [ ] 6.4 `core/storage/storage.ts`:**十個 key 全部**從 `:v7` 升到 `:v8`（`findings`／`cases`／`rules`／`articulation-processes`／`articulation-records`／`phonological-summaries`／`swallow-trials`／`session-records`／`assessment-forms`／`reports`，一個都不能漏，只升一部分會留下讀不到主體的孤兒）;`storage.spec.ts` 裡寫死的 key 一併改;commit 訊息要寫明這一版是**作廢不是遷移**，既有使用者的資料歸零。**這一輪只升一次版，就是這一項**：`add-score-band-conditions` 原本也要升，兩個各升一次等於把使用者的資料清空兩次；那份 change 的 Q6 定案為不出貨之後已經不升版，所以本項單獨執行、單獨一個 commit，不跟任何其他改動綁在一起
 - [ ] 6.5 `data/starter-content.spec.ts` 補斷言:6.1 那條規則存在、等級是提示、條件經 `fromJsonLogic()` 反解得出條件列而不是原始 JSON、對示範個案會觸發、對一個什麼都沒填（含沒填母語）的個案不觸發
 
 ## 7. 收尾
