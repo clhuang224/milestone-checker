@@ -6,7 +6,7 @@ import {
 import { probeErrors } from '../articulation/probe-errors';
 import { processIdsForTarget } from '../articulation/summary';
 import { SessionRecord } from '../../models/session-record.model';
-import { RecordProfile, Case } from '../../models/case.model';
+import { RecordProfile, Case, NativeLanguageId } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
 import { ZhuyinCategory } from '../../models/zhuyin.model';
 import { SwallowTrial } from '../../models/swallow-trial.model';
@@ -75,7 +75,15 @@ export interface RuleFacts {
    * silent error — the rule still fires, just on a premise the author did not intend — so the
    * choice belongs to whoever writes the rule.
    */
-  case: { ageInMonths?: number; correctedAgeInMonths?: number };
+  case: {
+    ageInMonths?: number;
+    correctedAgeInMonths?: number;
+    /**
+     * Absent when never asked, `[]` when answered only with typed languages. Ids only — typed
+     * `otherNativeLanguages` are left out because rules can only be written against a known list.
+     */
+    nativeLanguages?: NativeLanguageId[];
+  };
   articulation: { errors: ArticulationErrorFact[] };
   swallowing: { trials: SwallowTrialFact[] };
   /** Finding values stay flat at the top level — see buildFacts. */
@@ -136,6 +144,9 @@ export function buildFacts(
       correctedAgeInMonths: birthDateISO
         ? correctedAgeInMonthsOn(birthDateISO, caseRecord.gestationalWeeks, onDateISO)
         : undefined,
+      // Spread rather than assigned, so "never asked" leaves no key at all: the missing-field
+      // guard has to tell that apart from an answer that names no listed language.
+      ...(caseRecord.nativeLanguages ? { nativeLanguages: caseRecord.nativeLanguages } : {}),
     },
     articulation: { errors: errorFacts(probes, processGroups) },
     swallowing: { trials: trialFacts(trials) },

@@ -129,4 +129,22 @@ describe('buildFacts', () => {
     expect(result.articulation.errors).toHaveLength(1);
     expect(result.articulation.errors[0].processIds).toEqual([]);
   });
+
+  it('leaves native languages out entirely when the question was never asked', () => {
+    expect('nativeLanguages' in facts().case).toBe(false);
+  });
+
+  it('passes listed native language ids through', () => {
+    expect(facts({ nativeLanguages: ['mandarin', 'taiwanese'] }).case.nativeLanguages).toEqual([
+      'mandarin',
+      'taiwanese',
+    ]);
+  });
+
+  it('keeps an empty list when only typed languages were given, and drops the typed ones', () => {
+    const result = facts({ nativeLanguages: [], otherNativeLanguages: ['日語'] });
+
+    expect(result.case.nativeLanguages).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain('日語');
+  });
 });
