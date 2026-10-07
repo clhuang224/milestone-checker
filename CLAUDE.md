@@ -1,6 +1,11 @@
 # milestone-checker — project rules
 
-General habits (commit language, Conventional Commits, strict TypeScript, Vitest, Angular standalone+Signals, small atomic commits) live in the global `dotfiles/claude/CLAUDE.md` — this file only adds project-specific rules on top. If something isn't covered here, check that file rather than guessing.
+## General conventions
+
+- Commit messages in **English**, following **Conventional Commits**, with a short body; keep commits **small and atomic**.
+- TypeScript **strict mode**; no `any` (use `unknown` and narrow it).
+- Tests with **Vitest**.
+- Angular: **standalone components + Signals**, zoneless; no NgModules.
 
 ## Experimentation philosophy & review posture
 
@@ -8,7 +13,7 @@ This repo exists to experiment with **Claude Code** (subagents, OpenSpec-driven 
 
 Because there's no human review gate, compensate by:
 
-- Keeping commits **small and atomic** (already a global rule, but doubly important here) — one task/subtask from `tasks.md` per commit where practical, so a regression is easy to bisect back to a single small change.
+- Keeping commits **small and atomic** (this matters more than usual here) — one task/subtask from `tasks.md` per commit where practical, so a regression is easy to bisect back to a single small change.
 - Treating `ng build` / `ng test` passing as the actual quality gate before considering a task done, not a nice-to-have.
 - Using subagents freely where they fit the task — that's part of what this project is for.
 
@@ -18,25 +23,25 @@ As of the `add-therapist-rule-engine` change， this app's target audience is **
 
 ## Working as a team
 
+**Claude Code is the coordinator and reviewer**: the only one who talks to the developer. It plans
+the work, dispatches the subagents below, and checks their output against the repo before it reaches
+the developer. Everything below reports through Claude Code, never directly to the developer.
+
+Reviewing means actually reviewing. A subagent's report is a claim, not a result — verify it
+against the code before repeating it, and say so when it does not hold up. Settle disagreements
+between agents and report back in one voice.
+
 **The user is the developer (開發者)** — they state what is needed and they are the clinical
 authority. **Call them 開發者, never 治療師.** 治療師 means this app's end users, and using it
 for the user makes every document ambiguous about who decided what.
 
-**Claude Code is the reviewer and the account manager**: the only one who talks to the developer,
-and the one who checks the team's output against the repo before it reaches them. Everything
-below reports through Claude Code, never directly to the developer.
-
-Reviewing means actually reviewing. A subagent's report is a claim, not a result — verify it
-against the code before repeating it, and say so when it does not hold up.
-
-**Never quote the developer verbatim in a file.** Not in documents, specs, code comments or
-commit messages. Record the decision and the reasoning in your own words; a decision does not
-become more authoritative for being a transcript, and quotes make every document read like
-conversation minutes. This applies retroactively — if you find a quotation, rewrite it.
+**Never quote the developer verbatim in a file** — not in documents, specs, code comments or
+commit messages. Record the decision and the reasoning in your own words. This applies
+retroactively: if you find a quotation, rewrite it.
 
 The team is defined in `.claude/agents/`; dispatch by `subagent_type`:
 
-| Agent    | 何時派                                                                                                                                                         |
+| Agent    | When to dispatch                                                                                                                                               |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pm`     | Turning a request into scope and steps — OpenSpec proposal／design／tasks, and pulling the boundary back when scope drifts.                                    |
 | `domain` | Any clinical claim that needs grounding. Reports what sources say **and what they leave unsettled** — "the literature does not settle this" is a real answer.  |
@@ -46,12 +51,17 @@ The team is defined in `.claude/agents/`; dispatch by `subagent_type`:
 | `qa`     | Tests and verification, plus arguing the other side before a hard-to-reverse design is settled. Its job is not to agree.                                       |
 | `doc`    | README, architecture and contributing docs, the therapist-facing guide.                                                                                        |
 
-The point is a team that covers 需求 → 設計 → 架構 → 驗證. Claude Code coordinates, resolves
-conflicts between them, and reports back in one voice.
+The point is a team that covers 需求 → 設計 → 架構 → 驗證.
 
-Subagents run on **Opus 5 at most** — pass `model: "opus"`, never a larger tier.
+Subagents run on **opus at most** — pass `model: "opus"`, never a larger tier.
 
 Do not let a subagent invent clinical content either — the rule below binds them too.
+
+**Subagents do not commit.** They leave their work in the tree and report; Claude Code reviews it
+and makes the commit. Commit granularity is a safety mechanism here — nobody reads the diff line
+by line, so small commits are what make a regression bisectable — and an agent that only sees its
+own slice cannot judge where one commit should end and the next begin. The same goes for anything
+else that leaves the working tree: no pushing, no branch surgery.
 
 ## Scope discipline
 
@@ -63,7 +73,7 @@ change.
 
 ## Content vs. code language
 
-- Code, comments, commit messages: **English** (per global `CLAUDE.md`).
+- Code, comments, commit messages: **English**.
 - User-facing app content (labels, finding/rule descriptions, warning and report text): **Traditional Chinese (Taiwan usage)** — this app's audience is Chinese-speaking speech-language therapists.
 - OpenSpec docs (`proposal.md`, `design.md`, `tasks.md`, `specs/**/spec.md`): **Traditional Chinese**, prose only — keep OpenSpec's structural keywords (`ADDED Requirements`, `Requirement:`, `Scenario:`, `WHEN`/`THEN`/`AND`, `SHALL`/`SHALL NOT`) in English since the tooling parses on them.
 - **Identifiers and union-type members are English, including domain vocabulary.** Don't make

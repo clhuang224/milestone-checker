@@ -7,8 +7,9 @@ export interface ProbeItem {
   /**
    * 實際聽到的音, free text, e.g. 「ㄆㄠ」. Blank means the target sound was produced correctly.
    *
-   * Free text so the therapist can write what they heard; `parseHeard()` pulls the first zhuyin
-   * symbol out of it for derivation, and anything it cannot read is kept but not derived from.
+   * Free text so the therapist can write what they heard; `parseHeard()` pulls the zhuyin symbol
+   * the row is about out of it for derivation (the tone mark on a tone row, the first symbol
+   * otherwise), and anything it cannot read is kept but not derived from.
    */
   heard: string;
 }

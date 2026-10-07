@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { derivedProcessGroups } from '../core/articulation/summary';
 import { ConditionNode, fromJsonLogic } from '../core/rule-engine/condition-mapper';
-import { AGE_FIELD_ID } from '../core/rule-engine/facts';
-import { evaluateCondition } from '../core/rule-engine/json-logic';
+import { AGE_FIELD_ID, buildFacts } from '../core/rule-engine/facts';
+import { evaluateCondition, evaluateRules } from '../core/rule-engine/json-logic';
+import { starterCaseSeed } from './starter-cases';
+import { Case } from '../models/case.model';
 import { STARTER_FINDINGS } from './starter-findings';
 import { STARTER_RULES } from './starter-rules';
 
@@ -88,6 +91,66 @@ describe('starter content', () => {
 
     it('does not fire when the articulation table is empty', () => {
       expect(evaluateCondition(rule!.condition, facts(96, []))).toBe(false);
+    });
+  });
+
+  // Firing for the demo case is asserted in starter-cases.spec.ts; not repeated here.
+  describe('the Taiwanese dialect influence demo rule', () => {
+    const RULE_ID = 'rule-taiwanese-dialect-influence-demo';
+    const rule = STARTER_RULES.find((r) => r.id === RULE_ID);
+
+    it('exists with severity info', () => {
+      expect(rule).toBeDefined();
+      expect(rule!.action.severity).toBe('info');
+    });
+
+    // rule-editor.ts calls fromJsonLogic() with no fallback, so a shape it cannot read would break
+    // the editor for this shipped rule.
+    it('reads back into the editor as an AND of a native-language row and a target-sound row', () => {
+      let node: ConditionNode | undefined;
+      expect(() => {
+        node = fromJsonLogic(rule!.condition);
+      }).not.toThrow();
+
+      expect(node).toEqual({
+        type: 'group',
+        combinator: 'and',
+        children: [
+          { type: 'set', subject: 'nativeLanguage', mode: 'includes', values: ['taiwanese'] },
+          {
+            type: 'set',
+            subject: 'articulationTarget',
+            mode: 'includes',
+            values: ['sh', 'f', 'yu'],
+          },
+        ],
+      });
+    });
+
+    it('does not fire for a case with no native language or hearing filled in, even with an error on ㄕ', () => {
+      const seed = starterCaseSeed('2026-08-19');
+      // Only the fields the Case type requires; no birth date, native language or hearing.
+      const blankCase: Case = {
+        id: seed.caseRecord.id,
+        label: seed.caseRecord.label,
+        createdOnISODate: seed.caseRecord.createdOnISODate,
+        sex: seed.caseRecord.sex,
+      };
+      const probes = seed.probes.filter((p) => p.targetPhonemeId === 'sh');
+      const facts = buildFacts(
+        blankCase,
+        seed.record,
+        seed.profile,
+        probes,
+        derivedProcessGroups(probes),
+        [],
+      );
+
+      // Guard the premise: the ㄕ error is there and the native language was never asked.
+      expect(facts.articulation.errors.map((e) => e.targetPhonemeId)).toContain('sh');
+      expect('nativeLanguages' in facts.case).toBe(false);
+
+      expect(evaluateRules(STARTER_RULES, facts).map((r) => r.id)).not.toContain(RULE_ID);
     });
   });
 

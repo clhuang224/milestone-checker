@@ -61,8 +61,96 @@
             </select>
           </div>
 
-          @if (!c.birthDateISO) {
-            <p class="meta pb-2">沒填生日的話，用到年齡的規則不會判斷</p>
+          <!-- Hearing on its own row: the third label is long, and two ears inline with 生日 would
+               wrap unpredictably. Pressing the chosen status again clears that ear, so a mis-click
+               can go back to not-filled (no chip on) instead of forcing a guess. -->
+          <div class="basis-full flex flex-wrap gap-x-8 gap-y-3">
+            @for (ear of hearingEars; track ear.side) {
+              <fieldset class="min-w-0">
+                <legend class="field-label mb-1">{{ ear.label }}</legend>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (option of hearingOptions; track option.value) {
+                    <button
+                      type="button"
+                      class="chip"
+                      [class.chip-on]="c.hearing?.[ear.side] === option.value"
+                      [attr.aria-pressed]="c.hearing?.[ear.side] === option.value"
+                      (click)="toggleHearing(ear.side, option.value)"
+                    >
+                      {{ option.label }}
+                    </button>
+                  }
+                </div>
+              </fieldset>
+            }
+          </div>
+
+          <!-- Own full-width row: sixteen options inline with 生日 would push everything else off.
+               Groups follow NATIVE_LANGUAGE_ORDER and are told apart by spacing alone. -->
+          <fieldset class="basis-full min-w-0">
+            <legend class="field-label mb-1">母語</legend>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              @for (group of nativeLanguageGroups; track $index) {
+                <div class="flex flex-wrap gap-1.5">
+                  @for (option of group; track option.id) {
+                    <label
+                      class="chip has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent"
+                      [class.chip-on]="hasNativeLanguage(c, option.id)"
+                    >
+                      <input
+                        type="checkbox"
+                        class="sr-only"
+                        [checked]="hasNativeLanguage(c, option.id)"
+                        (change)="toggleNativeLanguage(option.id)"
+                      />
+                      {{ option.label }}
+                    </label>
+                  }
+                </div>
+              }
+
+              <div class="flex flex-wrap items-center gap-1.5">
+                @for (entry of c.otherNativeLanguages ?? []; track entry) {
+                  <span class="chip chip-on cursor-default gap-1 pr-1">
+                    {{ entry }}
+                    <button
+                      type="button"
+                      class="text-faint hover:text-ink px-0.5"
+                      [attr.aria-label]="'移除' + entry"
+                      (click)="removeOtherLanguage(entry)"
+                    >
+                      ×
+                    </button>
+                  </span>
+                }
+                <input
+                  id="case-other-language"
+                  type="text"
+                  placeholder="其他"
+                  aria-label="其他母語"
+                  class="input w-32 py-0.5"
+                  [attr.aria-invalid]="otherLanguageError() ? true : null"
+                  [attr.aria-describedby]="
+                    otherLanguageError() ? 'case-other-language-error' : null
+                  "
+                  (input)="otherLanguageError.set('')"
+                  (change)="onOtherLanguageInput($any($event.target))"
+                />
+              </div>
+            </div>
+            @if (otherLanguageError()) {
+              <p id="case-other-language-error" class="mt-1 text-xs text-danger" role="alert">
+                {{ otherLanguageError() }}
+              </p>
+            }
+          </fieldset>
+
+          <!-- One sentence for the whole section, so it sits after every field it covers. Gone once
+               all of them are filled: from then on it cannot affect this case. -->
+          @if (hasUnjudgedFields()) {
+            <p class="basis-full meta">
+              生日、母語、左右耳聽力哪一項沒填，用到那一項的規則就不會判斷
+            </p>
           }
         </div>
       }

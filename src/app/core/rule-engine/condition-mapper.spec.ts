@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { ArticulationProbe } from '../../models/articulation-record.model';
+import { Case, NativeLanguageId, RecordProfile } from '../../models/case.model';
 import { FindingDefinition } from '../../models/finding.model';
-import { RuleFacts } from './facts';
+import { SessionRecord } from '../../models/session-record.model';
+import { RuleFacts, buildFacts } from './facts';
 import { evaluateCondition } from './json-logic';
 import {
   ConditionGroup,
@@ -139,7 +142,7 @@ describe('applicability (set) rows', () => {
   });
 
   it('round-trips every subject and mode combination', () => {
-    const subjects = ['articulationTarget', 'articulationProcess'] as const;
+    const subjects = ['articulationTarget', 'articulationCategory', 'articulationProcess'] as const;
     const modes = ['includes', 'excludes'] as const;
 
     for (const subject of subjects) {
@@ -237,5 +240,172 @@ describe('defaultSetRow evaluated, not just round-tripped', () => {
     const row: ConditionSetRow = { ...defaultSetRow(), mode: 'excludes' };
 
     expect(evaluateCondition(toJsonLogic(row), oneError)).toBe(true);
+  });
+});
+
+describe('category (articulationCategory) set rows', () => {
+  const ON_DATE = '2026-08-20';
+  const caseRecord: Case = {
+    id: 'case-1',
+    label: '個案 A',
+    sex: 'female',
+    createdOnISODate: '2026-08-01',
+  };
+  const record: SessionRecord = {
+    id: 'record-1',
+    caseId: 'case-1',
+    onISODate: ON_DATE,
+    formIds: ['articulation'],
+  };
+  const profile: RecordProfile = { recordId: 'record-1', values: {}, updatedOnISODate: ON_DATE };
+
+  function probe(targetPhonemeId: string, heard: string): ArticulationProbe {
+    return {
+      id: `probe-${targetPhonemeId}`,
+      caseId: 'case-1',
+      recordId: 'record-1',
+      targetPhonemeId,
+      items: [{ word: '詞', heard }],
+      updatedOnISODate: ON_DATE,
+    };
+  }
+
+  function factsFor(probes: ArticulationProbe[]): RuleFacts {
+    return buildFacts(caseRecord, record, profile, probes, [], []);
+  }
+
+  const includesTone: ConditionSetRow = {
+    type: 'set',
+    subject: 'articulationCategory',
+    mode: 'includes',
+    values: ['tone'],
+  };
+  const excludesTone: ConditionSetRow = { ...includesTone, mode: 'excludes' };
+
+  it("serializes to a membership test on each error's targetCategory", () => {
+    expect(toJsonLogic({ ...includesTone, values: ['initial'] })).toEqual({
+      some: [{ var: 'articulation.errors' }, { in: [{ var: 'targetCategory' }, ['initial']] }],
+    });
+  });
+
+  it('round-trips includes and excludes rows unchanged', () => {
+    expect(fromJsonLogic(toJsonLogic(includesTone))).toEqual(includesTone);
+    expect(fromJsonLogic(toJsonLogic(excludesTone))).toEqual(excludesTone);
+  });
+
+  describe('evaluated against facts from buildFacts()', () => {
+    // A tone error (tone2 heard as tone3) and an initial error (ㄓ heard as ㄉ).
+    const toneOnly = factsFor([probe('tone2', 'ˇ')]);
+    const toneAndInitial = factsFor([probe('tone2', 'ˇ'), probe('zh', 'ㄉ')]);
+
+    it('produces the categories the rows below rely on', () => {
+      expect(toneOnly.articulation.errors.map((error) => error.targetCategory)).toEqual(['tone']);
+      expect(toneAndInitial.articulation.errors.map((error) => error.targetCategory)).toEqual([
+        'tone',
+        'initial',
+      ]);
+    });
+
+    it('matches 「包含 聲調」 on a case whose only errors are tone errors', () => {
+      expect(evaluateCondition(toJsonLogic(includesTone), toneOnly)).toBe(true);
+    });
+
+    it('does not match 「排除 聲調」 when nothing remains outside the tone category', () => {
+      expect(evaluateCondition(toJsonLogic(excludesTone), toneOnly)).toBe(false);
+    });
+
+    it('matches 「排除 聲調」 when an error outside the tone category remains', () => {
+      expect(evaluateCondition(toJsonLogic(excludesTone), toneAndInitial)).toBe(true);
+    });
+  });
+});
+
+describe('native-language (nativeLanguage) set rows', () => {
+  const includesTaiwanese: ConditionSetRow = {
+    type: 'set',
+    subject: 'nativeLanguage',
+    mode: 'includes',
+    values: ['taiwanese'],
+  };
+  const excludesTaiwanese: ConditionSetRow = { ...includesTaiwanese, mode: 'excludes' };
+  const includesProcess: ConditionSetRow = {
+    type: 'set',
+    subject: 'articulationProcess',
+    mode: 'includes',
+    values: ['taiwanese'],
+  };
+
+  it('serializes to a scalar membership test over case.nativeLanguages', () => {
+    expect(toJsonLogic(includesTaiwanese)).toEqual({
+      some: [{ var: 'case.nativeLanguages' }, { in: [{ var: '' }, ['taiwanese']] }],
+    });
+  });
+
+  it('round-trips includes and excludes rows unchanged', () => {
+    expect(fromJsonLogic(toJsonLogic(includesTaiwanese))).toEqual(includesTaiwanese);
+    expect(fromJsonLogic(toJsonLogic(excludesTaiwanese))).toEqual(excludesTaiwanese);
+  });
+
+  it('reads the collection before the predicate, so native-language and process rows are never mistaken for each other', () => {
+    // The native-language predicate is the same shape as the innermost part of a process row.
+    expect(fromJsonLogic(toJsonLogic(includesTaiwanese))).toMatchObject({
+      subject: 'nativeLanguage',
+    });
+    expect(fromJsonLogic(toJsonLogic(includesProcess))).toMatchObject({
+      subject: 'articulationProcess',
+    });
+    // A process-shaped predicate over the native-language collection is not a process row.
+    expect(() =>
+      fromJsonLogic({
+        some: [
+          { var: 'case.nativeLanguages' },
+          { some: [{ var: 'processIds' }, { in: [{ var: '' }, ['taiwanese']] }] },
+        ],
+      }),
+    ).toThrow();
+    // And a bare scalar membership over articulation errors is not a native-language row.
+    expect(() =>
+      fromJsonLogic({
+        some: [{ var: 'articulation.errors' }, { in: [{ var: '' }, ['taiwanese']] }],
+      }),
+    ).toThrow();
+  });
+
+  it('still throws on a some over an unknown collection', () => {
+    expect(() =>
+      fromJsonLogic({ some: [{ var: 'case.unknown' }, { in: [{ var: '' }, ['taiwanese']] }] }),
+    ).toThrow(/Unsupported JsonLogic "some" target/);
+  });
+
+  describe('evaluated against facts from buildFacts()', () => {
+    const ON_DATE = '2026-08-20';
+    const record: SessionRecord = {
+      id: 'record-1',
+      caseId: 'case-1',
+      onISODate: ON_DATE,
+      formIds: [],
+    };
+    const profile: RecordProfile = { recordId: 'record-1', values: {}, updatedOnISODate: ON_DATE };
+
+    function factsFor(nativeLanguages: NativeLanguageId[]): RuleFacts {
+      const caseRecord: Case = {
+        id: 'case-1',
+        label: '個案 A',
+        sex: 'female',
+        createdOnISODate: '2026-08-01',
+        nativeLanguages,
+      };
+      return buildFacts(caseRecord, record, profile, [], [], []);
+    }
+
+    it('matches 「包含 台灣台語」 on a case whose native languages include it', () => {
+      expect(
+        evaluateCondition(toJsonLogic(includesTaiwanese), factsFor(['taiwanese', 'mandarin'])),
+      ).toBe(true);
+    });
+
+    it('does not match 「包含 台灣台語」 on a case whose native languages lack it', () => {
+      expect(evaluateCondition(toJsonLogic(includesTaiwanese), factsFor(['mandarin']))).toBe(false);
+    });
   });
 });
